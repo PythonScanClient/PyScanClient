@@ -5,6 +5,13 @@
 import unittest
 from scan.table import TableScan
 
+# TODO Open/close shutter
+# TODO 'Comment' column can be comment command or Set('SomeCommentPV')
+# TODO Start/stop DAQ, overall or on each 'line'
+# TODO Reset counters, issue scan step markers
+# TODO Devices to always log
+# TODO Devices where we need to await 'increment' instead of absolute value 
+
 class TableScanTest(unittest.TestCase):
     def testXML(self):
         settings = None
