@@ -4,6 +4,7 @@ Created on Mar 8,2015
 @author: qiuyx
 '''
 from scan.commands.Command import Command
+import xml.etree.ElementTree as ET
 
 class Include(Command):
     '''
@@ -11,18 +12,33 @@ class Include(Command):
     '''
 
 
-    def __init__(self, scanFile=None,macros='macro=value'):
+    def __init__(self, scanFile=None,macros='macro=value',errHandler=None):
         '''
-        Constructor
+        @param scanFile: The included scan file path located at /scan/example
+                         Defaults as None.
+        @param macros:   
+        
+        Usage::
+        >>>icl=Include(scanFile='PrepMotor.scn',macros='macro=value')
         '''
-        self.scanFile=scanFile
-        self.macros=macros
+        self.__scanFile=scanFile
+        self.__macros=macros
+        self.__errHandler=errHandler
     
     def genXML(self):
-        return '<include>'+'<scan_file>'+self.scanFile+'</scan_file>'+'<macros>'+self.macros+'</macros></include>'
+        xml = ET.Element('include')
         
-    def __str__(self):
-        return 'InclueCommand(scan_file='+self.scanFile+', macros='+self.macros+')'
+        ET.SubElement(xml, 'scan_file').text = self.__scanFile
+        
+        ET.SubElement(xml, 'macros').text = self.__macros
+        
+        if self.__errHandler!=None:
+            ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
+            
+        return ET.tostring(xml)
+        
+    def __repr__(self):
+        return 'InclueCommand(scan_file='+self.__scanFile+', macros='+self.__macros+')'
     
     def toCmdString(self):
-        return 'InclueCommand(scan_file='+self.scanFile+', macros='+self.macros+')'
+        return 'InclueCommand(scan_file='+self.__scanFile+', macros='+self.__macros+')'

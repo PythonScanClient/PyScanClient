@@ -4,6 +4,7 @@ Created on Mar 8,2015
 @author: qiuyx
 '''
 from scan.commands.Command import Command
+import xml.etree.ElementTree as ET
 
 class Wait(Command):
     '''
@@ -25,6 +26,7 @@ class Wait(Command):
 
     def __init__(self, device=None,desiredValue=0.0,comparison='=',tolerance=0.1,timeout=0.0,errHandler=None):
         '''
+        Wait for a device to some vaule.
         Instantiation needs 6 params in the following order:
         :param  device:             Name of PV or device. Defaults None.
         :param  desiredValue:       Value wait to. Defaults 0.0
@@ -55,21 +57,29 @@ class Wait(Command):
         '''
         Generating .scn text.
         '''
-        result= '<wait>'
-        result+= '<device>'+str(self.__device)+'</device>'
-        result+= '<value>'+str(self.__desiredValue)+'</value>'
-        result+= '<comparison>'+self.__comparison+'</comparison>'
-        #result+= '<comparison>'+str(self.comparison)+'</comparison>'
+        xml = ET.Element('wait')
+        
+        dev = ET.SubElement(xml, 'device')
+        
+        if self.__device != None:
+            dev.text = str(self.__device)
+            
+        ET.SubElement(xml, 'value').text = str(self.__desiredValue)
+        
+        ET.SubElement(xml, 'comparison').text = self.__comparison
+        
         if self.__tolerance!=0.0:
-            result+= '<tolerance>'+str(self.__tolerance)+'</tolerance>'
+            ET.SubElement(xml,'tolerance').text = str(self.__tolerance)
+            
         if self.__timeout!=0.0:
-            result+= '<timeout>'+str(self.__timeout)+'</timeout>'
+            ET.SubElement(xml,'timeout').text = str(self.__timeout)
+            
         if self.__errHandler!=None:
-            result+= '<error_handler>'+str(self.__errHandler)+'</error_handler>'
-        result+= '</wait>'
-        return result
+            ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
+            
+        return ET.tostring(xml)
     
-    def __str__(self):
+    def __repr__(self):
         '''
         Overwrite the built-in __str__ method to give a pretty printing. 
         '''

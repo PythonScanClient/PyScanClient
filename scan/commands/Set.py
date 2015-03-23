@@ -4,6 +4,7 @@ Created on Mar 8,2015
 @author: qiuyx
 '''
 from scan.commands.Command import Command
+import xml.etree.ElementTree as ET
 
 class Set(Command):
     '''
@@ -11,56 +12,73 @@ class Set(Command):
     '''
 
 
-    def __init__(self, device=None,value=0.0,completion=False,wait=True,tolerance=0.1,timeOut=0.0):
+    def __init__(self, device=None,value=0.0,completion=False,readback=False,tolerance=0.1,timeout=0.0,errhandler=None):
         '''
-        Constructor
+        Command to set a __device to a __value
+        @param __device: Device name
+        @param __value: Value
+        @param __completion: Await __completion?
+        @param __readback: False to not check any __readback.
+                         True to __wait for __readback from the '__device',
+                         or name of specific __readback different from '__device'.
+        @param __tolerance: Readback __tolerance
+        @param timeout: Timeout in seconds, used for __completion and __readback check
         '''
-        self.device=device
-        self.value=value
-        self.completion=completion
-        self.wait=wait
-        self.tolerance=tolerance
-        self.timeOut=timeOut
+        self.__device=device
+        self.__value=value
+        self.__completion=completion
+        self.__readback=readback
+        self.__tolerance=tolerance
+        self.__timeOut=timeout
+        self.__errHandler=errhandler
         
     def genXML(self):
-        result= '<set>'
-        if self.device==None:
-            result+='<device/>'
-        else:
-            result+='<device>'+self.device+'</device>'
-        result+='<value>'+str(self.value)+'</value>'
-        if self.completion==True:
-            result+='<completion>true</completion>'
-        if self.wait==False:
-            result+='<wait>false</wait>'
-        result+='<tolerance>'+str(self.tolerance)+'</tolerance>'
-        if self.timeOut!=0.0:
-            result+='<timeout>'+str(self.timeOut)+'</timeout>'
-        result+='</set>'
+        xml = ET.Element('set')
+
+        dev=ET.SubElement(xml, 'device')
+        if self.__device!=None:
+            dev.text = self.__device
+            
+        ET.SubElement(xml, 'value').text = str(self.__value)
         
-        return result
+        if self.__completion==True:
+            ET.SubElement(xml, 'completion').text = 'true'
+            need_timeout = True
+            
+        if self.readback:
+            ET.SubElement(xml, "wait").text = "true"
+            ET.SubElement(xml, "readback").text = self.__device if self.__readback == True else self.__readback
+            ET.SubElement(xml, "tolerance").text = str(self.__tolerance)
+            need_timeout = True
+        if need_timeout  and  self.__timeout > 0:
+            ET.SubElement(xml, "timeout").text = str(self.__timeout)
+        
+        if self.__errHandler!=None:
+            ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
+ 
+        return ET.tostring(xml)
     
-    def __str__(self):
-        result= 'Set( device='+self.device
-        result+= ', value='+str(self.value)
-        if self.completion==True:
+    def __repr__(self):
+        result= 'Set( device='+self.__device
+        result+= ', value='+str(self.__value)
+        if self.__completion==True:
             result+=', completion=true'
-        if self.wait==False:
+        if self.__wait==False:
             result+=', wait=false'
-        if self.timeOut!=0.0:
-            result+=', timeOut='+str(self.timeOut)
+        if self.__timeOut!=0.0:
+            result+=', timeOut='+str(self.__timeOut)
         result+=')'
         return result
     
     def toCmdString(self):
-        result= 'Set(device='+self.device
-        result+= ',value='+str(self.value)
-        if self.completion==True:
+        result= 'Set(device='+self.__device
+        result+= ',value='+str(self.__value)
+        if self.__completion==True:
             result+=',completion=true'
-        if self.wait==False:
+        if self.__wait==False:
             result+=',wait=false'
-        if self.timeOut!=0.0:
-            result+=',timeOut='+str(self.timeOut)
+        if self.__timeOut!=0.0:
+            result+=',timeOut='+str(self.__timeOut)
         result+=')'
         return result
     

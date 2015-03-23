@@ -26,41 +26,51 @@ sc=ScanClient('localhost','4810')
 #generalize client instance:
 sc = ScanClient(host='localhost',port=4810)
 
-cc=Comment(comment='haha'),
+cc=Comment(text='haha'),
 #Create Command Sequence:
 cmds1 = CmdSequence(
-   Comment(comment='haha'),
+   Comment(text='haha'),
    Comment('hehe'),
-   ConfigLog(automatic=True),
+   ConfigLog(auto=True),
    Delay(seconds=2.0),
    Include(scanFile='1.scn',macros='macro=value'),
    Log('shutter','xpos','ypos'),
-   Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,
-               body=[Comment(comment='haha'),
-                     ConfigLog(automatic=True)
+   Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,readback=True,
+               body=[
+                     ConfigLog(auto=True),Comment(text='haha')
                      ]),
    Script('submit.py',1,'abc',0.05),
-   Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeOut=0.1),
+   Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeout=0.1,readback='pcharge'),
    Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
 )
 cmds2=[
        cc,
        Comment('hehe'),
-       ConfigLog(automatic=True),
+       ConfigLog(auto=True),
        Delay(seconds=2.0),
        Include(scanFile='1.scn',macros='macro=value'),
        Log('shutter','xpos','ypos'),
        Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,
-               body=[Comment(comment='haha'),
-                     ConfigLog(automatic=True)
+               body=[Comment(text='haha'),
+                     ConfigLog(auto=True)
                      ]),
        Script('submit.py',1,'abc',0.05),
-       Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeOut=0.1),
+       Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeout=0.1),
        Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
       ]
 
-print cc
-print 'cmds2:------',cmds2
+#print cc
+#print 'cmds2:------',cmds2
+print cmds1.genSCN() 
+print sc.genSCN4List(cmds2)
+
+#submit XML:
+sc.submit(cmds1.genSCN(),'TestSubmitXML')
+#submit CmdSequence:
+sc.submit(cmds1,'TestSubmitSeq')
+#submit List
+
+#sc.submit(cmds2,'TestSubmitList')
 '''
 #print c.toCmdString()
 print sc.genSCN4List(cmds2)

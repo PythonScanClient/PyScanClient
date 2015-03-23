@@ -4,81 +4,101 @@ Created on Mar 8,2015
 @author: qiuyx
 '''
 from scan.commands.Command import Command
+import xml.etree.ElementTree as ET 
 
 class Loop(Command):
     '''
     classdocs
     '''
 
-    def __init__(self, device=None,start=0.0,end=10.0,step=1.0,completion=True,wait=True,tolerance=0.1,timeOut=0.2,body=[]):
+    def __init__(self, device=None,start=0.0,end=10.0,step=1.0,completion=True,readback=False,wait=True,tolerance=0.1,timeOut=0.2,body=[],errHandler=None):
         '''
         Constructor
         '''
-        self.device=device
-        self.start=start
-        self.end=end
-        self.step=step
-        self.completion=completion
-        self.wait=wait
-        self.tolerance=tolerance
-        self.timeOut=timeOut
-        self.body=body
-    
+        self.__device = device
+        self.__start = start
+        self.__end = end
+        self.__step = step
+        self.__completion = completion
+        self.__readback = readback
+        self.__wait = wait
+        self.__tolerance = tolerance
+        self.__timeOut = timeOut
+        self.__body = body
+        self.__errHandler = errHandler
+        
     def genXML(self):
-        result= '<loop>'
-        if self.device==None:
-            result+='<device/>'
+        xml = ET.Element('loop')
+        
+        if self.__device==None:
+            ET.SubElement(xml, 'devices')
         else:    
-            result+='<device>'+self.device+'</device>'
-        result+='<start>'+str(self.start)+'</start>'
-        result+='<end>'+str(self.end)+'</end>'
-        result+='<step>'+str(self.step)+'</step>'
-        if self.completion:
-            result+='<completion>'+str(self.completion)+'</completion>'
-        if self.wait==False:
-            result+='<wait>'+str(self.wait)+'</wait>'
-        result+='<tolerance>'+str(self.tolerance)+'</tolerance>'
-        result+='<timeout>'+str(self.timeOut)+'</timeout>'
-        if len(self.body)!=0:
-            result+='<body>'
-            for command in self.body:
-                result+=command.genXML()
-            result+='</body>'
-        result+='</loop>'
-        return result
+            ET.SubElement(xml, 'devices').text = self.__device
+            
+        ET.SubElement(xml, 'start').text = str(self.__start)
+        
+        ET.SubElement(xml, 'end').text = str(self.__end)
+        
+        ET.SubElement(xml, 'step').text = str(self.__step)
+        
+        if self.__completion:
+            ET.SubElement(xml, 'completion').text = str(self.__completion)
+        
+        if isinstance(self.__readback, str):
+            ET.SubElement(xml, 'readback').text = str(self.__readback)
+        elif self.__readback==True:
+            ET.SubElement(xml, 'readback').text = self.__device
+
+        if self.__wait==False:
+            ET.SubElement(xml, 'wait').text = 'False'
+            
+        ET.SubElement(xml, 'tolerance').text = str(self.__tolerance)
+        
+        ET.SubElement(xml, 'timeout').text = str(self.__timeOut)
+        
+        body = ET.SubElement(xml,'body')
+        
+        if len(self.__body)!=0:
+            for command in self.__body:
+                body.text += command.genXML()
+                
+        if self.__errHandler!=None:
+            ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
+                          
+        return ET.tostring(xml)
     
-    def __str__(self):
+    def __repr__(self):
         result='Loop( '
-        result+= 'device='+self.device+', '
-        result+= 'start='+str(self.start)+', '
-        result+= 'end='+str(self.end)+', '
-        result+= 'step='+str(self.step)+', '
-        result+= 'completion'+str(self.completion)+', '
-        result+= 'wait'+str(self.wait)+', '
-        result+= 'tolerance'+str(self.tolerance)+', '
-        if len(self.body)!=0:
+        result+= 'device='+self.__device+', '
+        result+= 'start='+str(self.__start)+', '
+        result+= 'end='+str(self.__end)+', '
+        result+= 'step='+str(self.__step)+', '
+        result+= 'completion'+str(self.__completion)+', '
+        result+= 'wait'+str(self.__wait)+', '
+        result+= 'tolerance'+str(self.__tolerance)+', '
+        if len(self.__body)!=0:
             result+= '\n[\n'
-            for command in self.body:
+            for command in self.__body:
                 result+=command.toCmdString()+',\n'
             result+= ']\n'
-        result+= 'timeout'+str(self.timeOut)
+        result+= 'timeout'+str(self.__timeOut)
         result+=')'
         return result
         
     def toCmdString(self):
         result='Loop('
-        result+= 'device='+self.device+','
-        result+= 'start='+str(self.start)+','
-        result+= 'end='+str(self.end)+','
-        result+= 'step='+str(self.step)+','
-        result+= 'completion'+str(self.completion)+','
-        result+= 'wait'+str(self.wait)+','
-        result+= 'tolerance'+str(self.tolerance)+','
-        if len(self.body)!=0:
+        result+= 'device='+self.__device+','
+        result+= 'start='+str(self.__start)+','
+        result+= 'end='+str(self.__end)+','
+        result+= 'step='+str(self.__step)+','
+        result+= 'completion'+str(self.__completion)+','
+        result+= 'wait'+str(self.__wait)+','
+        result+= 'tolerance'+str(self.__tolerance)+','
+        if len(self.__body)!=0:
             result+= '\n[\n'
-            for command in self.body:
+            for command in self.__body:
                 result+=command.toCmdString()+',\n'
             result+= ']\n'
-        result+= 'timeout'+str(self.timeOut)
+        result+= 'timeout'+str(self.__timeOut)
         result+=')'
         return result

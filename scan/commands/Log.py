@@ -4,6 +4,7 @@ Created on Mar 8,2015
 @author: qiuyx
 '''
 from scan.commands.Command import Command
+import xml.etree.ElementTree as ET
 
 class Log(Command):
     '''
@@ -11,40 +12,42 @@ class Log(Command):
     '''
 
 
-    def __init__(self, *devices):
+    def __init__(self,errHandler=None,*devices):
         '''
         Constructor
         '''
-        self.devices=[]
+        self.__devices=[]
         for device in devices:
-            self.devices.append(device)
+            self.__devices.append(device)
+        self.__errHandler=errHandler
         
     def genXML(self):
-        result = '<log>'
-        if len(self.devices)==0:
-            result+='<devices/>'
-        else:
-            result +='<devices>'
-            for i in range(0,len(self.devices)):
-                result +='<device>'+self.devices[i]+'</device>'
-            result +='</devices>'    
-        result += '</log>'
-        return result
+        xml = ET.Element('log')
+        devices=ET.SubElement(xml, 'devices')
+        
+        if len(self.__devices)>0:
+            for i in range(0,len(self.__devices)):
+                ET.SubElement(devices, 'device').text = self.__devices[i]
+                
+        if self.__errHandler!=None:
+            ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
+            
+        return ET.tostring(xml)
     
-    def __str__(self):
+    def __repr__(self):
         result = 'Log( '
-        for i in range(0,len(self.devices)):
-            result +='device='+self.devices[i]
-            if i!=len(self.devices)-1:
+        for i in range(0,len(self.__devices)):
+            result +='device='+self.__devices[i]
+            if i!=len(self.__devices)-1:
                 result+=', '
         result += ')'
         return result
     
     def toCmdString(self):
         result = 'Log('
-        for i in range(0,len(self.devices)):
-            result +='device='+self.devices[i]
-            if i!=len(self.devices)-1:
+        for i in range(0,len(self.__devices)):
+            result +='device='+self.__devices[i]
+            if i!=len(self.__devices)-1:
                 result+=', '
         result += ')'
         return result
