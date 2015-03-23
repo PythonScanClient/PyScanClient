@@ -6,6 +6,20 @@ Unit test of ScanSettings
 import unittest
 from scan.util.scan_settings import DeviceSettings, ScanSettings
 
+class MyScanSettings(ScanSettings):
+    def __init__(self):
+        super(MyScanSettings, self).__init__()
+        # Define special settings for some devices
+        self.defineDeviceClass("My:Lakeshore.*", completion=True, readback=False, timeout=300, tolerance=10)
+        self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
+        
+    def getReadbackName(self, device_name):
+        # Motors use their *.RBV field for readback
+        if "Motor" in device_name:
+            return device_name + ".RBV"
+        return device_name
+
+
 class DeviceSettingsTest(unittest.TestCase):
     def testDeviceSettings(self):
         s = DeviceSettings("device", readback=False)
@@ -23,66 +37,81 @@ class DeviceSettingsTest(unittest.TestCase):
         self.assertEquals(s.getName(), "device")
         self.assertEquals(s.getReadback(), "other")
 
-    def testBasicScanSettings(self):
-        settings = ScanSettings()
-        
-        # Define special settings for some devices
-        settings.defineDeviceClass("My:Lakeshore.*", completion=True, readback=False, timeout=300)
+    def testDefaultSettings(self):
+        settings = MyScanSettings()
         
         # Check device that should have special settings
-        s = settings.getDeviceSettings("My:Lakeshore1")
+        s = settings.getDefaultSettings("My:Lakeshore1")
         print s
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), True)
         self.assertEquals(s.getReadback(), None)
         self.assertEquals(s.getTimeout(), 300)
+        self.assertEquals(s.getTolerance(), 10)
 
         # Check device that should NOT have them
-        s = settings.getDeviceSettings("Your:Lakeshore1")
+        s = settings.getDefaultSettings("Your:Lakeshore1")
         print s
         self.assertEquals(s.getName(), "Your:Lakeshore1")
         self.assertEquals(s.getCompletion(), False)
-        self.assertEquals(s.getReadback(), "Your:Lakeshore1")
+        self.assertEquals(s.getReadback(), None)
+        
+        # 'Motor' that uses *.RBV for a readback
+        s = settings.getDefaultSettings("My:Motor:47")
+        print s
+        self.assertEquals(s.getName(), "My:Motor:47")
+        self.assertEquals(s.getCompletion(), True)
+        self.assertEquals(s.getReadback(), "My:Motor:47.RBV")
+        self.assertEquals(s.getTimeout(), 100)
+        self.assertEquals(s.getTolerance(), 0)
+
+    def testDeviceModifiers(self):
+        settings = MyScanSettings()
+        
+        spec = "My:Lakeshore1"
+        (s, p) = settings.parseDeviceSettings(spec)
+        print "%s -> %s" % (spec, s)
+        self.assertEquals(s.getName(), "My:Lakeshore1")
+        self.assertEquals(s.getCompletion(), True)
+        self.assertEquals(s.getReadback(), None)
+        self.assertEquals(s.getTimeout(), 300)
+        self.assertEquals(p, False)
+
+        spec = "+p My:Lakeshore1"
+        (s, p) = settings.parseDeviceSettings(spec)
+        self.assertEquals(p, True)
+
+        spec = "-c My:Lakeshore1"
+        (s, p) = settings.parseDeviceSettings(spec)
+        print "%s -> %s" % (spec, s)
+        self.assertEquals(s.getName(), "My:Lakeshore1")
+        self.assertEquals(s.getCompletion(), False)
+        self.assertEquals(s.getReadback(), None)
+
+        spec = "+p-c+r My:Lakeshore1"
+        (s, p) = settings.parseDeviceSettings(spec)
+        print "%s -> %s" % (spec, s)
+        self.assertEquals(s.getName(), "My:Lakeshore1")
+        self.assertEquals(s.getCompletion(), False)
+        self.assertEquals(s.getReadback(), "My:Lakeshore1")
+        self.assertEquals(p, True)
+
+        spec = "+pr My:Lakeshore1"
+        (s, p) = settings.parseDeviceSettings(spec)
+        print "%s -> %s" % (spec, s)
+        self.assertEquals(s.getName(), "My:Lakeshore1")
+        self.assertEquals(s.getReadback(), "My:Lakeshore1")
+        self.assertEquals(p, True)
+
+        spec = "+p-cr My:Motor:47"
+        (s, p) = settings.parseDeviceSettings(spec)
+        print "%s -> %s" % (spec, s)
+        self.assertEquals(s.getName(), "My:Motor:47")
+        self.assertEquals(s.getCompletion(), False)
+        self.assertEquals(s.getReadback(), None)
+        self.assertEquals(p, True)
 
 
- 
 if __name__ == "__main__":
     unittest.main()
-    settings = ScanSettings()
-
-    print settings.parseDeviceModifiers("plain_device")
-    print settings.parseDeviceModifiers("-r no_readback")
-    print settings.parseDeviceModifiers("+r with_readback")
-    print settings.parseDeviceModifiers("+c with_callback")
-    print settings.parseDeviceModifiers("+cr with_callback_and_readback")
-    print settings.parseDeviceModifiers("+rc with_callback_and_readback")
-    print settings.parseDeviceModifiers("+c +r with_callback_and_readback")
-    print settings.parseDeviceModifiers("+c+r with_callback_and_readback")
-    print settings.parseDeviceModifiers("+c +rp with_callback_and_readback_in_parallel")
-    print settings.parseDeviceModifiers("+p with:Mot:callback_and_readback_in_parallel")
-
-
-    print settings.parseDeviceModifiers("Other")
-    print settings.parseDevice("Other")
-
     
-    print "%-22s: %-20s %-35s %-10s %-10s %-10s" % ( "Device", "PV", "Readback", "Completion?", "Timeout", "Tolerance" )
-    print "---------------------------------------------------------------------------------------------------------------"
-
-    
-    print "Title PV: %s" % settings.title
-    
-    settings.device_settings['TestWithCallback'] = { 'callback': True, 'readback': 'Test', 'timeout': None }
-    settings.device_settings['TestWithoutReadback'] = { 'callback': False, 'readback': None, 'timeout': None }
-    for device in [ "BL99:Mot:Whatever", "Speed",
-                    "-r-c BL99:Mot:Whatever",
-                    "-c-r BL99:Mot:Whatever",
-                    "BL99:Other", "+c BL99:Other", "-r BL99:Other", "-r+r BL99:Other",
-                    "TestWithCallback", "TestWithoutReadback"
-                  ]:
-                    
-        (pv, readback, completion, timeout, tolerance) = settings.parseDevice(device)
-        if readback is None:
-            readback = "-None-"
-        print "%-22s: %-20s %-35s %-10s %-10s %-10s" % (device, pv, readback, completion, timeout, tolerance)
-
