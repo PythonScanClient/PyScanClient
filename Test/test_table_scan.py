@@ -34,7 +34,7 @@ class TableScanTest(unittest.TestCase):
           [
             [ "  1",  "", ],
             [ "   ",  "range(5)", ],
-            [ "range(2)", "range(2)", ],
+            [ "[ 0, 1]", "range(2)", ],
           ]
         )
         print table_scan
