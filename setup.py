@@ -5,7 +5,7 @@ Created on
 '''
 from distutils.core import setup
 setup(name='PyScanClient',
-      version='0.9.3',
+      version='0.9.5',
       description='Python Scna Server Client Lib',
       author='Qiu Yongxiang',
       author_email='qiuyongxiang05@gmail.com',
