@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 
 class Wait(Command):
     '''
-    command that delays the scan until a device reaches a certain value.It has 6 properties in the following order:
+    Command that delays the scan until a device reaches a certain value. It has these properties:
     1.device
     2.desiredValue
     3.comparison
@@ -26,22 +26,21 @@ class Wait(Command):
 
     def __init__(self, device, value, comparison='=', tolerance=0.0, timeout=0.0, errhandler=None):
         '''
-        Wait for a device to some vaule.
-        Instantiation needs 6 params in the following order:
-        :param  device:             Name of PV or device. Defaults None.
-        :param  desiredValue:       Value Wait to. Defaults 0.0
-        :param  comparison:         Comparison with the desiredValue. 
-                                    Defaults '=' ,other available:
-                                             '>' ,
+        Wait for a device to reach a value.
+        @param  device:      Name of PV or device.
+        @param  value:       Desired value.
+        @param  comparison:  How current value is compared to the desired value.
+                             Defaults to '='.
+                             Other options:  '>' ,
                                              '>=',
                                              '<' ,
                                              '<=',
                                              'increase by',
                                              'decrease by'
                                     
-        :param  tolerance:          Defaults 0.1
-        :param  timeout             Defaults 0.0
-        :param  errHandler          Defaults None
+        @param  tolerance:  Tolerance used for numeric comparison. Defaults to 0, not used for string values.
+        @param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
+        @param  errhandler: Default None.
         
         Usage::
         >>> wcmd = Wait('shutter', 1)
