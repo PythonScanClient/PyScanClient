@@ -25,13 +25,15 @@ class TableScan:
     
     def __init__(self, settings, headers, rows, run_per_line=True):
         """
-        Initialize Table scan     
-        @param settings: ScanSettings
-        @param headers[]: Header columns of the table
-        @param rows[][]: Rows of the scan
-        @param run_per_line: True to create one 'run' per line,
-                             False to create one long run that resets counters
-                             and marks scan steps at each 'Wait'
+        Initialize Table scan
+        
+        Parameters:
+        settings:     ScanSettings
+        headers[]:    Header columns of the table
+        rows[][]:     Rows of the scan. Each row must have len(headers) columns.
+        run_per_line: True to create one 'run' per line,
+                      False to create one long run that resets counters
+                      and marks scan steps at each 'Wait'
         """
         self.settings = settings
         self.name = "Table Scan"
@@ -40,7 +42,8 @@ class TableScan:
         # values may be java.lang.String u'text'.
         # Convert to plain 'text'.
         #
-        # In addition, skip empty rows
+        # In addition, measure the width of each column
+        # and skip empty rows
         self.headers = [ str(h).strip() for h in headers ]
         self.cols = len(self.headers)
         self.rows = []
@@ -64,8 +67,8 @@ class TableScan:
     
     def getValue(self, text):
         """Get value from text
-           @param text: Text that may contain numeric value
-           @return: Number or text
+           text: Text that may contain numeric value
+           Returns Number or text.
         """ 
         try:
             return float(text)
@@ -74,24 +77,20 @@ class TableScan:
     
     def createScan(self):
         """Create scan for complete table
-           @return: list of scan commands
+           Returns list of commands.
         """
         
-        # Parse column headers
-        col_device = dict()
-        col_completion = dict()
-        col_readback = dict()
-        col_timeout = dict()
-        col_tolerance = dict()
-        col_parallel = dict()
-        motors = set()
+        # Parse column headers.
+        col_device = [ None for i in range(self.cols) ]
+        col_parallel = [ None for i in range(self.cols) ]
         i = 0
         while i < self.cols:
             if self.headers[i] == TableScan.WAITFOR:
                 # Column TableScan.WAITFOR must be followed by TableScan.VALUE
-                if i >= cols-1  or  self.headers[i+1] != TableScan.VALUE:
+                if i >= self.cols-1  or  self.headers[i+1] != TableScan.VALUE:
                     raise ValueError(TableScan.WAITFOR + " column must be followed by " + TableScan.VALUE)
-                if i < cols-2  and  self.headers[i+2] == TableScan.OR_TIME:
+                # .. and may then be followed by TableScan.OR_TIME
+                if i < self.cols-2  and  self.headers[i+2] == TableScan.OR_TIME:
                     i += 2
                 else:
                     i += 1
@@ -100,14 +99,7 @@ class TableScan:
                 pass
             else:
                 # Parse device info
-#                 (col_device[i], col_completion[i], col_readback[i],
-#                  col_timeout[i], col_tolerance[i], col_parallel[i]) = self.settings.parseDeviceModifiers(self.headers[i])
-
-                (col_device[i], col_completion[i], col_readback[i],
-                 col_timeout[i], col_tolerance[i], col_parallel[i]) = (self.headers[i], False, False, 0, 0.1, False)
-                
-                if ":Mot:" in col_device[i]:
-                    motors.add(col_device[i])
+                (col_device[i], col_parallel[i])  = self.settings.parseDeviceSettings(self.headers[i])
             i += 1
         
         # Expand any range(start, end, step) cells
@@ -119,7 +111,7 @@ class TableScan:
         log_devices = list()
         if not self.run_per_line:
             # Create one long run, started before first line
-            commands.append(IncludeCommand("start.scn", ""))
+            commands.append(Include("start.scn"))
             # Log the scan steps?
             if self.settings.mark_scan_steps:
                 log_devices.append('%s:CS:Scan:Step:Index' % self.settings.S)
@@ -226,9 +218,9 @@ class TableScan:
                     # 'Normal' column that sets a device
                     device = col_device[i]
                     value = self.getValue(row[i])
-                    # TODO Add readback as Set command supports it
-                    #command = cmds.Set(device, value, completion=col_completion[i], readback=col_readback[i],timeOut=col_timeout[i], tolerance=col_tolerance[i])
-                    command = cmds.Set(device, value, completion=col_completion[i], timeOut=col_timeout[i], tolerance=col_tolerance[i])
+                    command = cmds.Set(device.getName(), value,
+                                       completion=device.getCompletion(), readback=device.getReadback(),
+                                       timeout=device.getTimeout(), tolerance=device.getTolerance())
                         
                     if col_parallel[i]:
                         parallel_commands.append(command)
@@ -241,32 +233,29 @@ class TableScan:
             # End of columns in row
             # Complete accumulated parallel commands
             if parallel_commands:
-                commands.append(ParallelCommand(parallel_commands))
+                commands.append(cmds.Parallel(parallel_commands))
                 parallel_commands = list()
         
         if not self.run_per_line:
             # End one long run at end of table
-            commands.append(IncludeCommand("stop.scn", ""))
+            commands.append(Include("stop.scn", ""))
         
-        # Start by waiting for all motors to be idle
-#         for motor in motors:
-#             idle = self.settings.getMotorIdlePV(motor)
-#             if idle:
-#                 commands.insert(0, WaitCommand(idle, Comparison.EQUALS, 1, 0.1, 5.0))
-
         return commands
 
         
-    def __str__(self):
+    def __repr__(self):
+        """Returns table as columnized string."""
+        result = 'headers=[ "'
         line = []
         for c in range(self.cols):
             line.append(self.headers[c].ljust(self.width[c]))
-        text = "  ".join(line)
+        result += '", "'.join(line)
+        result += '" ]\nrows= ['
         for row in self.rows:
             line = []
             for c in range(self.cols):
                 line.append(row[c].ljust(self.width[c]))
-            text = text + "\n" + "  ".join(line)
-            
-        return text
+            result += ' [ "' + '", "'.join(line) + '" ],\n       '
+        result += "]"
+        return result
     
