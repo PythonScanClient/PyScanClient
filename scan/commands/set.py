@@ -77,7 +77,7 @@ class Set(Command):
         if self.__timeout!=0.0:
             result += ', timeOut='+str(self.__timeout)
         if self.__errHandler:
-            result += ", errHandler='%s'" % self.__errHandler
+            result += ", errhandler='%s'" % self.__errHandler
         result+=')'
         return result
     

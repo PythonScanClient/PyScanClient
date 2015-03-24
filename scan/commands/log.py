@@ -18,7 +18,7 @@ class Log(Command):
            Log("pv1")
            Log("pv1", "pv2")
            Log(devices=["pv1", "pv2"])
-           Log(devices=["pv1", "pv2"], errHandler="OnErrorContinue")
+           Log(devices=["pv1", "pv2"], errhandler="OnErrorContinue")
         """
         if isinstance(devices, str):
             self.__devices = [ devices ]
@@ -28,7 +28,7 @@ class Log(Command):
             self.__devices = list()
         if args:
             self.__devices += args
-        self.__errHandler = kwargs['errHandler'] if 'errHandler' in kwargs else None
+        self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
         
     def genXML(self):
         xml = ET.Element('log')
@@ -50,7 +50,7 @@ class Log(Command):
             result += "', '".join(self.__devices)
             result += "'"
         if self.__errHandler:
-            result += ", errHandler='%s'" % self.__errHandler
+            result += ", errhandler='%s'" % self.__errHandler
         result += ')'
         return result
     

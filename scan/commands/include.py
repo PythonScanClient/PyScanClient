@@ -44,7 +44,7 @@ class Include(Command):
         if self.__macros:
             result += ", macros='%s'" % self.__macros
         if self.__errHandler:
-            result += ", errHandler='%s'" % self.__errHandler
+            result += ", errhandler='%s'" % self.__errHandler
         result += ")"
         return result
             
