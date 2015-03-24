@@ -14,7 +14,7 @@ class Parallel(Command):
            Parallel(command1)
            Parallel(command1, command2)
            Parallel(body=[command1, command2])
-           Parallel(body=[command1, command2], timeout=10, errHandler="MyErrorHandler")
+           Parallel(body=[command1, command2], timeout=10, errhandler="MyErrorHandler")
         """
         if isinstance(body, Command):
             self.__body = [ body ]
@@ -25,7 +25,7 @@ class Parallel(Command):
         if args:
             self.__body += args
         self.__timeout = kwargs['timeout'] if 'timeout' in kwargs else 0
-        self.__errHandler = kwargs['errHandler'] if 'errHandler' in kwargs else None
+        self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
         
     def genXML(self):
         xml = ET.Element('parallel')
@@ -35,8 +35,8 @@ class Parallel(Command):
 
         if len(self.__body)!=0:
             body = ET.SubElement(xml,'body')
-            for Command in self.__body:
-                body.append(Command.genXML())
+            for cmd in self.__body:
+                body.append(cmd.genXML())
                 
         if self.__errHandler:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
@@ -52,6 +52,6 @@ class Parallel(Command):
         if self.__timeout > 0:
             result += ', timeout=%g' % self.__timeout
         if self.__errHandler:
-            result += ", errHandler='%s'" % self.__errHandler
+            result += ", errhandler='%s'" % self.__errHandler
         result += ')'
         return result
