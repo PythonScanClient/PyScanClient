@@ -93,7 +93,7 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><timeout>10</timeout><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></parallel>")
 
-        cmd = Parallel(cmds, errHandler="MyHandler")
+        cmd = Parallel(cmds, errhandler="MyHandler")
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body><error_handler>MyHandler</error_handler></parallel>")
 
@@ -139,7 +139,6 @@ class CommandTest(unittest.TestCase):
         self.assertEqual(str(cmd), "Script('MyCustomCommand', 'arg1', 42.3)")
         self.assertEqual(ET.tostring(cmd.genXML()), "<script><path>MyCustomCommand</path><arguments><argument>arg1</argument><argument>42.3</argument></arguments></script>")
 
-
     def testWait(self):
         cmd = Wait('device', 3.14)
         print cmd
@@ -150,6 +149,32 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(str(cmd), "Wait('counts', 1000, comparison='increase by', timeout=5, errhandler='someHandler')")
         self.assertEqual(ET.tostring(cmd.genXML()), "<wait><device>counts</device><value>1000</value><comparison>INCREASE_BY</comparison><timeout>5.0</timeout><error_handler>someHandler</error_handler></wait>")
+
+    def testLoop(self):
+        cmd = Loop('pv1', 1, 10, 0.1)
+        print cmd
+        self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><body /></loop>")
+
+        cmd = Loop('pv1', 1, 10, 0.1, Delay(5))
+        print cmd
+        self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1, [ Delay(5) ])")
+        cmd = Loop('pv1', 1, 10, 0.1, Delay(1), Delay(2))
+        print cmd
+        self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1, [ Delay(1), Delay(2) ])")
+        cmd = Loop('pv1', 1, 10, 0.1, body= [ Delay(1), Delay(2) ])
+        print cmd
+        self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1, [ Delay(1), Delay(2) ])")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><body><delay><seconds>1</seconds></delay><delay><seconds>2</seconds></delay></body></loop>")
+
+        cmd = Loop('pv1', 1, 10, 0.1, Delay(1), Delay(2), readback=True)
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><wait>true</wait><readback>pv1</readback><tolerance>0.01</tolerance><body><delay><seconds>1</seconds></delay><delay><seconds>2</seconds></delay></body></loop>")
+
+        cmd = Loop('pv1', 1, 10, 0.1, completion=True, timeout=10)
+        print cmd
+        self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1, completion=True, timeout=10)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><completion>true</completion><timeout>10</timeout><body /></loop>")
 
 
 
