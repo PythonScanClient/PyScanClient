@@ -8,6 +8,7 @@ Updated on Mar 19,2015
 
 import requests
 from scan.commands.CmdSequence import CmdSequence
+import xml.etree.ElementTree as ET
 
 class ScanClient(object):
     '''
@@ -167,12 +168,10 @@ class ScanClient(object):
             print 'No scan defined!'
             
     def genSCN4List(self,cmdList=None):
-        result='<commands>'
+        xml = ET.Element('commands')
         for c in cmdList:
-            result+=c.genXML()
-        
-        result+='</commands>'
-        return result
+            xml.append(c.genXML())
+        return ET.tostring(xml)
     
     def simulate(self,scanXML=None):
         '''

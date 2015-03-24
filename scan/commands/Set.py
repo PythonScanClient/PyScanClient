@@ -29,7 +29,7 @@ class Set(Command):
         self.__completion=completion
         self.__readback=readback
         self.__tolerance=tolerance
-        self.__timeOut=timeout
+        self.__timeout=timeout
         self.__errHandler=errhandler
         
     def genXML(self):
@@ -45,7 +45,7 @@ class Set(Command):
             ET.SubElement(xml, 'completion').text = 'true'
             need_timeout = True
             
-        if self.readback:
+        if self.__readback:
             ET.SubElement(xml, "wait").text = "true"
             ET.SubElement(xml, "readback").text = self.__device if self.__readback == True else self.__readback
             ET.SubElement(xml, "tolerance").text = str(self.__tolerance)
@@ -56,7 +56,7 @@ class Set(Command):
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
  
-        return ET.tostring(xml)
+        return xml
     
     def __repr__(self):
         result= 'Set( device='+self.__device
@@ -65,8 +65,8 @@ class Set(Command):
             result+=', completion=true'
         if self.__wait==False:
             result+=', wait=false'
-        if self.__timeOut!=0.0:
-            result+=', timeOut='+str(self.__timeOut)
+        if self.__timeout!=0.0:
+            result+=', timeOut='+str(self.__timeout)
         result+=')'
         return result
     
@@ -77,8 +77,8 @@ class Set(Command):
             result+=',completion=true'
         if self.__wait==False:
             result+=',wait=false'
-        if self.__timeOut!=0.0:
-            result+=',timeOut='+str(self.__timeOut)
+        if self.__timeout!=0.0:
+            result+=',timeOut='+str(self.__timeout)
         result+=')'
         return result
     

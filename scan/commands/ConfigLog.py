@@ -31,10 +31,8 @@ class ConfigLog(Command):
         
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
-        
-        r=ET.tostring(xml)
-        
-        return r
+             
+        return xml
     
     def __repr__(self):
         return 'ConfigLogCommand(Automatic='+lower(str(self.__auto))+')'

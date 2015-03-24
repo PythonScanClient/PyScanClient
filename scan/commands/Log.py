@@ -32,7 +32,7 @@ class Log(Command):
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
             
-        return ET.tostring(xml)
+        return xml
     
     def __repr__(self):
         result = 'Log( '

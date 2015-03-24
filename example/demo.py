@@ -20,27 +20,28 @@ from Scan.ConfigLog import ConfigLog
 from scan import *
 
 #get the client instance
-sc=ScanClient('localhost','4810')
+sc = ScanClient('localhost','4810')
 
 ####################2015-3-8 New ScanClient####################
 #generalize client instance:
 sc = ScanClient(host='localhost',port=4810)
 
-cc=Comment(text='haha'),
+cc = Comment(text='haha')
 #Create Command Sequence:
+
 cmds1 = CmdSequence(
    Comment(text='haha'),
    Comment('hehe'),
    ConfigLog(auto=True),
    Delay(seconds=2.0),
    Include(scanFile='1.scn',macros='macro=value'),
-   Log('shutter','xpos','ypos'),
+   Log(None,'shutter','xpos','ypos'),
    Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,readback=True,
                body=[
                      ConfigLog(auto=True),Comment(text='haha')
                      ]),
    Script('submit.py',1,'abc',0.05),
-   Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeout=0.1,readback='pcharge'),
+   Set(device='shutter',value=0.1,completion=True,tolerance=0.1,timeout=0.1,readback='pcharge'),
    Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
 )
 cmds2=[
@@ -55,7 +56,7 @@ cmds2=[
                      ConfigLog(auto=True)
                      ]),
        Script('submit.py',1,'abc',0.05),
-       Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeout=0.1),
+       Set(device='shutter',value=0.1,completion=True,tolerance=0.1,timeout=0.1),
        Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
       ]
 
@@ -99,21 +100,21 @@ else:
 print sc.serverInfo()
 
 #define a new scan
-newScan = '<commands><comment><address>0</address><text>Successfully adding a new scan</text></comment></commands>'
+##newScan = '<commands><comment><address>0</address><text>Successfully adding a new scan</text></comment></commands>'
 
 #clear scan server
 print sc.clear()
 
 #simulate the new scan
-print sc.simulate(newScan)
+##print sc.simulate(newScan)
 
 #submit the new scan and get the scan id
-sid = sc.submit(newScan,scanName='TestDemo')
-sid = str[4:sid.find('</id>')]
+##sid = sc.submit(newScan,scanName='TestDemo')
+##sid = str[4:sid.find('</id>')]
 
 #get all scans
-print sc.scanInfo()
+#print sc.scanInfo()
 
 #abort the scan
-print sc.abort(sid)
+#print sc.abort(sid)
 

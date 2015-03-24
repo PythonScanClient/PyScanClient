@@ -10,7 +10,6 @@ class Delay(Command):
     '''
     classdocs
     '''
-    
 
     def __init__(self, seconds=1.0,errHandler=None):
         '''
@@ -31,7 +30,7 @@ class Delay(Command):
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
             
-        return ET.tostring(xml)
+        return xml
     
     def __repr__(self):
         return 'DelayCommand(seconds='+str(self.__seconds)+')'

@@ -35,7 +35,7 @@ class Include(Command):
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
             
-        return ET.tostring(xml)
+        return xml
         
     def __repr__(self):
         return 'InclueCommand(scan_file='+self.__scanFile+', macros='+self.__macros+')'

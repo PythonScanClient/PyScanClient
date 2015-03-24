@@ -3,6 +3,7 @@ Created on Mar 8 ,2015
 
 @author: qiuyx
 '''
+import xml.etree.ElementTree as ET
 
 class CmdSequence(object):
     '''
@@ -28,12 +29,11 @@ class CmdSequence(object):
         '''
         Get the .SCN file content of this Sequence.
         '''
-        result='<commands>'
+        scn = ET.Element('commands')
         for c in self.commands:
-            result+=c.genXML()
+            scn.append(c.genXML())
         
-        result+='</commands>'
-        return result
+        return ET.tostring(scn)
     
     def toSeqString(self):
         '''

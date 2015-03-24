@@ -24,7 +24,7 @@ class Comment(Command):
     def genXML(self):
         xml=ET.Element('comment');
         ET.SubElement(xml, 'text').text = self.__text
-        return ET.tostring(xml)
+        return xml
 
     def __repr__(self):
         return 'Comment(Comment='+self.__text+')'

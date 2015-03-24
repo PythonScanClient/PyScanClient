@@ -7,7 +7,7 @@ from abc import abstractmethod
 class Command(object):
     '''
     Abstract father Command Class.
-    Sub Command must implement generalize() method.
+    Sub Command must implement genXML() method.
     '''
 
 

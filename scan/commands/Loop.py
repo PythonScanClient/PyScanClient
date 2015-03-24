@@ -11,7 +11,7 @@ class Loop(Command):
     classdocs
     '''
 
-    def __init__(self, device=None,start=0.0,end=10.0,step=1.0,completion=True,readback=False,wait=True,tolerance=0.1,timeOut=0.2,body=[],errHandler=None):
+    def __init__(self, device=None,start=0.0,end=10.0,step=1.0,completion=True,readback=False,wait=True,tolerance=0.1,timeout=0.2,body=[],errHandler=None):
         '''
         Constructor
         '''
@@ -23,7 +23,7 @@ class Loop(Command):
         self.__readback = readback
         self.__wait = wait
         self.__tolerance = tolerance
-        self.__timeOut = timeOut
+        self.__timeout = timeout
         self.__body = body
         self.__errHandler = errHandler
         
@@ -31,9 +31,9 @@ class Loop(Command):
         xml = ET.Element('loop')
         
         if self.__device==None:
-            ET.SubElement(xml, 'devices')
+            ET.SubElement(xml, 'device')
         else:    
-            ET.SubElement(xml, 'devices').text = self.__device
+            ET.SubElement(xml, 'device').text = self.__device
             
         ET.SubElement(xml, 'start').text = str(self.__start)
         
@@ -54,18 +54,18 @@ class Loop(Command):
             
         ET.SubElement(xml, 'tolerance').text = str(self.__tolerance)
         
-        ET.SubElement(xml, 'timeout').text = str(self.__timeOut)
+        ET.SubElement(xml, 'timeout').text = str(self.__timeout)
         
         body = ET.SubElement(xml,'body')
         
         if len(self.__body)!=0:
             for command in self.__body:
-                body.text += command.genXML()
+                body.append(command.genXML())
                 
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
                           
-        return ET.tostring(xml)
+        return xml
     
     def __repr__(self):
         result='Loop( '
@@ -81,7 +81,7 @@ class Loop(Command):
             for command in self.__body:
                 result+=command.toCmdString()+',\n'
             result+= ']\n'
-        result+= 'timeout'+str(self.__timeOut)
+        result+= 'timeout'+str(self.__timeout)
         result+=')'
         return result
         
@@ -99,6 +99,6 @@ class Loop(Command):
             for command in self.__body:
                 result+=command.toCmdString()+',\n'
             result+= ']\n'
-        result+= 'timeout'+str(self.__timeOut)
+        result+= 'timeout'+str(self.__timeout)
         result+=')'
         return result
