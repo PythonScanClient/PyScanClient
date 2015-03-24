@@ -7,7 +7,7 @@ Updated on Mar 19,2015
 '''
 import requests
 import urllib2
-from scan.commands.CommandSequence import CommandSequence
+from scan.commands.commandsequence import CommandSequence
 import xml.etree.ElementTree as ET
 
 class scanclient(object):
