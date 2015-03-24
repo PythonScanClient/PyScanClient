@@ -63,14 +63,17 @@ class Set(Command):
         return self.toCmdString()
     
     def toCmdString(self):
-        result= 'Set(device='+self.__device
-        result+= ',value='+str(self.__value)
+        result= "Set(device='%s'" % self.__device
+        if isinstance(self.__value, str):
+            result += ",value='%s'" % self.__value
+        else:
+            result += ",value=%s" % str(self.__value)
         if self.__completion==True:
             result+=',completion=true'
         if self.__readback:
             result+=', readback='+str(self.__readback)
         if self.__timeout!=0.0:
-            result+=',timeOut='+str(self.__timeout)
+            result+=',timeout='+str(self.__timeout)
         result+=')'
         return result
     
