@@ -27,13 +27,13 @@ class Comment(Command):
         return xml
 
     def __repr__(self):
-        return 'Comment(Comment='+self.__text+')'
+        return self.toCmdString()
     
     def toCmdString(self):
         '''
         Give a printing of this Command. 
         '''
-        return 'Comment(Comment='+self.__text+')'
+        return "Comment('%s')" % self.__text
     
     
         
