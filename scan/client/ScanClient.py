@@ -28,26 +28,24 @@ class ScanClient(object):
     __scansResource = "/scans"
     __scansCompletedResource = "/completed"
     __scanResource = "/scan"
-    
-    def __new__(cls, host = 'localhost',port=4810):
-        '''   
-        Singleton method to make sure there is only one instance alive.
-        '''
-        
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(ScanClient,cls).__new__(cls)
-        return cls.instance
-    
+       
     def __init__(self, host = 'localhost',port=4810):
+        '''
+        @param host: The IP address of the server.
+        @param port: The IP port of the server.
         
+        Usage::
+        >>>sc = ScanClient('192.168.1.125','4811')
+        '''
+        #May implement a one to one host+port with instance in the future.
         self.__baseURL = "http://"+host+':'+str(port)
         
         try:
             conn = urllib2.urlopen(self.__baseURL+'/scans')
             conn.read()
             conn.close()
-        except Exception,ex:
-            raise Exception,ex
+        except Exception as ex:
+            raise ex
     
     def __do_request(self,url=None,method=None,data=None):
         #handle all types of HTTP request.
