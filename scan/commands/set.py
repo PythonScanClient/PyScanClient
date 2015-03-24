@@ -68,13 +68,17 @@ class Set(Command):
             result += ", '%s'" % self.__value
         else:
             result += ", %s" % str(self.__value)
+        use_timeout = False
         if self.__completion:
+            use_timeout = True
             result += ', completion=true'
         if isinstance(self.__readback, str):
+            use_timeout = True
             result += ", readback='%s'" % self.__readback
         elif self.__readback:
+            use_timeout = True
             result += ", readback=%s" % str(self.__readback)
-        if self.__timeout!=0.0:
+        if use_timeout  and  self.__timeout!=0.0:
             result += ', timeOut='+str(self.__timeout)
         if self.__errHandler:
             result += ", errhandler='%s'" % self.__errHandler
