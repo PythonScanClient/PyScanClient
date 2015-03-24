@@ -41,21 +41,18 @@ class Loop(Command):
         
         ET.SubElement(xml, 'step').text = str(self.__step)
         
-        if self.__completion:
-            ET.SubElement(xml, 'completion').text = str(self.__completion)
+        if self.__completion==True:
+            ET.SubElement(xml, 'completion').text = 'true'
+            need_timeout = True
         
-        if isinstance(self.__readback, str):
-            ET.SubElement(xml, 'readback').text = str(self.__readback)
-        elif self.__readback==True:
-            ET.SubElement(xml, 'readback').text = self.__device
-
-        if self.__wait==False:
-            ET.SubElement(xml, 'wait').text = 'False'
-            
-        ET.SubElement(xml, 'tolerance').text = str(self.__tolerance)
-        
-        ET.SubElement(xml, 'timeout').text = str(self.__timeout)
-        
+        if self.__readback:
+            ET.SubElement(xml, "wait").text = "true"
+            ET.SubElement(xml, "readback").text = self.__device if self.__readback == True else self.__readback
+            ET.SubElement(xml, "tolerance").text = str(self.__tolerance)
+            need_timeout = True
+        if need_timeout  and  self.__timeout > 0:
+            ET.SubElement(xml, "timeout").text = str(self.__timeout)
+               
         body = ET.SubElement(xml,'body')
         
         if len(self.__body)!=0:

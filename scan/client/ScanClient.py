@@ -5,10 +5,15 @@ Created on Dec 30, 2014
 Updated on Mar 19,2015
 @author: Yongxiang Qiu
 '''
-
 import requests
+import urllib2
+import urllib
+from urllib2 import URLError
 from scan.commands.CmdSequence import CmdSequence
 import xml.etree.ElementTree as ET
+from requests import status_codes
+
+from urllib import addinfourl
 
 class ScanClient(object):
     '''
@@ -37,11 +42,53 @@ class ScanClient(object):
         
         self.__baseURL = "http://"+host+':'+str(port)
         
-        try:  
-            requests.get(self.__baseURL+'/scans', verify=False).raise_for_status()
-        except:
-            raise Exception, 'Failed to create client to ' + self.__baseURL
+        try:
+            conn = urllib2.urlopen(self.__baseURL+'/scans')
+            conn.read()
+            conn.close()
+        except Exception,ex:
+            raise Exception,ex
+    
+    def __do_request(self,url=None,method=None,data=None):
+        #handle all types of HTTP request.
+        try:
+            res_text = ''
+            status_code = 0
+            response = None
+            #Register a Request Object with url:
+            req = urllib2.Request(url)
+            #Add XML header:
+            req.add_header('content-type' , 'text/xml')
+            #Get OpenerDirector Object
+            opener = urllib2.build_opener()
+            
+            if method=='GET':
+                response = opener.open(req)
+                
+            elif method=='POST':
+                response = opener.open(req, data)
+                
+            elif method=='DELETE':
+                req.get_method = lambda : 'DELETE'
+                response = opener.open(req)
+                
+            elif method=='PUT':
+                req.get_method = lambda : 'PUT'
+                response = opener.open(req)
+            else:
+                raise Exception,'Undefined HttpRequest Type.'
+            
+            res_text = response.read()
+            status_code = response.getcode()
+            response.close()
+            
+            return res_text if status_code == 200 else status_code
+              
+        except Exception as ex:
+            raise ex
         
+        
+            
     def submit(self,cmds=None,scanName='UnNamed'):
         '''
         :param cmds: Support the following 3 types:
@@ -58,12 +105,16 @@ class ScanClient(object):
             
             elif isinstance(cmds,list):
                 self.__submitScanList(cmds,scanName)
-        except:
-            raise Exception, '''Invalid Commands input, must be one of these 3 types:
-                             1.The .scn XML text. 
-                             2.A CommandSequnce instance
-                             3.An Array of commands
-                             '''
+            
+            else:
+                raise Exception, '''Invalid Commands input, must be one of these 3 types:
+                1.The .scn XML text. 
+                2.A CommandSequnce instance
+                3.An Array of commands
+                '''
+        except Exception as e:
+            raise e
+            
         
         
     def __submitScanXML(self,scanXML=None,scanName='UnNamed'):
@@ -80,27 +131,22 @@ class ScanClient(object):
 
         >>> import scan
         >>> ssc=ScanClient('localhost',4810)
-        >>> scanId = ssc.__submitScanSequence(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
+        >>> scanId = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
         '''
 
         try:
             url = self.__baseURL+self.__scanResource+'/'+scanName
-            r = requests.post(url = url,data = scanXML,headers = {'content-type': 'text/xml'}) 
-        except:
-            raise Exception, 'Failed to submit scan.'
+             
+            r =self.__do_request(url,'POST' ,scanXML)
+            return r
+        except Exception,ex:
+            raise Exception,ex
         
-        self.__curScanXML = scanXML
-        self.__curScanName = scanName
-        if r.status_code == 200:
-            return r.text
-        else:
-            return r.status_code
     
     def __submitScanList(self,cmdList=None,scanName='UnNamed'):
         '''
         Create and submit a new scan from Command Sequence.
         
-        Using   POST {BaseURL}/scan/{scanName}
         Return  <id>{scanId}</id>
         
         :param cmdList: The Command Sequence of a new scan
@@ -125,7 +171,7 @@ class ScanClient(object):
                        Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeOut=0.1),
                        Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
                     ]
-        >>> scanId = ssc.__submitScanSequence(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
+        >>> scanId = ssc.__submitScanList(cmds1)
         '''
         
         return self.__submitScanXML(self.genSCN4List(cmdList),scanName)
@@ -134,7 +180,6 @@ class ScanClient(object):
         '''
         Create and submit a new scan from Command Sequence.
         
-        Using   POST {BaseURL}/scan/{scanName}
         Return  <id>{scanId}</id>
         
         :param cmdSeq: The Command Sequence of a new scan
@@ -162,10 +207,7 @@ class ScanClient(object):
         >>> scanId = ssc.__submitScanSequence(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
         '''
         
-        if cmdSeq!=None:
-            return self.__submitScanXML(cmdSeq.genSCN(),scanName)
-        else:
-            print 'No scan defined!'
+        return self.__submitScanXML(cmdSeq.genSCN(),scanName)
             
     def genSCN4List(self,cmdList=None):
         xml = ET.Element('commands')
@@ -189,16 +231,18 @@ class ScanClient(object):
         >>> sid = ssc.simulate(scanXML='<commands><comment><address>0</address><text>Successfully simulating a new scan!</text></comment></commands>')
       
         '''
-        
-        r = requests.post(url = self.__baseURL+self.__simulateResource,data = scanXML,headers = {'content-type': 'text/xml'}) 
-        if r.status_code == 200:
-            return r.text
-        else:
-            return None
+        try:
+            url = self.__baseURL+self.__simulateResource
+             
+            r =self.__do_request(url,'POST' ,scanXML)
+            return r
+               
+        except:
+            raise Exception, 'Failed to simulate scan.'
         
     def delete(self,scanID = None):
         '''
-        Remove a unique scans.
+        Remove a completed scans.
         
         Using DELETE {BaseURL}/scan/{scanID}.
         Return HTTP status code.
@@ -215,10 +259,13 @@ class ScanClient(object):
         '''
         
         try:
-            r=requests.delete(url = self.__baseURL+self.__scanResource+'/'+str(scanID))
+            r=self.__do_request(self.__baseURL+self.__scanResource+'/'+str(scanID), 'DELETE')
+
             print 'scan %d deleted.'%scanID
-        except:
-            raise Exception, 'Failed to deleted scan '+str(scanID)
+            
+            return r
+        except Exception as ex:
+            raise  ex
         return r.status_code
 
     def clear(self):
@@ -236,10 +283,12 @@ class ScanClient(object):
         '''
         
         try:
-            r = requests.delete(url = self.__baseURL+self.__scansResource+self.__scansCompletedResource)
+            r = self.__do_request(self.__baseURL+self.__scansResource+self.__scansCompletedResource, 'DELETE')
+           
             print 'All completed scans are deleted.'
-        except:
-            raise Exception, 'Failed to remove completed scan.'
+            return r
+        except Exception as ex:
+            raise ex
         return r.status_code
     
     #############Detailed Design Needed#############
@@ -286,10 +335,11 @@ class ScanClient(object):
         '''
         
         try:
-            r = requests.get(url = self.__baseURL+self.__serverResource+self.__serverInfoResource)
-        except:
-            raise Exception, 'Failed to get info from scan server.'
-        return r.text
+            r = self.__do_request(url=self.__baseURL+self.__serverResource+self.__serverInfoResource,method='GET')
+            #r = requests.get(url = self.__baseURL+self.__serverResource+self.__serverInfoResource)
+        except Exception as e:
+            raise e 
+        return r
         
     def scanList(self):
         '''
@@ -304,17 +354,17 @@ class ScanClient(object):
         >>> st = ssc.scanList()
         '''
         try:
-            r = requests.get(url = self.__baseURL+self.__scansResource)
-        except:
-            raise Exception, 'Failed to get info from scan server.'
-        return r.text
+            r = self.__do_request(url = self.__baseURL+self.__scansResource,method='GET')
+        except Exception as ex:
+            raise ex
+        return r
 
     def pause(self,scanID=None):
         ''' 
         Pause a running scan
         
         Using PUT {BaseURL}/scan/{id}/pause
-        Return Http Status Code
+        Return Http Status Code.
         
         Usage::
 
@@ -324,10 +374,11 @@ class ScanClient(object):
         '''
         
         try:
-            r = requests.put(url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/pause')
-        except:
-            raise Exception, 'Failed to get info from scan server.'
-        return r.status_code
+            url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/pause'
+            r = self.__do_request(url, 'PUT')
+            return r
+        except Exception as ex:
+            raise ex 
         
     def abort(self,scanID=None):
         '''
@@ -344,10 +395,11 @@ class ScanClient(object):
         '''
 
         try:
-            r = requests.put(url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/abort')
-        except:
-            raise Exception, 'Failed to abort scan '+str(scanID)
-        return r.status_code
+            url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/abort'
+            r = self.__do_request(url, 'PUT')
+            return r
+        except Exception as ex:
+            raise ex 
     
     def resume(self,scanID=None):
         '''
@@ -364,10 +416,11 @@ class ScanClient(object):
         '''
         
         try:
-            r = requests.put(url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/resume')
-        except:
-            raise Exception, 'Failed to resume scan ',scanID
-        return r.status_code        
+            url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/resume'
+            r = self.__do_request(url, 'PUT')
+            return r
+        except Exception as ex:
+            raise ex 
         
     def update(self,scanID=None,scanXML=None):
         '''
@@ -391,4 +444,3 @@ class ScanClient(object):
         except:
             raise Exception, 'Failed to resume scan '+str(scanID)
         return r.status_code
-    
