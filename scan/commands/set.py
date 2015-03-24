@@ -11,17 +11,18 @@ class Set(Command):
     classdocs
     '''
 
-    def __init__(self, device=None,value=0.0,completion=False,readback=False,tolerance=0.1,timeout=0.0,errhandler=None):
+    def __init__(self, device, value, completion=False, readback=False, tolerance=0.0, timeout=0.0, errhandler=None):
         '''
-        command to set a __device to a __value
-        @param __device: Device name
-        @param __value: Value
-        @param __completion: Await __completion?
-        @param __readback: False to not check any __readback.
-                         True to __wait for __readback from the '__device',
-                         or name of specific __readback different from '__device'.
-        @param __tolerance: Readback __tolerance
-        @param timeout: Timeout in seconds, used for __completion and __readback check
+        Command to set a device to a value, with optional check of completion and readback verification.
+        @param device:     Device name
+        @param value:      Value
+        @param completion: Await __completion?
+        @param readback:   False to not check any readback,
+                           True to wait for readback from the 'device',
+                           or name of specific device to check for readback.
+        @param tolerance:  Tolerance when checking numeric readback.
+        @param timeout:    Timeout in seconds, used for 'completion' and 'readback' check
+        @param errhandler: Error handler
         '''
         self.__device=device
         self.__value=value
@@ -35,13 +36,13 @@ class Set(Command):
         xml = ET.Element('set')
 
         dev=ET.SubElement(xml, 'device')
-        if self.__device!=None:
+        if self.__device:
             dev.text = self.__device
             
         ET.SubElement(xml, 'value').text = str(self.__value)
         
         need_timeout = False
-        if self.__completion==True:
+        if self.__completion:
             ET.SubElement(xml, 'completion').text = 'true'
             need_timeout = True
             
@@ -53,8 +54,8 @@ class Set(Command):
         if need_timeout  and  self.__timeout > 0:
             ET.SubElement(xml, "timeout").text = str(self.__timeout)
         
-        if self.__errHandler!=None:
-            ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
+        if self.__errHandler:
+            ET.SubElement(xml,'error_handler').text = self.__errHandler
  
         return xml
     
@@ -75,6 +76,8 @@ class Set(Command):
             result += ", readback=%s" % str(self.__readback)
         if self.__timeout!=0.0:
             result += ', timeOut='+str(self.__timeout)
+        if self.__errHandler:
+            result += ", errHandler='%s'" % self.__errHandler
         result+=')'
         return result
     
