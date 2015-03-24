@@ -11,23 +11,32 @@ class Log(Command):
     classdocs
     '''
 
-
-    def __init__(self,errHandler=None,*devices):
-        '''
-        Constructor
-        '''
-        self.__devices=[]
-        for device in devices:
-            self.__devices.append(device)
-        self.__errHandler=errHandler
+    def __init__(self, devices=None, *args, **kwargs):
+        """Examples:
+         
+           Log()
+           Log("pv1")
+           Log("pv1", "pv2")
+           Log(devices=["pv1", "pv2"])
+           Log(devices=["pv1", "pv2"], errHandler="OnErrorContinue")
+        """
+        if isinstance(devices, str):
+            self.__devices = [ devices ]
+        elif devices:
+            self.__devices = list(devices)
+        else:
+            self.__devices = list()
+        if args:
+            self.__devices += args
+        self.__errHandler = kwargs['errHandler'] if 'errHandler' in kwargs else None
         
     def genXML(self):
         xml = ET.Element('log')
-        devices=ET.SubElement(xml, 'devices')
         
         if len(self.__devices)>0:
-            for i in range(0,len(self.__devices)):
-                ET.SubElement(devices, 'device').text = self.__devices[i]
+            devices=ET.SubElement(xml, 'devices')
+            for dev in self.__devices:
+                ET.SubElement(devices, 'device').text = dev
                 
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
@@ -35,19 +44,16 @@ class Log(Command):
         return xml
     
     def __repr__(self):
-        result = 'Log( '
-        for i in range(0,len(self.__devices)):
-            result +='device='+self.__devices[i]
-            if i!=len(self.__devices)-1:
-                result+=', '
+        result = 'Log('
+        if len(self.__devices):
+            result += "'"
+            result += "', '".join(self.__devices)
+            result += "'"
+        if self.__errHandler:
+            result += ", errHandler='%s'" % self.__errHandler
         result += ')'
         return result
     
     def toCmdString(self):
-        result = 'Log('
-        for i in range(0,len(self.__devices)):
-            result +='device='+self.__devices[i]
-            if i!=len(self.__devices)-1:
-                result+=', '
-        result += ')'
-        return result
+        return self.__repr__()
+    

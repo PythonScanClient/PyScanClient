@@ -52,6 +52,6 @@ class Parallel(Command):
         if self.__timeout > 0:
             result += ', timeout=%g' % self.__timeout
         if self.__errHandler:
-            result += ', errHandler="%s"' % self.__errHandler
+            result += ", errHandler='%s'" % self.__errHandler
         result += ')'
         return result
