@@ -27,6 +27,11 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value></set>")
 
+        # Handle numeric as well as string for value
+        cmd = Set("some_device", "Text")
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>Text</value></set>")
+
         # With completion
         cmd = Set("some_device", 3.14, completion=True)
         print cmd
