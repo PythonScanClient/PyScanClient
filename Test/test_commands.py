@@ -20,6 +20,19 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<comment><text>Check for current &lt; 10</text></comment>")
 
+    def testDelayCommand(self):
+        # Basic set
+        cmd = Delay(47.11)
+        print cmd
+        self.assertEqual(str(cmd), "Delay(47.11)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<delay><seconds>47.11</seconds></delay>")
+
+    def testConfig(self):
+        # Basic set
+        cmd = ConfigLog(True)
+        print cmd
+        self.assertEqual(str(cmd), "ConfigLog(True)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<config_log><automatic>true</automatic></config_log>")
 
     def testSetCommand(self):
         # Basic set
@@ -84,7 +97,6 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body><error_handler>MyHandler</error_handler></parallel>")
 
-
     def testLog(self):
         # One device
         cmd = Log("pv1")
@@ -115,6 +127,19 @@ class CommandTest(unittest.TestCase):
         cmd = Include("start.scn", "macro=value")
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<include><scan_file>start.scn</scan_file><macros>macro=value</macros></include>")
+        
+    def testScript(self):
+        # Basic set
+        cmd = Script("MyCustomScript")
+        print cmd
+        self.assertEqual(str(cmd), "Script('MyCustomScript')")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<script><path>MyCustomScript</path></script>")
+
+        cmd = Script("MyCustomCommand", "arg1", 42.3)
+        print cmd
+        self.assertEqual(str(cmd), "Script('MyCustomCommand', 'arg1', 42.3)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<script><path>MyCustomCommand</path><arguments><argument>arg1</argument><argument>42.3</argument></arguments></script>")
+
 
 
 if __name__ == "__main__":

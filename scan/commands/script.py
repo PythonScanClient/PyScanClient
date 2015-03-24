@@ -11,23 +11,22 @@ class Script(Command):
     classdocs
     '''
 
-
-    def __init__(self, path='the_script.py',errHandler=None,*args):
+    def __init__(self, path='the_script.py', *args, **kwargs):
         '''
-        Constructor
+        Example:
+        Script("MyCustomCommand")
+        Script("MyCustomCommand", "arg1", 42.3)
         '''
-        self.__path=path
-        self.__args=[]
-        for arg in args:
-            self.__args.append(arg)
-        self.__errHandler=errHandler
+        self.__path = path
+        self.__args = args
+        self.__errHandler = kwargs['errHandler'] if 'errHandler' in kwargs else None
         
     def genXML(self):
-        xml = ET.Element('Script')
+        xml = ET.Element('script')
         ET.SubElement(xml, 'path').text = self.__path
 
-        argLst = ET.SubElement(xml, 'arguments')
         if len(self.__args)!=0:
+            argLst = ET.SubElement(xml, 'arguments')
             for arg in self.__args:
                 ET.SubElement(argLst,'argument').text = str(arg)
         
@@ -37,23 +36,16 @@ class Script(Command):
         return xml
     
     def __repr__(self):
-        result= 'Script( Path='+self.__path
-        if len(self.__args)!=0:
-            result+=', '
-            for i in range(0,len(self.__args)):
-                result+='Argument='+str(self.__args[i])
-                if i!=len(self.__args):
-                    result+=', '
-        result+=')'
-        return result
+        return self.toCmdString()
         
     def toCmdString(self):
-        result= 'Script(Path='+self.__path
-        if len(self.__args)!=0:
-            result+=','
-            for i in range(0,len(self.__args)):
-                result+='Argument='+str(self.__args[i])
-                if i!=len(self.__args):
-                    result+=','
+        result= "Script('%s'" % self.__path
+        for arg in self.__args:
+            if isinstance(arg, str):
+                result += ", '%s'" % arg
+            else:
+                result += ", " + str(arg)
+        if self.__errHandler:
+            result += ", errhandler='%s'" % self.__errHandler
         result+=')'
         return result
