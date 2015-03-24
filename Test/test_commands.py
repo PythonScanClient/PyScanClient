@@ -107,5 +107,15 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<log><devices><device>pv1</device><device>pv2</device><device>pv3</device></devices></log>")
 
+    def testInclude(self):
+        cmd = Include("start.scn")
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<include><scan_file>start.scn</scan_file></include>")
+
+        cmd = Include("start.scn", "macro=value")
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<include><scan_file>start.scn</scan_file><macros>macro=value</macros></include>")
+
+
 if __name__ == "__main__":
     unittest.main()
