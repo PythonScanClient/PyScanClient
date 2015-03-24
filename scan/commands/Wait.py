@@ -3,7 +3,7 @@ Created on Mar 8,2015
 
 @author: qiuyx
 '''
-from scan.commands.command import Command
+from scan.commands.Command import Command
 import xml.etree.ElementTree as ET
 
 class Wait(Command):

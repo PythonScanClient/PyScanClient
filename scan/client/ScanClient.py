@@ -7,7 +7,7 @@ Updated on Mar 19,2015
 '''
 import requests
 import urllib2
-from scan.commands.cmdseq import cmdseq
+from scan.commands.CommandSequence import CommandSequence
 import xml.etree.ElementTree as ET
 
 class scanclient(object):
@@ -93,7 +93,7 @@ class scanclient(object):
             if isinstance(cmds,str):
                 self.__submitScanXML(cmds,scanName)
             
-            elif isinstance(cmds,cmdseq):
+            elif isinstance(cmds,CommandSequence):
                 self.__submitScanSequence(cmds, scanName)
             
             elif isinstance(cmds,list):

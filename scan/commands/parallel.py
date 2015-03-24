@@ -1,12 +1,12 @@
 '''
-Parallel command
+Parallel Command
 
 @author: Kay Kasemir
 '''
-from scan.commands import command
+from scan.commands import Command
 import xml.etree.ElementTree as ET 
 
-class Parallel(command):
+class Parallel(Command):
     def __init__(self, body=None, *args, **kwargs):
         """Examples:
         
@@ -16,7 +16,7 @@ class Parallel(command):
            Parallel(body=[command1, command2])
            Parallel(body=[command1, command2], timeout=10, errHandler="MyErrorHandler")
         """
-        if isinstance(body, command):
+        if isinstance(body, Command):
             self.__body = [ body ]
         elif body:
             self.__body = list(body)
@@ -35,8 +35,8 @@ class Parallel(command):
 
         if len(self.__body)!=0:
             body = ET.SubElement(xml,'body')
-            for command in self.__body:
-                body.append(command.genXML())
+            for Command in self.__body:
+                body.append(Command.genXML())
                 
         if self.__errHandler:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
