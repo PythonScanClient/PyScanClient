@@ -48,30 +48,30 @@ cmds1 = CmdSequence(
    Comment('hehe'),
    ConfigLog(auto=True),
    Delay(seconds=2.0),
-   Include(scanFile='1.scn',macros='macro=value'),
+   Include('1.scn', macros='macro=value'),
    Log(None,'shutter','xpos','ypos'),
-   Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,readback=True,
+   Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,readback=True,readback=True,
                body=[
                      ConfigLog(auto=True),Comment(text='haha')
                      ]),
    #Script('test.py',1,'abc',0.05),
-   Set(device='shutter',value=0.1,completion=True,tolerance=0.1,timeout=0.1,readback='pcharge'),
-   Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
+   Set('shutter', 0.1, completion=True, tolerance=0.1, timeout=0.1, readback='pcharge'),
+   Wait('shutter', 10.0, comparison='=', tolerance=0.1, timeout=5.0)
 )
 cmds2=[
        cc,
        Comment('hehe'),
        ConfigLog(auto=True),
        Delay(seconds=2.0),
-       Include(scanFile='1.scn',macros='macro=value'),
+       Include(scan='1.scn',macros='macro=value'),
        Log('shutter','xpos','ypos'),
-       Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,
+       Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,readback=True,
                body=[Comment(text='haha'),
                      ConfigLog(auto=True)
                      ]),
        #Script('test.py',1,'abc',0.05),
        Set(device='shutter',value=0.1,completion=True,tolerance=0.1,timeout=0.1),
-       Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
+       Wait(device='shutter',value=10.0,comparison='=',tolerance=0.1,timeout=5.0)
       ]
 
 #print cc
