@@ -1,1 +1,1 @@
-from scan.client.ScanClient import ScanClient
+from scan.client.scanclient import scanclient

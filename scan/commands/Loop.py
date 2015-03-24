@@ -3,7 +3,7 @@ Created on Mar 8,2015
 
 @author: qiuyx
 '''
-from scan.commands.Command import Command
+from scan.commands.command import Command
 import xml.etree.ElementTree as ET 
 
 class Loop(Command):
@@ -11,7 +11,7 @@ class Loop(Command):
     classdocs
     '''
 
-    def __init__(self, device=None,start=0.0,end=10.0,step=1.0,completion=True,readback=False,wait=True,tolerance=0.1,timeout=0.2,body=[],errHandler=None):
+    def __init__(self, device=None,start=0.0,end=10.0,step=1.0,completion=True,readback=False,Wait=True,tolerance=0.1,timeout=0.2,body=[],errHandler=None):
         '''
         Constructor
         '''
@@ -21,14 +21,14 @@ class Loop(Command):
         self.__step = step
         self.__completion = completion
         self.__readback = readback
-        self.__wait = wait
+        self.__wait = Wait
         self.__tolerance = tolerance
         self.__timeout = timeout
         self.__body = body
         self.__errHandler = errHandler
         
     def genXML(self):
-        xml = ET.Element('loop')
+        xml = ET.Element('Loop')
         
         if self.__device==None:
             ET.SubElement(xml, 'device')
@@ -46,7 +46,7 @@ class Loop(Command):
             need_timeout = True
         
         if self.__readback:
-            ET.SubElement(xml, "wait").text = "true"
+            ET.SubElement(xml, "Wait").text = "true"
             ET.SubElement(xml, "readback").text = self.__device if self.__readback == True else self.__readback
             ET.SubElement(xml, "tolerance").text = str(self.__tolerance)
             need_timeout = True
@@ -71,7 +71,7 @@ class Loop(Command):
         result+= 'end='+str(self.__end)+', '
         result+= 'step='+str(self.__step)+', '
         result+= 'completion'+str(self.__completion)+', '
-        result+= 'wait'+str(self.__wait)+', '
+        result+= 'Wait'+str(self.__wait)+', '
         result+= 'tolerance'+str(self.__tolerance)+', '
         if len(self.__body)!=0:
             result+= '\n[\n'
@@ -89,7 +89,7 @@ class Loop(Command):
         result+= 'end='+str(self.__end)+','
         result+= 'step='+str(self.__step)+','
         result+= 'completion'+str(self.__completion)+','
-        result+= 'wait'+str(self.__wait)+','
+        result+= 'Wait'+str(self.__wait)+','
         result+= 'tolerance'+str(self.__tolerance)+','
         if len(self.__body)!=0:
             result+= '\n[\n'

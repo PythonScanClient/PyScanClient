@@ -3,7 +3,7 @@ Created on Mar 8,2015
 
 @author: qiuyx
 '''
-from scan.commands.Command import Command
+from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Script(Command):
@@ -23,7 +23,7 @@ class Script(Command):
         self.__errHandler=errHandler
         
     def genXML(self):
-        xml = ET.Element('script')
+        xml = ET.Element('Script')
         ET.SubElement(xml, 'path').text = self.__path
 
         argLst = ET.SubElement(xml, 'arguments')

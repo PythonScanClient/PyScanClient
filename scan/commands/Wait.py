@@ -3,12 +3,12 @@ Created on Mar 8,2015
 
 @author: qiuyx
 '''
-from scan.commands.Command import Command
+from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Wait(Command):
     '''
-    Command that delays the scan until a device reaches a certain value.It has 6 properties in the following order:
+    command that delays the scan until a device reaches a certain value.It has 6 properties in the following order:
     1.device
     2.desiredValue
     3.comparison
@@ -29,7 +29,7 @@ class Wait(Command):
         Wait for a device to some vaule.
         Instantiation needs 6 params in the following order:
         :param  device:             Name of PV or device. Defaults None.
-        :param  desiredValue:       Value wait to. Defaults 0.0
+        :param  desiredValue:       Value Wait to. Defaults 0.0
         :param  comparison:         Comparison with the desiredValue. 
                                     Defaults '=' ,other available:
                                              '>' ,
@@ -57,7 +57,7 @@ class Wait(Command):
         '''
         Generating .scn text.
         '''
-        xml = ET.Element('wait')
+        xml = ET.Element('Wait')
         
         dev = ET.SubElement(xml, 'device')
         
@@ -96,7 +96,7 @@ class Wait(Command):
 
     def toCmdString(self):
         '''
-        Give a printing of this Command. 
+        Give a printing of this command. 
         '''
         result= 'Wait( '
         result+= 'device='+str(self.__device)+', '

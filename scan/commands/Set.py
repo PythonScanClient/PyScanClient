@@ -3,7 +3,7 @@ Created on Mar 8,2015
 
 @author: qiuyx
 '''
-from scan.commands.Command import Command
+from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Set(Command):
@@ -14,7 +14,7 @@ class Set(Command):
 
     def __init__(self, device=None,value=0.0,completion=False,readback=False,tolerance=0.1,timeout=0.0,errhandler=None):
         '''
-        Command to set a __device to a __value
+        command to set a __device to a __value
         @param __device: Device name
         @param __value: Value
         @param __completion: Await __completion?
@@ -63,17 +63,14 @@ class Set(Command):
         return self.toCmdString()
     
     def toCmdString(self):
-        result= "Set(device='%s'" % self.__device
-        if isinstance(self.__value, str):
-            result += ",value='%s'" % self.__value
-        else:
-            result += ",value=%s" % str(self.__value)
+        result= 'Set(device='+self.__device
+        result+= ',value='+str(self.__value)
         if self.__completion==True:
             result+=',completion=true'
         if self.__readback:
             result+=', readback='+str(self.__readback)
         if self.__timeout!=0.0:
-            result+=',timeout='+str(self.__timeout)
+            result+=',timeOut='+str(self.__timeout)
         result+=')'
         return result
     

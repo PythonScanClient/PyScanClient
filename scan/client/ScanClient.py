@@ -7,15 +7,10 @@ Updated on Mar 19,2015
 '''
 import requests
 import urllib2
-import urllib
-from urllib2 import URLError
-from scan.commands.CmdSequence import CmdSequence
+from scan.commands.cmdseq import cmdseq
 import xml.etree.ElementTree as ET
-from requests import status_codes
 
-from urllib import addinfourl
-
-class ScanClient(object):
+class scanclient(object):
     '''
     The scan provides interfaces to interact with java-ScanServer,
     which includes methods such as Start,Pause,GetScanInfo... to manipulate 
@@ -98,7 +93,7 @@ class ScanClient(object):
             if isinstance(cmds,str):
                 self.__submitScanXML(cmds,scanName)
             
-            elif isinstance(cmds,CmdSequence):
+            elif isinstance(cmds,cmdseq):
                 self.__submitScanSequence(cmds, scanName)
             
             elif isinstance(cmds,list):

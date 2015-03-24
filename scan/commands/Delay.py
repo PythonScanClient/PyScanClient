@@ -3,7 +3,7 @@ Created on Mar 8,2015
 
 @author: qiuyx
 '''
-from scan.commands.Command import Command
+from scan.commands.command import Command
 import xml.etree.ElementTree as ET 
 
 class Delay(Command):
@@ -13,7 +13,7 @@ class Delay(Command):
 
     def __init__(self, seconds=1.0,errHandler=None):
         '''
-        @param seconds: Time to delay. 
+        @param seconds: Time to Delay. 
                         Defaults as 1.0
         
         Usage::
@@ -23,10 +23,10 @@ class Delay(Command):
         self.__errHandler=errHandler
     
     def genXML(self):
-        xml = ET.Element('delay')
+        xml = ET.Element('Delay')
         
         ET.SubElement(xml, 'seconds').text = str(self.__seconds)
-        #return '<delay>'+'<seconds>'+str(self.__seconds)+'</seconds>'+'</delay>'
+        #return '<Delay>'+'<seconds>'+str(self.__seconds)+'</seconds>'+'</Delay>'
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
             
