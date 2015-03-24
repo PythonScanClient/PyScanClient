@@ -16,20 +16,22 @@ class DeviceSettings(object):
        With callback?
        ...
     """
-    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=0.0):
+    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>='):
         """name:       Device name
            completion: True to use completion
            readback:   False to not use a readback,
                        True to use the primary name,
                        Actual read back name if different from the promary device name. 
            timeout:    Time out for callback and readback in seconds. 0 to wait forever.
-           tolerance:  Tolerance for numeric readback comparison. 
+           tolerance:  Tolerance for numeric readback comparison.
+           comparison: Comparison to use in Wait commands
         """
         self.name = name
         self.completion = completion
         self.readback = readback
         self.timeout = timeout
         self.tolerance = tolerance
+        self.comparison = comparison
     
     def getName(self):
         """Returns device name."""
@@ -52,13 +54,17 @@ class DeviceSettings(object):
     def getTolerance(self):
         """Returns tolerance for numeric readback check."""
         return self.tolerance
+
+    def getComparison(self):
+        """Returns comparison for Wait command."""
+        return self.comparison
     
     def __repr__(self):
         rb = self.getReadback()
         if rb:
             rb = "'" + rb + "'"
-        return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%g)" % (
-                self.name, str(self.completion), rb,  self.timeout, self.tolerance)
+        return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%g, comparison='%s')" % (
+                self.name, str(self.completion), rb,  self.timeout, self.tolerance, self.comparison)
 
 
 
@@ -98,16 +104,17 @@ class ScanSettings(object):
         
         return device_name
         
-    def defineDeviceClass(self, name_pattern, completion=False, readback=False, timeout=0.0, tolerance=0.0):
+    def defineDeviceClass(self, name_pattern, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>='):
         """name_pattern: Device name pattern (regular expression)
            completion:   True to use completion
            readback:     False to not use a readback,
                          True to use the primary name,
                          Actual read back name if different from the promary device name. 
            timeout:      Time out for callback and readback in seconds. 0 to wait forever.
-           tolerance:    Tolerance for numeric readback comparison. 
+           tolerance:    Tolerance for numeric readback comparison.
+           comparison:   Comparison to use in Wait commands.
         """
-        self.device_settings.append(DeviceSettings(name_pattern, completion, readback, timeout, tolerance))                
+        self.device_settings.append(DeviceSettings(name_pattern, completion, readback, timeout, tolerance, comparison))                
                         
     def getDefaultSettings(self, name):
         """name: Name of device
@@ -119,7 +126,7 @@ class ScanSettings(object):
                 rb = setting.readback
                 if rb == True:
                     rb = self.getReadbackName(name)
-                return DeviceSettings(name, setting.getCompletion(), rb, setting.getTimeout(), setting.getTolerance())
+                return DeviceSettings(name, setting.getCompletion(), rb, setting.getTimeout(), setting.getTolerance(), setting.getComparison())
         return DeviceSettings(name)
     
     def parseDeviceSettings(self, prefixed_device):

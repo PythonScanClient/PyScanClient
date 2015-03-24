@@ -22,6 +22,8 @@ class TableScan:
     WAITFOR = "Wait For"
     VALUE = "Value"
     OR_TIME = "Or Time"
+    COMPLETION = "completion"
+    SECONDS = "seconds"
     
     def __init__(self, settings, headers, rows, run_per_line=True):
         """
@@ -135,14 +137,14 @@ class TableScan:
                     waitfor = row[i]
                     value = self.getValue(row[i+1])
 
-                    if waitfor.lower() != self.settings.COMPLETION  and  parallel_commands:
+                    if waitfor.lower() != TableScan.COMPLETION  and  parallel_commands:
                         # Complete accumulated parallel_commands before starting the run
-                        commands.append(ParallelCommand(parallel_commands))
+                        commands.append(cmds.Parallel(parallel_commands))
                         parallel_commands = list()
 
                     if self.run_per_line:
                         # Start (& stop) for each line
-                        commands.append(IncludeCommand("start.scn", ""))
+                        commands.append(cmds.Include("start.scn", ""))
                     else:
                         # Reset counters, mark start of new scan step
                         if self.settings.reset_counters:
@@ -160,44 +162,36 @@ class TableScan:
                             cmd = '%s:CS:Scan:Step:Control' % self.settings.S
                             commands.append(SetCommand(cmd, 2, True, cmd, False, 0.1, 20))
 
-                    if waitfor.lower() == self.settings.COMPLETION:
+                    if waitfor.lower() == TableScan.COMPLETION:
                         # Assert that there are any parallel commands,
                         # because otherwise the 'WaitFor - Completion' was likely an error
                         if not parallel_commands:
                             raise Exception("Line %d has no parallel commands to complete" % line)
-                        commands.append(ParallelCommand(parallel_commands))
+                        commands.append(cmds.Parallel(parallel_commands))
                         parallel_commands = list()
-                    elif waitfor.lower() == self.settings.SECONDS:
-                        commands.append(DelayCommand(value))
-                    elif waitfor in self.settings.incrementors:
-                        cmd = WaitCommand(waitfor, Comparison.INCREASE_BY, value)
-                        commands.append(cmd)
-                        if not waitfor in log_devices:
-                            log_devices.append(waitfor)
-                        if i+2 < cols  and  self.headers[i+2] == TableScan.OR_TIME:
-                            or_time = row[i+2].strip()
-                            if len(or_time) > 0:
-                                or_time = float(or_time)
-                                cmd.setTimeout(or_time)
-                                cmd.setErrorHandler("OnErrorContinue")
+                    elif waitfor.lower() == TableScan.SECONDS:
+                        commands.append(cmds.Delay(value))
                     else:
-                        cmd = WaitCommand(waitfor, Comparison.AT_LEAST, value)
-                        commands.append(cmd)
-                        if not waitfor in log_devices:
-                            log_devices.append(waitfor)
-                        if i+2 < cols  and  self.headers[i+2] == TableScan.OR_TIME:
+                        (device, parallel) = self.settings.parseDeviceSettings(waitfor)
+                        timeout = device.getTimeout()
+                        errhandler = None
+                        if i+2 < self.cols  and  self.headers[i+2] == TableScan.OR_TIME:
                             or_time = row[i+2].strip()
                             if len(or_time) > 0:
-                                or_time = float(or_time)
-                                cmd.setTimeout(or_time)
-                                cmd.setErrorHandler("OnErrorContinue")
+                                timeout = float(or_time)
+                                errhandler = "OnErrorContinue"
+                        cmd = cmds.Wait(device.getName(), value, comparison=device.getComparison(),
+                                        tolerance=device.getTolerance(), timeout=timeout, errhandler=errhandler)
+                        commands.append(cmd)
+                        if not device.getName() in log_devices:
+                            log_devices.append(device.getName())
                     
                     if len(log_devices) > 0:
-                        commands.append(LogCommand(log_devices))
+                        commands.append(cmds.Log(log_devices))
 
                     if self.run_per_line:
                         # (Start &) stop for each line
-                        commands.append(IncludeCommand("stop.scn", ""))
+                        commands.append(cmds.Include("stop.scn"))
                     else:
                         # Mark end of scan step
                         if self.settings.mark_scan_steps:
@@ -206,7 +200,7 @@ class TableScan:
                     
                     # Skip TableScan.VALUE in addition to current column,
                     # so next two Exceptions should not happen unless there's an empty "WAIT_FOR"
-                    if i+2 < cols  and  self.headers[i+2] == TableScan.OR_TIME:
+                    if i+2 < self.cols  and  self.headers[i+2] == TableScan.OR_TIME:
                         i = i + 2
                     else:
                         i = i + 1
@@ -227,8 +221,8 @@ class TableScan:
                     else:
                         commands.append(command)
                     
-                    if not device in log_devices:
-                        log_devices.append(device)
+                    if not device.getName() in log_devices:
+                        log_devices.append(device.getName())
                 i = i + 1
             # End of columns in row
             # Complete accumulated parallel commands

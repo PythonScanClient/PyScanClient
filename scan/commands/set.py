@@ -65,9 +65,9 @@ class Set(Command):
     def toCmdString(self):
         result = "Set('%s'" % self.__device
         if isinstance(self.__value, str):
-            result += ", value='%s'" % self.__value
+            result += ", '%s'" % self.__value
         else:
-            result += ", value=%s" % str(self.__value)
+            result += ", %s" % str(self.__value)
         if self.__completion:
             result += ', completion=true'
         if isinstance(self.__readback, str):

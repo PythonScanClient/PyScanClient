@@ -11,6 +11,7 @@ class MyScanSettings(ScanSettings):
         super(MyScanSettings, self).__init__()
         # Define special settings for some devices
         self.defineDeviceClass("Motor.*", completion=True, readback=True, timeout=100)
+        self.defineDeviceClass("InfiniteCounter", comparison="to increase by")
         
     def getReadbackName(self, device_name):
         # Motors use their *.RBV field for readback
@@ -19,11 +20,11 @@ class MyScanSettings(ScanSettings):
         return device_name
 
 # TODO Check the generated scan once the string representation of commands is fixed
-# TODO WaitFor, Value
 # TODO Open/close shutter
 # TODO 'Comment' column can be comment command or Set('SomeCommentPV')
 # TODO Start/stop DAQ, overall or on each 'line'
 # TODO Reset counters, issue scan step markers
+# TODO Fix Log command
 # TODO Devices to always log
 # TODO Devices where we need to await 'increment' instead of absolute value 
 # TODO Start by waiting for all motors to be idle
@@ -55,7 +56,55 @@ class TableScanTest(unittest.TestCase):
           ]
         )
         cmds = handle(table_scan)
-        #self.assertEqual(str(cmds), "[Comment('Setup'), Set(device='X',value=1.0), Set(device='Y',value=2.0), Set(device='Speed',value=30.0), Comment('Count'), Set(device='Wavelength',value=100.0), Comment('Wait'), Set(device='Wavelength',value=200.0)]")
+        self.assertEqual(str(cmds), "[Comment('Setup'), Set('X', 1.0), Set('Y', 2.0), Set('Speed', 30.0), Comment('Count'), Set('Wavelength', 100.0), Comment('Wait'), Set('Wavelength', 200.0)]")
+
+        print "\n=== Wait for time ==="
+        table_scan = TableScan(settings,
+          (   "X",  "Y", "Wait For", "Value" ),
+          [
+            [ "1",  "2", "seconds", "10" ],
+            [ "3",  "4", "seconds", "20" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 2.0), Include('start.scn'), Delay(10), Log('X', 'Y'), Include('stop.scn'), Set('X', 3.0), Set('Y', 4.0), Include('start.scn'), Delay(20), Log('X', 'Y'), Include('stop.scn')]")
+
+
+        print "\n=== Wait for PV ==="
+        table_scan = TableScan(settings,
+          (   "X",  "Y", "Wait For", "Value" ),
+          [
+            [ "1",  "2", "Counter1", "10" ],
+            [ "3",  "4", "Counter1", "20" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        #self.assertEqual(str(cmds), "")
+
+
+        print "\n=== Wait for PV using 'increment' ==="
+        table_scan = TableScan(settings,
+          (   "X",  "Y", "Wait For",        "Value" ),
+          [
+            [ "1",  "2", "Counter1",        "10" ],
+            [ "3",  "4", "InfiniteCounter", "20" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        #self.assertEqual(str(cmds), "")
+
+
+        print "\n=== Wait for PV or Max Time ==="
+        table_scan = TableScan(settings,
+          (   "X",  "Y", "Wait For", "Value", "Or Time" ),
+          [
+            [ "1",  "2", "Counter1", "10",    "500" ],
+            [ "3",  "4", "Counter1", "20",    "" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        #self.assertEqual(str(cmds), "")
+
 
 
     def testScanSettings(self):
@@ -82,11 +131,22 @@ class TableScanTest(unittest.TestCase):
 
 
     def testParallel(self):
-        print "\n=== Parallel ==="
+        print "\n=== Parallel without Wait ==="
         table_scan = TableScan(settings,
           (   "X", "+p Y", "+p Z" ),
           [
             [ "1", "2",    "3" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        # self.assertEqual(str(cmds), "")
+
+        print "\n=== Parallel with Wait ==="
+        table_scan = TableScan(settings,
+          (   "X", "+p Y", "+p Z", "Wait For", "Value" ),
+          [
+            [ "1", "2",    "3",    "Seconds",  "10" ],
+            [ "4", "5",    "6",    "completion", "" ],
           ]
         )
         cmds = handle(table_scan)

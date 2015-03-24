@@ -12,6 +12,7 @@ class MyScanSettings(ScanSettings):
         # Define special settings for some devices
         self.defineDeviceClass("My:Lakeshore.*", completion=True, readback=False, timeout=300, tolerance=10)
         self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
+        self.defineDeviceClass("PerpetualCounter", comparison='to increase by')
         
     def getReadbackName(self, device_name):
         # Motors use their *.RBV field for readback
@@ -21,7 +22,7 @@ class MyScanSettings(ScanSettings):
 
 
 class DeviceSettingsTest(unittest.TestCase):
-    def testDeviceSettings(self):
+    def testDefaultSettings(self):
         s = DeviceSettings("device", readback=False)
         print s
         self.assertEquals(s.getName(), "device")
@@ -37,7 +38,7 @@ class DeviceSettingsTest(unittest.TestCase):
         self.assertEquals(s.getName(), "device")
         self.assertEquals(s.getReadback(), "other")
 
-    def testDefaultSettings(self):
+    def testCustomSettings(self):
         settings = MyScanSettings()
         
         # Check device that should have special settings
@@ -64,6 +65,16 @@ class DeviceSettingsTest(unittest.TestCase):
         self.assertEquals(s.getReadback(), "My:Motor:47.RBV")
         self.assertEquals(s.getTimeout(), 100)
         self.assertEquals(s.getTolerance(), 0)
+
+        # Different comparisons
+        s = settings.getDefaultSettings("SomeCounter")
+        print s
+        self.assertEquals(s.getComparison(), '>=')
+
+        s = settings.getDefaultSettings("PerpetualCounter")
+        print s
+        self.assertEquals(s.getComparison(), 'to increase by')
+
 
     def testDeviceModifiers(self):
         settings = MyScanSettings()
