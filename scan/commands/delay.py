@@ -11,29 +11,30 @@ class Delay(Command):
     classdocs
     '''
 
-    def __init__(self, seconds=1.0,errHandler=None):
+    def __init__(self, seconds, errhandler=None):
         '''
-        @param seconds: Time to Delay. 
-                        Defaults as 1.0
+        @param seconds: Time to delay in seconds. 
         
         Usage::
         >>>dl=Delay(2.5)
         '''
-        self.__seconds=seconds
-        self.__errHandler=errHandler
+        self.__seconds = seconds
+        self.__errHandler = errhandler
     
     def genXML(self):
-        xml = ET.Element('Delay')
-        
+        xml = ET.Element('delay')
         ET.SubElement(xml, 'seconds').text = str(self.__seconds)
-        #return '<Delay>'+'<seconds>'+str(self.__seconds)+'</seconds>'+'</Delay>'
         if self.__errHandler!=None:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
-            
         return xml
     
     def __repr__(self):
-        return 'DelayCommand(seconds='+str(self.__seconds)+')'
+        return self.toCmdString()
     
     def toCmdString(self):
-        return 'DelayCommand(seconds='+str(self.__seconds)+')'
+        result = "Delay(%g" % self.__seconds
+        if self.__errHandler:
+            result += ", errhandler='%s'" % self.__errHandler
+        result+=')'
+        return result
+
