@@ -41,6 +41,7 @@ class Set(Command):
             
         ET.SubElement(xml, 'value').text = str(self.__value)
         
+        need_timeout = False
         if self.__completion==True:
             ET.SubElement(xml, 'completion').text = 'true'
             need_timeout = True
@@ -59,24 +60,15 @@ class Set(Command):
         return xml
     
     def __repr__(self):
-        result= 'Set( device='+self.__device
-        result+= ', value='+str(self.__value)
-        if self.__completion==True:
-            result+=', completion=true'
-        if self.__wait==False:
-            result+=', wait=false'
-        if self.__timeout!=0.0:
-            result+=', timeOut='+str(self.__timeout)
-        result+=')'
-        return result
+        return self.toCmdString()
     
     def toCmdString(self):
         result= 'Set(device='+self.__device
         result+= ',value='+str(self.__value)
         if self.__completion==True:
             result+=',completion=true'
-        if self.__wait==False:
-            result+=',wait=false'
+        if self.__readback:
+            result+=', readback='+str(self.__readback)
         if self.__timeout!=0.0:
             result+=',timeOut='+str(self.__timeout)
         result+=')'
