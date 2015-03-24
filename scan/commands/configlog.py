@@ -8,20 +8,17 @@ import xml.etree.ElementTree as ET
 
 class ConfigLog(Command):
     '''
-    Config atuomatic logging.
+    Config automatic logging.
     '''
 
-
-    def __init__(self, auto=False,errHandler=None):
+    def __init__(self, auto, errhandler=None):
         '''
-        @param auto: True or False for whether logging is automatic.
-                     Defaults as False.
-        
+        @param auto: True to log all write access, False to only log via Log() command.
         Usage::
         >>>cl=ConfigLog(True)
         '''
         self.__auto=auto
-        self.__errHandler=errHandler
+        self.__errHandler=errhandler
         
     def genXML(self):
         xml=ET.Element('config_log');
@@ -29,13 +26,13 @@ class ConfigLog(Command):
         ET.SubElement(xml, 'automatic').text = lower(str(self.__auto))
         #return '<config_log>'+'<automatic>'+lower(str(self.__automatic))+'</automatic>'+'</config_log>'
         
-        if self.__errHandler!=None:
+        if self.__errHandler:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
              
         return xml
     
     def __repr__(self):
-        return 'ConfigLogCommand(Automatic='+lower(str(self.__auto))+')'
+        return self.toCmdString()
         
     def toCmdString(self):
-        return 'ConfigLogCommand(Automatic='+lower(str(self.__auto))+')'
+        return 'ConfigLog(%s)' % str(self.__auto)
