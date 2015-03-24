@@ -25,21 +25,29 @@ class TableScan:
     COMPLETION = "completion"
     SECONDS = "seconds"
     
-    def __init__(self, settings, headers, rows, run_per_line=True):
+    def __init__(self, settings, headers, rows, pre=None, post=None, start=None, stop=None):
         """
         Initialize Table scan
         
         Parameters:
         settings:     ScanSettings
-        headers[]:    Header columns of the table
+        headers[]:    Column headers of the table
         rows[][]:     Rows of the scan. Each row must have len(headers) columns.
-        run_per_line: True to create one 'run' per line,
-                      False to create one long run that resets counters
-                      and marks scan steps at each 'Wait'
+        pre:          Command or list of commands executed at the start of the table.
+                      Could be used to 'arm' data aquisition.
+        post:         Command or list of commands executed at the end of the table.
+                      Could be used to close data aquisition.
+        start:        Command or list of commands executed to start each 'Wait For'.
+                      Could be used to reset counters, trigger data acquisition.
+        stop:         Command or list of commands executed at the end of each 'Wait For'.
+                      Could be used to inform data acquisition that one step of the scan has completed.
         """
         self.settings = settings
         self.name = "Table Scan"
-        self.run_per_line = run_per_line
+        self.pre = self.makeList(pre)
+        self.post = self.makeList(post)
+        self.start = self.makeList(start)
+        self.stop = self.makeList(stop)
         # When called with table widget data,
         # values may be java.lang.String u'text'.
         # Convert to plain 'text'.
@@ -66,6 +74,13 @@ class TableScan:
                 raise ValueError("Not all rows have equal number of columns")
             if not is_empty:
                 self.rows.append(patched_row)
+    
+    def makeList(self, cmd):
+        if isinstance(cmd, cmds.Command):
+            return [ cmd ]
+        if cmd:
+            return list(cmd)
+        return None
     
     def getValue(self, text):
         """Get value from text
@@ -111,12 +126,8 @@ class TableScan:
         commands = list()
 #         log_devices = list(self.settings.log_always)
         log_devices = list()
-        if not self.run_per_line:
-            # Create one long run, started before first line
-            commands.append(Include("start.scn"))
-            # Log the scan steps?
-            if self.settings.mark_scan_steps:
-                log_devices.append('%s:CS:Scan:Step:Index' % self.settings.S)
+        if self.pre:
+            commands += self.pre
         line = 0
         for row in expanded_rows:
             line += 1
@@ -142,25 +153,9 @@ class TableScan:
                         commands.append(cmds.Parallel(parallel_commands))
                         parallel_commands = list()
 
-                    if self.run_per_line:
-                        # Start (& stop) for each line
-                        commands.append(cmds.Include("start.scn", ""))
-                    else:
-                        # Reset counters, mark start of new scan step
-                        if self.settings.reset_counters:
-                            # Initially, only one reset PV was supported,
-                            # but now we allow single PV or list of PVs.
-                            if type(self.settings.reset_counters) in ( list, tuple ):
-                                pvs = self.settings.reset_counters
-                            else:
-                                pvs = ( self.settings.reset_counters, )
-                            for pv in pvs:
-                                cmd = SetCommand(pv, 1, True, pv, False, 0.1, 20)
-                                cmd.setErrorHandler("OnErrorContinue")
-                                commands.append(cmd)
-                        if self.settings.mark_scan_steps:
-                            cmd = '%s:CS:Scan:Step:Control' % self.settings.S
-                            commands.append(SetCommand(cmd, 2, True, cmd, False, 0.1, 20))
+                    # Optional commands to mark start of a "Wait For"
+                    if self.start:
+                        commands += self.start
 
                     if waitfor.lower() == TableScan.COMPLETION:
                         # Assert that there are any parallel commands,
@@ -189,14 +184,9 @@ class TableScan:
                     if len(log_devices) > 0:
                         commands.append(cmds.Log(log_devices))
 
-                    if self.run_per_line:
-                        # (Start &) stop for each line
-                        commands.append(cmds.Include("stop.scn"))
-                    else:
-                        # Mark end of scan step
-                        if self.settings.mark_scan_steps:
-                            cmd = '%s:CS:Scan:Step:Control' % self.settings.S
-                            commands.append(SetCommand(cmd, 3, True, cmd, False, 0.1, 20))
+                    # Optional commands to mark end of a "Wait For"
+                    if self.stop:
+                        commands += self.stop
                     
                     # Skip TableScan.VALUE in addition to current column,
                     # so next two Exceptions should not happen unless there's an empty "WAIT_FOR"
@@ -230,9 +220,9 @@ class TableScan:
                 commands.append(cmds.Parallel(parallel_commands))
                 parallel_commands = list()
         
-        if not self.run_per_line:
+        if self.post:
             # End one long run at end of table
-            commands.append(Include("stop.scn", ""))
+            commands += self.post
         
         return commands
 

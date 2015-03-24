@@ -3,6 +3,7 @@
    @author: Kay Kasemir
 """
 import unittest
+from scan.commands import Set
 from scan.table import TableScan
 from scan.util.scan_settings import ScanSettings
 
@@ -20,13 +21,9 @@ class MyScanSettings(ScanSettings):
         return device_name
 
 # TODO Check the generated scan once the string representation of commands is fixed
-# TODO Open/close shutter
 # TODO 'Comment' column can be comment command or Set('SomeCommentPV')
-# TODO Start/stop DAQ, overall or on each 'line'
-# TODO Reset counters, issue scan step markers
 # TODO Fix Log command
 # TODO Devices to always log
-# TODO Devices where we need to await 'increment' instead of absolute value 
 # TODO Start by waiting for all motors to be idle
 #         for motor in motors:
 #             idle = self.settings.getMotorIdlePV(motor)
@@ -67,7 +64,7 @@ class TableScanTest(unittest.TestCase):
           ]
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 2.0), Include('start.scn'), Delay(10), Log('X', 'Y'), Include('stop.scn'), Set('X', 3.0), Set('Y', 4.0), Include('start.scn'), Delay(20), Log('X', 'Y'), Include('stop.scn')]")
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 2.0), Delay(10), Log('X', 'Y'), Set('X', 3.0), Set('Y', 4.0), Delay(20), Log('X', 'Y')]")
 
 
         print "\n=== Wait for PV ==="
@@ -105,6 +102,27 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         #self.assertEqual(str(cmds), "")
 
+
+    def testStartStop(self):
+        print "\n=== Start/stop at each step ==="
+        table_scan = TableScan(settings,
+          (   "X",  "Y", "Wait For", "Value" ),
+          [
+            [ "1",  "2", "counter", "10" ],
+            [ "3",  "4", "counter", "10" ],
+          ],
+          pre = Set('shutter', 1),
+          post = Set('shutter', 0),
+          start = [ Set('counter:reset', 1, completion=True),
+                    Set('counter:enable', 1, completion=True),
+                    Set('daq:enable', 1, completion=True)
+                  ],
+          stop  = [ Set('daq:enable', 0, completion=True),
+                    Set('counter:enable', 0, completion=True)
+                  ],
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('shutter', 1), Set('X', 1.0), Set('Y', 2.0), Set('counter:reset', 1, completion=true), Set('counter:enable', 1, completion=true), Set('daq:enable', 1, completion=true), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=true), Set('counter:enable', 0, completion=true), Set('X', 3.0), Set('Y', 4.0), Set('counter:reset', 1, completion=true), Set('counter:enable', 1, completion=true), Set('daq:enable', 1, completion=true), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=true), Set('counter:enable', 0, completion=true), Set('shutter', 0)]")
 
 
     def testScanSettings(self):
