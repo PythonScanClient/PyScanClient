@@ -12,18 +12,17 @@ class Include(Command):
     '''
 
 
-    def __init__(self, scanFile=None, macros=None,errHandler=None):
+    def __init__(self, scan, macros=None, errhandler=None):
         '''
-        @param scanFile: The included scan file path located at /scan/example
-                         Defaults as None.
-        @param macros:   
+        @param scan:   Name of included scan file, must be on the server's list of script_paths
+        @param macros: "name=value, other=42"
         
         Usage::
-        >>>icl=Include(scanFile='PrepMotor.scn',macros='macro=value')
+        >>>icl=Include(scanFile='PrepMotor.scn', macros='macro=value')
         '''
-        self.__scanFile=scanFile
-        self.__macros=macros
-        self.__errHandler=errHandler
+        self.__scanFile = scan
+        self.__macros = macros
+        self.__errHandler = errhandler
     
     def genXML(self):
         xml = ET.Element('include')
