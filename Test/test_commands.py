@@ -47,6 +47,27 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>true</wait><readback>some_device.RBV</readback><tolerance>1</tolerance><timeout>10.0</timeout></set>")
 
+    def testLog(self):
+        # One device
+        cmd = Log("pv1")
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<log><devices><device>pv1</device></devices></log>")
+
+        # Nothing
+        cmd = Log()
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<log><devices /></log>")
+
+        # Several
+        cmd = Log("pv1", "pv2", "pv3")
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<log><devices><device>pv1</device><device>pv2</device><device>pv3</device></devices></log>")
+
+        # .. provided as list
+        devices_to_log = [ "pv1", "pv2", "pv3" ]
+        cmd = Log(devices_to_log)
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<log><devices><device>pv1</device><device>pv2</device><device>pv3</device></devices></log>")
 
 if __name__ == "__main__":
     unittest.main()
