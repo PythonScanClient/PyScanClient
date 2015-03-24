@@ -129,7 +129,6 @@ class CommandTest(unittest.TestCase):
         self.assertEqual(ET.tostring(cmd.genXML()), "<include><scan_file>start.scn</scan_file><macros>macro=value</macros></include>")
         
     def testScript(self):
-        # Basic set
         cmd = Script("MyCustomScript")
         print cmd
         self.assertEqual(str(cmd), "Script('MyCustomScript')")
@@ -139,6 +138,18 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(str(cmd), "Script('MyCustomCommand', 'arg1', 42.3)")
         self.assertEqual(ET.tostring(cmd.genXML()), "<script><path>MyCustomCommand</path><arguments><argument>arg1</argument><argument>42.3</argument></arguments></script>")
+
+
+    def testWait(self):
+        cmd = Wait('device', 3.14)
+        print cmd
+        self.assertEqual(str(cmd), "Wait('device', 3.14)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<wait><device>device</device><value>3.14</value><comparison>EQUALS</comparison></wait>")
+
+        cmd = Wait('counts', 1000, comparison='increase by', timeout=5.0, errhandler='someHandler')
+        print cmd
+        self.assertEqual(str(cmd), "Wait('counts', 1000, comparison='increase by', timeout=5, errhandler='someHandler')")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<wait><device>counts</device><value>1000</value><comparison>INCREASE_BY</comparison><timeout>5.0</timeout><error_handler>someHandler</error_handler></wait>")
 
 
 
