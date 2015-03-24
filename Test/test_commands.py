@@ -47,6 +47,37 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>true</wait><readback>some_device.RBV</readback><tolerance>1</tolerance><timeout>10.0</timeout></set>")
 
+    def testParallel(self):
+        # Nothing
+        cmd = Parallel()
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<parallel />")
+
+        # A few
+        cmd = Parallel(Comment("One"), Comment("Two"))
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></parallel>")
+
+        # .. as list
+        cmds = Comment("One"), Comment("Two")
+        cmd = Parallel(cmds)
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></parallel>")
+
+        cmd = Parallel(body=cmds)
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></parallel>")
+
+        # With other parameters
+        cmd = Parallel(cmds, timeout=10)
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><timeout>10</timeout><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></parallel>")
+
+        cmd = Parallel(cmds, errHandler="MyHandler")
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body><error_handler>MyHandler</error_handler></parallel>")
+
+
     def testLog(self):
         # One device
         cmd = Log("pv1")

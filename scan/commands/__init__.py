@@ -9,3 +9,4 @@ from scan.commands.Loop import Loop
 from scan.commands.Script import Script
 from scan.commands.Set import Set
 from scan.commands.Wait import Wait
+from parallel import Parallel
