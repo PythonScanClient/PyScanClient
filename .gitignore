@@ -1,6 +1,9 @@
 # Python
 *.pyc
 
+# Generated docs
+doc/_build
+
 *.class
 
 # Mobile Tools for Java (J2ME)
