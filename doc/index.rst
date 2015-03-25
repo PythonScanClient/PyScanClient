@@ -15,6 +15,7 @@ Contents:
    scan_client.rst
    commands.rst
    table_scan.rst
+   scan_settings.rst
 
 Indices and tables
 ==================

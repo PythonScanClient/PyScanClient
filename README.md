@@ -16,7 +16,7 @@ To build:
     cd doc
     make clean html
 
-Then view doc/_build/html/index.html in web browser.
+Then view `doc/_build/html/index.html` in web browser.
 
 
 This repository is at https://github.com/PythonScanClient/PyScanClient

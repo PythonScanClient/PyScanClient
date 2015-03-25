@@ -1,31 +1,45 @@
 """
 Scan settings
+=============
 
-ScanSettings class is meant to be the basis
-of a site-specific implementation.
+Provides information on how to access a device.
 
-@author: Kay Kasemir
+* Wait for callback completion?
+* Check a readback?
+
+  * Which one? The original device, or a different one?
+  * Look for exact match, or use a tolrance of +- 0.5?
+  
+* With what timeout?
+
+When installing the scan client library,
+derive your site-specific implementation
+from the ScanSettings class
+and make it available to all users of this library.
+
+
+Example
+-------
+
+.. literalinclude:: ../example/scan_settings1.py
+
 """
+#@author: Kay Kasemir
 import re
 
 class DeviceSettings(object):
-    """Settings for a device, how it should be accessed in a scan.
+    """Describes how a device should be accessed in a scan.
     
-       With completion?
-       With readback? If yes, using what device name?
-       With callback?
-       ...
-    """
-    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>='):
-        """name:       Device name
-           completion: True to use completion
-           readback:   False to not use a readback,
+    :param name:       Device name
+    :param completion: True to use completion
+    :param readback:   False to not use a readback,
                        True to use the primary name,
                        Actual read back name if different from the promary device name. 
-           timeout:    Time out for callback and readback in seconds. 0 to wait forever.
-           tolerance:  Tolerance for numeric readback comparison.
-           comparison: Comparison to use in Wait commands
-        """
+    :param timeout:    Time out for callback and readback in seconds. 0 to wait forever.
+    :param tolerance:  Tolerance for numeric readback comparison.
+    :param comparison: Comparison to use in Wait commands
+    """
+    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>='):
         self.name = name
         self.completion = completion
         self.readback = readback
@@ -34,29 +48,29 @@ class DeviceSettings(object):
         self.comparison = comparison
     
     def getName(self):
-        """Returns device name."""
+        """:returns: Device name."""
         return self.name
 
     def getCompletion(self):
-        """Returns True when device should be accessed with completion."""
+        """:returns: True when device should be accessed with completion."""
         return self.completion
 
     def getReadback(self):
-        """Get device name to use for readback, or None."""
+        """:returns: Device name to use for readback, or None."""
         if not self.readback:
             return None
         return self.name if self.readback == True else self.readback
 
     def getTimeout(self):
-        """Returns timeout in seconds."""
+        """:returns: Timeout in seconds for both completion and readback."""
         return self.timeout
     
     def getTolerance(self):
-        """Returns tolerance for numeric readback check."""
+        """:returns: Tolerance for numeric readback check. Does not apply to string values."""
         return self.tolerance
 
     def getComparison(self):
-        """Returns comparison for Wait command."""
+        """:returns: Comparison for Wait command."""
         return self.comparison
     
     def __repr__(self):
@@ -69,20 +83,10 @@ class DeviceSettings(object):
 
 
 class ScanSettings(object):
-    """Scan Settings
-    
-       Site-specific implementation is derived from the ScanSettings class.
-       In its constructor, derived classes can call defineDeviceClass() to
-       define settings for devices that match a certain name.
-       
-       In addition, derived class may override computeReadbackName() to
-       provide for example the *.RBV for a motor PV.
+    """Base class for site-specific scan settings
     """
 
     def __init__(self):
-        """Derived class can override constructor
-           to add calls to defineDeviceClass()
-        """
         # List that holds DeviceSettings, but NOT exactly as it's passed out to
         # uses of this class:
         # The device_settings[].name is a regular expression pattern for device names.
@@ -92,10 +96,14 @@ class ScanSettings(object):
         # self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
 
     def getReadbackName(self, device_name):
-        """device_name: Primary device name
-           Returns the corresponding device name for readback check
+        """Override this method to provide custom readback names.
+        
+        For example, map from device names that match the naming
+        convention for motors at your site and return the associated
+        `*.RBV` name.
            
-           Derived class may override to compute the readback name
+        :param device_name: Primary device name
+        :return: Corresponding device name for readback check
         """
         
         # Example for derived class:
@@ -105,20 +113,26 @@ class ScanSettings(object):
         return device_name
         
     def defineDeviceClass(self, name_pattern, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>='):
-        """name_pattern: Device name pattern (regular expression)
-           completion:   True to use completion
-           readback:     False to not use a readback,
-                         True to use the primary name,
-                         Actual read back name if different from the promary device name. 
-           timeout:      Time out for callback and readback in seconds. 0 to wait forever.
-           tolerance:    Tolerance for numeric readback comparison.
-           comparison:   Comparison to use in Wait commands.
+        """Define a class of devices based on name
+        
+        Call this in the constructor of your derived class.
+        
+        :param name_pattern: Device name pattern (regular expression)
+        :param completion:   True to use completion
+        :param readback:     False to not use a readback,
+                             True to use the primary name,
+                             Actual read back name if different from the promary device name. 
+        :param timeout:      Time out for callback and readback in seconds. 0 to wait forever.
+        :param tolerance:    Tolerance for numeric readback comparison.
+        :param comparison:   Comparison to use in Wait commands.
         """
         self.device_settings.append(DeviceSettings(name_pattern, completion, readback, timeout, tolerance, comparison))                
                         
     def getDefaultSettings(self, name):
-        """name: Name of device
-           Returns suggested DeviceSettings for that device.
+        """Get the default settings for a device
+        
+        :param name: Name of device
+        :return: DeviceSettings for that device.
         """
         for setting in self.device_settings:
             if re.match(setting.getName(), name):
@@ -130,17 +144,27 @@ class ScanSettings(object):
         return DeviceSettings(name)
     
     def parseDeviceSettings(self, prefixed_device):
-        """Parse a device name that may be prefixed with modifiers
-           that override the default settings for the device.
-           
-           Supported modifiers:
-           -c: Do not await completion
-           +c: Do await completion
-           -r: Do not check readback
-           +r: Do check readback
-           +p: Access in parallel
+        """Parse a device name that may be prefixed with modifiers.
         
-           @return: ( DeviceSettings(name), parallel )
+        For example, the name 'SomeMotor' may ordinarily indicate a
+        motor and by default be accessed with callback completion
+        and readback if you called `parseDeviceSettings('SomeMotor')`.
+        
+        By adding the prefix '-c-r' or '-cr', the DeviceSettings will
+        exclude the completion and readback:
+        `parseDeviceSettings('-cr SomeMotor')`.
+        
+           
+        Supported modifiers:
+        
+        * -c: Do not await completion
+        * +c: Do await completion
+        * -r: Do not check readback
+        * +r: Do check readback
+        * +p: Access in parallel
+
+        :param prefixed_device: Name of device with optional prefixes
+        :return: ( DeviceSettings, parallel )
         """
         mod_device = prefixed_device.strip()
         readback = None

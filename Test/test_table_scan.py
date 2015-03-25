@@ -5,7 +5,7 @@
 import unittest
 from scan.commands import Set
 from scan.table import TableScan
-from scan.util.scan_settings import ScanSettings
+from scan.util import ScanSettings
 
 class MyScanSettings(ScanSettings):
     def __init__(self):
