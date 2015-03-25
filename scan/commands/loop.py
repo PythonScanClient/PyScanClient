@@ -7,57 +7,63 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET 
 
 class Loop(Command):
-    '''
-    classdocs
-    '''
-
+    """Set a device to various values in a loop.
+    
+    Optional check of completion and readback verification.
+    
+    :param device:     Device name
+    :param start:      Initial value
+    :param end:        Final value
+    :param step:       Step size
+    :param body:       One or more commands
+    :param completion: Await callback completion?
+    :param readback:   `False` to not check any readback,
+                       `True` to wait for readback from the 'device',
+                       or name of specific device to check for readback.
+    :param tolerance:  Tolerance when checking numeric `readback`.
+                       When left as none, will default to 10% of step size.
+    :param timeout:    Timeout in seconds, used for `completion` and `readback` check.
+    :param errhandler: Error handler
+    
+    Examples:
+    
+    Set `pv1` to 1, 1.5, 2, 2.5, 3, .., 9.5, 10:
+        >>> cmd = Loop('pv1', 1, 10, 0.5)
+    
+    Set `pv1` to 10, 9, 8, 7, .., 1:
+        >>> cmd = Loop('pv1', 10, 1, -1)
+    
+    At each step of the loop, perform additional commands:    
+        >>> cmd = Loop('pv1', 1, 10, Set('daq', 1), Delay(10), Set('daq', 0))
+        >>> cmd = Loop('pv1', 1, 10,
+        ...            body = [ Set('daq', 1), Delay(10), Set('daq', 0) ])
+    
+    When after loop updates `pv1`, check for its readback to match, then perform commands within the loop:
+        >>> cmd = Loop('pv1', 1, 10, Set('daq', 1), Delay(10), Set('daq', 0), readback=True)
+    
+    Special behavior of nested loops. If step size is 'wrong', the loops will cycle direction:
+        >>> cmd = Loop('x', 1, 3, body=[ Loop('y', 1, 3, -1 ])
+    
+    Will result in these values:
+    
+    =  =
+    x  y
+    =  =
+    1  1
+    1  2
+    1  3
+    2  3
+    2  2
+    2  1
+    3  1
+    3  2
+    3  3
+    =  =
+    
+    Note how the direction of the inner loop changes.
+    This can be useful for scanning the X/Y surface of a sample.    
+    """
     def __init__(self, device, start, end, step, body=None, *args, **kwargs):
-        '''
-        Set a device to various values in a loop, with optional check of completion and readback verification.
-        @param device:     Device name
-        @param start:      Initial value
-        @param end:        Final value
-        @param step:       Step size
-        @param body:       One or more commands
-        @param completion: Await __completion?
-        @param readback:   False to not check any readback,
-                           True to wait for readback from the 'device',
-                           or name of specific device to check for readback.
-        @param tolerance:  Tolerance when checking numeric readback.
-                           When left as none, will default to 10% of step size.
-        @param timeout:    Timeout in seconds, used for 'completion' and 'readback' check
-        @param errhandler: Error handler
-
-        Examples:
-        
-        # Set pv1 to 1, 1.5, 2, 2.5, 3, .., 9.5, 10
-        Loop('pv1', 1, 10, 0.5)
-
-        # Set pv1 to 10, 9, 8, 7, .., 1
-        Loop('pv1', 10, 1, -1)
-
-        Loop('pv1', 1, 10, Set('daq', 1), Delay(10), Set('daq', 0))
-        Loop('pv1', 1, 10, Set('daq', 1), Delay(10), Set('daq', 0), readback=True)
-        
-        # Note special behavior of nested loops.
-        # If step size is 'wrong', the loops will cycle direction:
-        Loop('x', 1, 3, body=[ Loop('y', 1, 3, -1 ])
-        # will result in these values:
-        #
-        # x  y
-        # 1  1
-        # 1  2
-        # 1  3
-        # 2  3
-        # 2  2
-        # 2  1
-        # 3  1
-        # 3  2
-        # 3  3
-        #
-        # Note how the direction of the inner loop changes.
-        # This can be useful for scanning the X/Y surface of a sample
-        '''
         self.__device = device
         self.__start = start
         self.__end = end

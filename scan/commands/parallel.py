@@ -7,15 +7,39 @@ from scan.commands import Command
 import xml.etree.ElementTree as ET 
 
 class Parallel(Command):
-    def __init__(self, body=None, *args, **kwargs):
-        """Examples:
+    """Perform multiple commands in parallel.
+    
+    Each of the commands performed in parallel may await
+    callback completion and/or check readbacks.
+    
+    The `Parallel` command completes when all of the commands
+    in its `body` have finished executing,
+    or an optional timeout expires.
+    
+    :param body:       Commands or list of commands
+    :param timeout:    Optional timeout in seconds.
+                       By default, wait forever.
+    :param errhandler: Optional error handler.
+    
+    Examples:
+    
+    Do nothing:
+        >>> cmd = Parallel()
         
-           Parallel()
-           Parallel(command1)
-           Parallel(command1, command2)
-           Parallel(body=[command1, command2])
-           Parallel(body=[command1, command2], timeout=10, errhandler="MyErrorHandler")
-        """
+    Perform one command, same as directly using `Set('x', 1')`:
+        >>> cmd = Parallel(Set('x', 1))
+    
+    Set two PVs to a value, each awaiting callback completion:
+        >>> cmd = Parallel(Set('x', 1, completion=True),
+        ...                Set('y', 2, completion=True))
+    
+    Given a list of commands, perform them all in parallel:
+        >>> cmd = Parallel(body=[command1, command2, command3])
+        
+    .. with timeout:
+        >>> cmd = Parallel(body=[command1, command2], timeout=10)
+    """
+    def __init__(self, body=None, *args, **kwargs):
         if isinstance(body, Command):
             self.__body = [ body ]
         elif body:

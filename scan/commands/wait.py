@@ -7,15 +7,26 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Wait(Command):
-    '''
-    Command that delays the scan until a device reaches a certain value. It has these properties:
-    1.device
-    2.desiredValue
-    3.comparison
-    4.tolerance
-    5.timeout
-    6.errHandler
-    '''
+    """Wait until a condition is met, i.e. a device reaches a value.
+    
+    :param  device:      Name of PV or device.
+    :param  value:       Desired value.
+    :param  comparison:  How current value is compared to the desired value.
+                         Defaults to '='.
+                         Other options: '>', '>=', '<' , '<=', 'increase by','decrease by'
+    :param  tolerance:  Tolerance used for numeric comparison. Defaults to 0, not used for string values.
+    :param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
+    :param  errhandler: Default None.
+        
+    Example:
+        >>> cmd = Wait('shutter', 1)
+        >>> cmd = Wait('position', 25.0, timeout=60.0, tolerance=0.5)
+        >>> cmd = Wait('counts', 1e12, comparison='>=', timeout=10.0)
+        >>> cmd = Wait('counts', 1e12, comparison='increase by',
+                       timeout=5.0, errhandler='someHandler')
+        
+    """
+    
     __comparisons= {'=':'EQUALS',
                     '>':'ABOVE',
                     '>=':'AT_LEAST',
@@ -25,29 +36,6 @@ class Wait(Command):
                     'decrease by':'DECREASE_BY'}
 
     def __init__(self, device, value, comparison='=', tolerance=0.0, timeout=0.0, errhandler=None):
-        '''
-        Wait for a device to reach a value.
-        @param  device:      Name of PV or device.
-        @param  value:       Desired value.
-        @param  comparison:  How current value is compared to the desired value.
-                             Defaults to '='.
-                             Other options:  '>' ,
-                                             '>=',
-                                             '<' ,
-                                             '<=',
-                                             'increase by',
-                                             'decrease by'
-                                    
-        @param  tolerance:  Tolerance used for numeric comparison. Defaults to 0, not used for string values.
-        @param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
-        @param  errhandler: Default None.
-        
-        Usage::
-        >>> wcmd = Wait('shutter', 1)
-        >>> wcmd = Wait('position', 25.0, timeout=60.0, tolerance=0.5)
-        >>> wcmd = Wait('counts', 1e12, comparison='>=', timeout=10.0)
-        >>> wcmd = Wait('counts', 1e12, comparison='increase by', timeout=5.0, errhandler='someHandler')
-        '''
         self.__device=device
         self.__desiredValue=value
         if not comparison in Wait.__comparisons:
@@ -58,9 +46,6 @@ class Wait(Command):
         self.__errHandler=errhandler
         
     def genXML(self):
-        '''
-        Generating .scn text.
-        '''
         xml = ET.Element('wait')
         
         ET.SubElement(xml, 'device').text = self.__device
@@ -81,12 +66,6 @@ class Wait(Command):
         return xml
     
     def __repr__(self):
-        return self.toCmdString()
-
-    def toCmdString(self):
-        '''
-        Give a printing of this command. 
-        '''
         result = "Wait('%s'" % self.__device
         if isinstance(self.__desiredValue, str):
             result += ", '%s'" % self.__desiredValue

@@ -7,17 +7,41 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Script(Command):
-    '''
-    classdocs
-    '''
+    """Custom command implemented in Jython
+    
+    This command executes Jython code.
+    
+    :param script: Name of the script class.
+    :param arguments...: Arguments to the script.
+    
+    Example Script:
+    
+    Scripts must derive from `ScanScript`:
+    
+    >>> class MyScript(ScanScript):
+    ...    def __init__(self, name, offset):
+    ...        self.name = name
+    ...        self.offset = offset
+    ...
+    ...    def getDeviceNames(self):
+    ...        return [ "result1" ]
+    ...
+    ...    def run(self, context, args):
+    ...        [ x ] = context.getData(self.name)
+    ...        context.write(self.name + "_offset", x + offset)
+    
+    For details refer to the Javadoc of the Scan Server.
+    
+    A Jython script that defines the class `MyScript` must
+    be stored in file named `myscript.py`,
+    i.e. using the lower case version of the class name.
+    It must be located on the scan server script path.
 
-    def __init__(self, path='the_script.py', *args, **kwargs):
-        '''
-        Example:
-        Script("MyCustomCommand")
-        Script("MyCustomCommand", "arg1", 42.3)
-        '''
-        self.__path = path
+    Example Script commands:
+        >>> cmd = Script("MyScript", "pos", 42.3)
+    """
+    def __init__(self, script='the_script.py', *args, **kwargs):
+        self.__path = script
         self.__args = args
         self.__errHandler = kwargs['errHandler'] if 'errHandler' in kwargs else None
         

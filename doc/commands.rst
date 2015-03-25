@@ -1,42 +1,66 @@
 Scan Commands
 =============
 
-Assemble a scan from commands.
+Assemble a scan from commands:
 
-.. sourcecode:: python
+.. literalinclude:: ../example/commands1.py
 
-    from scan.commands import *
-    
-    cmds = [
-       Set('pv1', 42)
-    ]
-    
 
-Key Commands
-------------
+Comment
+-------
    
 .. autoclass:: scan.commands.comment.Comment
    :members:
 
+Set
+---
 .. autoclass:: scan.commands.set.Set
    :members:
+
+Wait
+----
+
+.. autoclass:: scan.commands.wait.Wait
+   :members:
+
+Loop
+----
+
+.. autoclass:: scan.commands.loop.Loop
+   :members:
+
+Parallel
+--------
+
+.. autoclass:: scan.commands.parallel.Parallel
+   :members:
+
+Delay
+-----
 
 .. autoclass:: scan.commands.delay.Delay
    :members:
 
+Log
+---
+
 .. autoclass:: scan.commands.log.Log
    :members:
+
+Include
+-------
 
 .. autoclass:: scan.commands.include.Include
    :members:
 
 
-Specialized Commands
---------------------
-
-.. autoclass:: scan.commands.command.Command
-   :members: genXML, __repr__, toCmdString
+ConfigLog
+---------
 
 .. autoclass:: scan.commands.configlog.ConfigLog
    :members:
-   
+
+Script
+------
+.. autoclass:: scan.commands.script.Script
+   :members:
