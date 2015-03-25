@@ -7,16 +7,14 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET 
 
 class ConfigLog(Command):
-    '''
-    Config automatic logging.
-    '''
-
+    """Config automatic logging.
+    
+    :param auto: True to log all write access, False to only log via `Log()` command.
+    
+    Example:
+        >>> cmd = ConfigLog(True)
+    """
     def __init__(self, auto, errhandler=None):
-        '''
-        @param auto: True to log all write access, False to only log via Log() command.
-        Usage::
-        >>>cl=ConfigLog(True)
-        '''
         self.__auto=auto
         self.__errHandler=errhandler
         
@@ -32,7 +30,4 @@ class ConfigLog(Command):
         return xml
     
     def __repr__(self):
-        return self.toCmdString()
-        
-    def toCmdString(self):
         return 'ConfigLog(%s)' % str(self.__auto)

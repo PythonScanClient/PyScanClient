@@ -1,1 +1,0 @@
-from scan.client.scanclient import scanclient

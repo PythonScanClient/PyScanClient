@@ -7,18 +7,14 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Comment(Command):
-    '''
-    Command to add comment.
-    SubClass of Command
-    '''
+    """Comment
     
-    def __init__(self, text="This is an example comment."):
-        '''
-        @param text: Comment Text.
+    :param text: Comment Text.
         
-        Usage::
-        >>>c=Comment("Scan Start.")
-        '''
+    Example:
+        >>> cmd = Comment("Scan Start.") 
+    """
+    def __init__(self, text="This is an example comment."):
         self.__text=text
     
     def genXML(self):
@@ -27,13 +23,7 @@ class Comment(Command):
         return xml
 
     def __repr__(self):
-        return self.toCmdString()
-    
-    def toCmdString(self):
-        '''
-        Give a printing of this Command. 
-        '''
         return "Comment('%s')" % self.__text
-    
+
     
         

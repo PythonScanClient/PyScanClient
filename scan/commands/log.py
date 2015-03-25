@@ -7,19 +7,25 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Log(Command):
-    '''
-    classdocs
-    '''
-
+    """Log current value of one or more devices.
+    
+    :param devices: One or more devices to log
+    
+    The current value of listed devices is logged with the scan
+    and can later be retrieved.
+    
+    The logged data is meant to allow tracking the progress
+    of the scan or to debug details of a scan.
+    It does not provide data acquisition.
+    
+    Examples:
+        >>> cmd = Log()
+        >>> cmd = Log("pv1")
+        >>> cmd = Log("pv1", "pv2")
+        >>> cmd = Log(devices=["pv1", "pv2"])
+        >>> cmd = Log(devices=["pv1", "pv2"], errhandler="OnErrorContinue")
+    """
     def __init__(self, devices=None, *args, **kwargs):
-        """Examples:
-         
-           Log()
-           Log("pv1")
-           Log("pv1", "pv2")
-           Log(devices=["pv1", "pv2"])
-           Log(devices=["pv1", "pv2"], errhandler="OnErrorContinue")
-        """
         if isinstance(devices, str):
             self.__devices = [ devices ]
         elif devices:

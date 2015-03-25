@@ -7,17 +7,14 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET 
 
 class Delay(Command):
-    '''
-    classdocs
-    '''
-
-    def __init__(self, seconds, errhandler=None):
-        '''
-        @param seconds: Time to delay in seconds. 
+    """Delay for a fixed amount of time
+    
+    :param seconds: Time to delay in seconds. 
         
-        Usage::
-        >>>dl=Delay(2.5)
-        '''
+    Example:
+        >>> cmd = Delay(2.5)
+    """
+    def __init__(self, seconds, errhandler=None):
         self.__seconds = seconds
         self.__errHandler = errhandler
     
@@ -29,9 +26,6 @@ class Delay(Command):
         return xml
     
     def __repr__(self):
-        return self.toCmdString()
-    
-    def toCmdString(self):
         result = "Delay(%g" % self.__seconds
         if self.__errHandler:
             result += ", errhandler='%s'" % self.__errHandler

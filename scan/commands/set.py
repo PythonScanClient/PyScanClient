@@ -7,23 +7,26 @@ from scan.commands.command import Command
 import xml.etree.ElementTree as ET
 
 class Set(Command):
-    '''
-    classdocs
-    '''
+    """Set a device to a value.
+    
+    With optional check of completion and readback verification.
+    
+    :param device:     Device name
+    :param value:      Value
+    :param completion: Await callback completion?
+    :param readback:   `False` to not check any readback,
+                       `True` to wait for readback from the `device`,
+                       or name of specific device to check for readback.
+    :param tolerance:  Tolerance when checking numeric `readback`.
+    :param timeout:    Timeout in seconds, used for `completion` and `readback`.
+    :param errhandler: Error handler
+    
+    Example:
+        >>> cmd = Set('position', 10.5)
+        
+    """
 
     def __init__(self, device, value, completion=False, readback=False, tolerance=0.0, timeout=0.0, errhandler=None):
-        '''
-        Command to set a device to a value, with optional check of completion and readback verification.
-        @param device:     Device name
-        @param value:      Value
-        @param completion: Await __completion?
-        @param readback:   False to not check any readback,
-                           True to wait for readback from the 'device',
-                           or name of specific device to check for readback.
-        @param tolerance:  Tolerance when checking numeric readback.
-        @param timeout:    Timeout in seconds, used for 'completion' and 'readback' check
-        @param errhandler: Error handler
-        '''
         self.__device=device
         self.__value=value
         self.__completion=completion
