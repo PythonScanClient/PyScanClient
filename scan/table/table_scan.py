@@ -1,22 +1,128 @@
 """
 Table Scan Support
+==================
 
-@author: Kay Kasemir
+Creates a scan based on a table.
+
+Basic Example
+-------------
+
+Each column of a table specifies a device name (Process Variable).
+Cells in each row provide the desired values.
+
++-----------+---------+
+|temperature|position |
++-----------+---------+
+|   50      |   1     |
++-----------+---------+
+|  100      |   2     |
++-----------+---------+
+
+The table above creates the following scan commands::
+
+   Set('temperature', 50),
+   Set('position', 1),
+   Set('temperature', 100),
+   Set('position', 2),
+
+
+Cells can remain empty if a device should not be changed in that row.
+
++-----------+---------+
+|temperature|position |
++-----------+---------+
+|   50      |   1     |
++-----------+---------+
+|           |   2     |
++-----------+---------+
+|           |   3     |
++-----------+---------+
+|  100      |   1     |
++-----------+---------+
+|           |   2     |
++-----------+---------+
+|           |   3     |
++-----------+---------+
+
+Results in::
+
+   Set('temperature', 50),
+   Set('position', 1),
+   Set('position', 2),
+   Set('position', 3),
+   Set('temperature', 100),
+   Set('position', 1),
+   Set('position', 2),
+   Set('position', 3),
+
+
+Ranges, Lists
+-------------
+
+Cells that contain a `range()` command or list will be expanded,
+resulting in this shorter version of the previous table,
+using both 'range(1,4,1)' and '[1, 2, 3]' to create the same sequence of position values:
+
++-----------+------------+
+|temperature|position    |
++-----------+------------+
+|   50      |range(1,4,1)|
++-----------+------------+
+|  100      |[1, 2, 3]   |
++-----------+------------+
+
+Within a row, multiple ranges or lists are recursively expanded from right to left.
+This shorter table results in the same scan commands:
+
++-----------+------------+
+|temperature|position    |
++-----------+------------+
+| [50,100]  | [1, 2, 3]  |
++-----------+------------+
+
+
+
+Scan Settings
+-------------
+
+In addition to simply writing to a device,
+the 'Set' command can wait for completion
+and compare a readback from either the original device name (Process Variable)
+or a different one.
+
+When for example accessing a 'position' device associtated with an EPICS motor,
+the 'Set' command should await completion,
+then compare the 'position.RBV' against the desired position.
+The tolerance for this comparison as well as a timeout will depend on the actual
+motor.
+
+The 'ScanSettings' class is used to configure which PVs use completion,
+their timeout, the name of an associated readback.
+
+.. literalinclude:: ../example/scan_settings1.py
+
+
+Code Example
+-------------
+
+.. literalinclude:: ../example/table1.py
+
+'Wait For', 'Value' Columns
+---------------------------
+
+These special columns result in `Wait` command.
+
 """
+# @author: Kay Kasemir
 
 import scan.commands as cmds
 from range_helper import expandRanges
 
 class TableScan:
     """
-    Fields
-    ------
-    name:      Name of the scan
-    headers[]: Header columns of the table
-    cols:      Number of columns
-    rows[][]:  Rows of the scan
-    width[]:   Max width of each column
+    Creates scan commands based on a table.
     """
+    
     # Predefined columns
     COMMENT = "Comment"
     WAITFOR = "Wait For"
@@ -44,10 +150,10 @@ class TableScan:
         """
         self.settings = settings
         self.name = "Table Scan"
-        self.pre = self.makeList(pre)
-        self.post = self.makeList(post)
-        self.start = self.makeList(start)
-        self.stop = self.makeList(stop)
+        self.pre = self.__makeList(pre)
+        self.post = self.__makeList(post)
+        self.start = self.__makeList(start)
+        self.stop = self.__makeList(stop)
         # When called with table widget data,
         # values may be java.lang.String u'text'.
         # Convert to plain 'text'.
@@ -75,14 +181,14 @@ class TableScan:
             if not is_empty:
                 self.rows.append(patched_row)
     
-    def makeList(self, cmd):
+    def __makeList(self, cmd):
         if isinstance(cmd, cmds.Command):
             return [ cmd ]
         if cmd:
             return list(cmd)
         return None
     
-    def getValue(self, text):
+    def __getValue(self, text):
         """Get value from text
            text: Text that may contain numeric value
            Returns Number or text.
@@ -146,7 +252,7 @@ class TableScan:
 #                         commands.append(SetCommand(self.settings.comment, text))
                 elif what == TableScan.WAITFOR:
                     waitfor = row[i]
-                    value = self.getValue(row[i+1])
+                    value = self.__getValue(row[i+1])
 
                     if waitfor.lower() != TableScan.COMPLETION  and  parallel_commands:
                         # Complete accumulated parallel_commands before starting the run
@@ -201,7 +307,7 @@ class TableScan:
                 else:
                     # 'Normal' column that sets a device
                     device = col_device[i]
-                    value = self.getValue(row[i])
+                    value = self.__getValue(row[i])
                     command = cmds.Set(device.getName(), value,
                                        completion=device.getCompletion(), readback=device.getReadback(),
                                        timeout=device.getTimeout(), tolerance=device.getTolerance())

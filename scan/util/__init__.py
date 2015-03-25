@@ -1,2 +1,1 @@
-
-
+from scan_settings import DeviceSettings, ScanSettings

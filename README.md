@@ -1,11 +1,23 @@
-# PyScanClient
+PyScanClient
+============
 A collaboratively developed Python/Jython Scan Server Client.
 
- * Allows python or jython code to assemble, submit and monitor scans via the ScanServer's REST interface.
- * Scans can be submitted in underlying XML format, as list of python Command objects, or via higher-level abstactions like a "Scan Table".
+Documentation
+-------------
 
-For Scan System overview, see "CSS Scan System", Proceedings of ICALEPCS2013, San Francisco, CA, USA
-( http://epaper.kek.jp/ICALEPCS2013/papers/frcoaab01.pdf )
+Based on sphinx, http://sphinx-doc.org/
+
+To install on Linux (RedHat):
+    
+    sudo yum install python-sphinx
+
+To build:
+
+    cd doc
+    make clean html
+
+Then view doc/_build/html/index.html in web browser.
+
 
 This repository is at https://github.com/PythonScanClient/PyScanClient
 
