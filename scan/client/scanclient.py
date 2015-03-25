@@ -38,9 +38,11 @@ class scanclient(object):
         try:
             conn = urllib2.urlopen(self.__baseURL+'/scans')
             conn.read()
-            conn.close()
+            
         except Exception as ex:
             raise ex
+        finally:
+            conn.close()
     
     def __do_request(self,url=None,method=None,data=None):
         #handle all types of HTTP request.
@@ -73,13 +75,14 @@ class scanclient(object):
             
             res_text = response.read()
             status_code = response.getcode()
-            response.close()
+            
             
             return res_text if status_code == 200 else status_code
               
         except Exception as ex:
             raise ex
-        
+        finally:
+            response.close()
         
             
     def submit(self,cmds=None,scanName='UnNamed'):
