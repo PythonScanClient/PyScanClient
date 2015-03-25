@@ -5,6 +5,8 @@ A collaboratively developed Python/Jython Scan Server Client.
 Documentation
 -------------
 
+For snapshot, see http://ics-web.sns.ornl.gov/css/PyScanClient
+
 Based on sphinx, http://sphinx-doc.org/
 
 To install on Linux (RedHat):
