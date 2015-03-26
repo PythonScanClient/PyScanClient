@@ -86,11 +86,11 @@ class ScanClient(object):
     def submit(self, cmds, name='UnNamed'):
         """Submit scan to scan server for execution
         
-        :param cmds: Support the following 3 types:
-                     1. The .scn XML text
-                     2. A CommandSequnce instance
-                     3. A Python List
+        :param cmds: List of commands,
+                     :class:`scan.commands.commandsequence.CommandSequence`
+                     or text with raw XML format.
         :param name: Name of scan
+        
         :return: ID of submitted scan
         """
         quoted_name = urllib.quote(name, '')
@@ -108,7 +108,7 @@ class ScanClient(object):
         return int(xml.text)
         
         
-    def __submitScanXML(self, scanXML, scanName='UnNamed'):
+    def __submitScanXML(self, scanXML, scanName):
         """Submit scan in raw XML-form.
         
         Using   POST {BaseURL}/scan/{scanName}
@@ -117,77 +117,50 @@ class ScanClient(object):
         :param scanXML: The XML content of your new scan
         :param scanName: The name you want to give the new scan
         
+        :return: Raw XML for scan ID
+
         Usage::
 
         >>> import scan
         >>> ssc=ScanClient('localhost',4810)
         >>> scanId = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
         """
-        url = self.__baseURL+self.__scanResource+'/'+scanName
+        url = self.__baseURL + self.__scanResource + '/' + scanName
         r = self.__do_request(url, 'POST', scanXML)
         return r
         
     def __submitScanSequence(self, cmdSeq, scanName):
-        '''
-        Create and submit a new scan from Command Sequence.
+        """Submit a CommandSequence
         
-        Return  <id>{scanId}</id>
-        
-        :param cmdSeq: The Command Sequence of a new scan
+        :param cmdSeq: :class:`scan.commands.commandsequence.CommandSequence`
         :param scanName: The name needed to give the new scan
-        
-        Usage::
 
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> cmds1 = CmdSeq(
-                       Comment(comment='haha'),
-                       Comment('hehe'),
-                       Command(automatic=True),
-                       DelayCommand(seconds=2.0),
-                       Include(scanFile='1.scn',macros='macro=value'),
-                       Log('shutter','xpos','ypos'),
-                       Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,
-                                   body=[Comment(comment='haha'),
-                                         Command(automatic=True)
-                                         ]),
-                       Script('submit.py',1,'abc',0.05),
-                       Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeOut=0.1),
-                       Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
-                    )
-        >>> scanId = ssc.__submitScanSequence(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
-        '''
-        
+        :return: Raw XML for scan ID
+        """
         return self.__submitScanXML(cmdSeq.genSCN(),scanName)
             
-    def genSCN4List(self,cmdList=None):
-        xml = ET.Element('commands')
-        for c in cmdList:
-            xml.append(c.genXML())
-        return ET.tostring(xml)
     
-    def simulate(self,scanXML=None):
-        '''
-        Simulate a scan.
+    def simulate(self, cmds):
+        """Submit scan to scan server for simulation
         
-        Using   POST {BaseURL}/simulate
-        Return  Success Messages in XML form
+        :param cmds: List of commands,
+                     :class:`scan.commands.commandsequence.CommandSequence`
+                     or text with raw XML format.
         
-        :param scanXML: The XML content of your new scan
-        
-        Usage::
+        :return: Simulation result
+        """
+        if isinstance(cmds, str):
+            scan = cmds            
+        elif isinstance(cmds, CommandSequence):
+            scan = cmds.genSCN()
+        else:
+            # Warp list, tuple, other iterable
+            scan = CommandSequence(cmds).genSCN()
+            
+        url = self.__baseURL + self.__simulateResource
 
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> sid = ssc.simulate(scanXML='<commands><comment><address>0</address><text>Successfully simulating a new scan!</text></comment></commands>')
-      
-        '''
-        url = self.__baseURL+self.__simulateResource
-        try:
-            r =self.__do_request(url=url,method='POST',data=scanXML)
-            return r
-        except:
-            raise Exception, 'Failed to simulate scan.'
+        simulation = self.__do_request(url, 'POST', scan)
+        return simulation
         
     def delete(self,scanID = None):
         '''
