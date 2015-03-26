@@ -34,15 +34,15 @@ class Loop(Command):
         >>> cmd = Loop('pv1', 10, 1, -1)
     
     At each step of the loop, perform additional commands:    
-        >>> cmd = Loop('pv1', 1, 10, Set('daq', 1), Delay(10), Set('daq', 0))
-        >>> cmd = Loop('pv1', 1, 10,
+        >>> cmd = Loop('pv1', 1, 10, 1, Set('daq', 1), Delay(10), Set('daq', 0))
+        >>> cmd = Loop('pv1', 1, 10, 1,
         ...            body = [ Set('daq', 1), Delay(10), Set('daq', 0) ])
     
     When after loop updates `pv1`, check for its readback to match, then perform commands within the loop:
-        >>> cmd = Loop('pv1', 1, 10, Set('daq', 1), Delay(10), Set('daq', 0), readback=True)
+        >>> cmd = Loop('pv1', 1, 10, 1, Set('daq', 1), Delay(10), Set('daq', 0), readback=True)
     
     Special behavior of nested loops. If step size is 'wrong', the loops will cycle direction:
-        >>> cmd = Loop('x', 1, 3, body=[ Loop('y', 1, 3, -1 ])
+        >>> cmd = Loop('x', 1, 3, 1, body=[ Loop('y', 1, 3, -1 ])
     
     Will result in these values:
     
