@@ -16,5 +16,5 @@ setup(name='PyScanClient',
     'Intended Audience :: Developers',
     'Programming Language :: Python :: 2.7',
      ],
-      install_requires = ['requests>=2.4.3']
+      install_requires = []
     )

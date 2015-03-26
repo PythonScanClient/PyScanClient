@@ -5,7 +5,7 @@ Created on Dec 30, 2014
 Updated on Mar 19,2015
 @author: Yongxiang Qiu
 '''
-import requests
+
 import urllib2
 from scan.commands.commandsequence import CommandSequence
 import xml.etree.ElementTree as ET
@@ -34,11 +34,10 @@ class scanclient(object):
         '''
         #May implement a one to one host+port with instance in the future.
         self.__baseURL = "http://"+host+':'+str(port)
-        
+
+        conn = urllib2.urlopen(self.__baseURL+'/scans')
         try:
-            conn = urllib2.urlopen(self.__baseURL+'/scans')
             conn.read()
-            
         except Exception as ex:
             raise ex
         finally:
@@ -75,7 +74,6 @@ class scanclient(object):
             
             res_text = response.read()
             status_code = response.getcode()
-            
             
             return res_text if status_code == 200 else status_code
               
@@ -129,11 +127,9 @@ class scanclient(object):
         >>> ssc=ScanClient('localhost',4810)
         >>> scanId = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
         '''
-
+        url = self.__baseURL+self.__scanResource+'/'+scanName
         try:
-            url = self.__baseURL+self.__scanResource+'/'+scanName
-             
-            r =self.__do_request(url,'POST' ,scanXML)
+            r =self.__do_request(url=url,method='POST',data=scanXML)
             return r
         except Exception,ex:
             raise Exception,ex
@@ -227,12 +223,10 @@ class scanclient(object):
         >>> sid = ssc.simulate(scanXML='<commands><comment><address>0</address><text>Successfully simulating a new scan!</text></comment></commands>')
       
         '''
+        url = self.__baseURL+self.__simulateResource
         try:
-            url = self.__baseURL+self.__simulateResource
-             
-            r =self.__do_request(url,'POST' ,scanXML)
+            r =self.__do_request(url=url,method='POST',data=scanXML)
             return r
-               
         except:
             raise Exception, 'Failed to simulate scan.'
         
@@ -255,10 +249,7 @@ class scanclient(object):
         '''
         
         try:
-            r=self.__do_request(self.__baseURL+self.__scanResource+'/'+str(scanID), 'DELETE')
-
-            print 'scan %d deleted.'%scanID
-            
+            r=self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(scanID), method='DELETE')
             return r
         except Exception as ex:
             raise  ex
@@ -279,9 +270,7 @@ class scanclient(object):
         '''
         
         try:
-            r = self.__do_request(self.__baseURL+self.__scansResource+self.__scansCompletedResource, 'DELETE')
-           
-            print 'All completed scans are deleted.'
+            r = self.__do_request(url=self.__baseURL+self.__scansResource+self.__scansCompletedResource, method='DELETE')
             return r
         except Exception as ex:
             raise ex
@@ -307,12 +296,12 @@ class scanclient(object):
         >>> st = ssc.scanInfo(153,scan)
         '''
                     
+        if infoType == 'scan':
+            url = self.__baseURL+self.__scanResource+'/'+str(scanID)
+        else:
+            url = self.__baseURL+self.__scanResource+'/'+str(scanID)+'/'+infoType
         try:
-            if infoType == 'scan':
-                url = self.__baseURL+self.__scanResource+'/'+str(scanID)
-            else:
-                url = self.__baseURL+self.__scanResource+'/'+str(scanID)+'/'+infoType
-            r = requests.get(url)
+            r = self.__do_request(url=url,method="GET")
         except:
             raise Exception, 'Failed to get info from scan '+str(scanID)
         return r.text
@@ -332,7 +321,6 @@ class scanclient(object):
         
         try:
             r = self.__do_request(url=self.__baseURL+self.__serverResource+self.__serverInfoResource,method='GET')
-            #r = requests.get(url = self.__baseURL+self.__serverResource+self.__serverInfoResource)
         except Exception as e:
             raise e 
         return r
@@ -371,7 +359,7 @@ class scanclient(object):
         
         try:
             url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/pause'
-            r = self.__do_request(url, 'PUT')
+            r = self.__do_request(url=url, method='PUT')
             return r
         except Exception as ex:
             raise ex 
@@ -392,7 +380,7 @@ class scanclient(object):
 
         try:
             url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/abort'
-            r = self.__do_request(url, 'PUT')
+            r = self.__do_request(url=url, method='PUT')
             return r
         except Exception as ex:
             raise ex 
@@ -413,7 +401,7 @@ class scanclient(object):
         
         try:
             url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/resume'
-            r = self.__do_request(url, 'PUT')
+            r = self.__do_request(url=url, method='PUT')
             return r
         except Exception as ex:
             raise ex 
@@ -436,7 +424,7 @@ class scanclient(object):
         '''
         
         try:
-            r = requests.put(url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/patch',data=scanXML,headers= {'content-type': 'text/xml'})
+            r = self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/patch',data=scanXML,method="PUT")
         except:
             raise Exception, 'Failed to resume scan '+str(scanID)
         return r.status_code
