@@ -95,12 +95,12 @@ class TableScanTest(unittest.TestCase):
         table_scan = TableScan(settings,
           (   "X",  "Y", "Wait For", "Value", "Or Time" ),
           [
-            [ "1",  "2", "Counter1", "10",    "500" ],
-            [ "3",  "4", "Counter1", "20",    "" ],
+            [ "1",  "2", "Counter1", "10",    "60" ],
+            [ "3",  "4", "Counter1", "20",    "00:01:00" ],
           ]
         )
         cmds = handle(table_scan)
-        #self.assertEqual(str(cmds), "")
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 2.0), Wait('Counter1', 10.0, comparison='>=', timeout=60, errhandler='OnErrorContinue'), Log('X', 'Y', 'Counter1'), Set('X', 3.0), Set('Y', 4.0), Wait('Counter1', 20.0, comparison='>=', timeout=60, errhandler='OnErrorContinue'), Log('X', 'Y', 'Counter1')]")
 
 
     def testStartStop(self):
@@ -163,12 +163,13 @@ class TableScanTest(unittest.TestCase):
         table_scan = TableScan(settings,
           (   "X", "+p Y", "+p Z", "Wait For", "Value" ),
           [
-            [ "1", "2",    "3",    "Seconds",  "10" ],
-            [ "4", "5",    "6",    "completion", "" ],
+            [ "1", "2",    "3",    "Seconds",  "10"    ],
+            [  "",  "",     "",    "Seconds",  "02:00" ],
+            [ "4", "5",    "6",    "completion", ""    ],
           ]
         )
         cmds = handle(table_scan)
-        # self.assertEqual(str(cmds), "")
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Parallel(Set('Y', 2.0), Set('Z', 3.0)), Delay(10), Log('X', 'Y', 'Z'), Delay(120), Log('X', 'Y', 'Z'), Set('X', 4.0), Parallel(Set('Y', 5.0), Set('Z', 6.0)), Log('X', 'Y', 'Z')]")
 
 
     def testRange(self):
