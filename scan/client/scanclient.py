@@ -6,16 +6,20 @@ Updated on Mar 19,2015
 @author: Yongxiang Qiu
 '''
 
+import urllib
 import urllib2
 from scan.commands.commandsequence import CommandSequence
 import xml.etree.ElementTree as ET
 
-class scanclient(object):
-    '''
-    The scan provides interfaces to interact with java-ScanServer,
-    which includes methods such as Start,Pause,GetScanInfo... to manipulate 
-    the behaviors and retrieve data from scan.
-    '''
+class ScanClient(object):
+    """Client interface to the scan server
+    
+    :param host: The IP address or name of scan server host.
+    :param port: The TCP port of the scan server.
+    
+    Example:
+        >>>sc = ScanClient('localhost')
+    """
     __baseURL = None
     __serverResource = "/server"
     __serverInfoResource = "/info"
@@ -24,36 +28,32 @@ class scanclient(object):
     __scansCompletedResource = "/completed"
     __scanResource = "/scan"
        
-    def __init__(self, host = 'localhost',port=4810):
-        '''
-        @param host: The IP address of the server.
-        @param port: The IP port of the server.
-        
-        Usage::
-        >>>sc = ScanClient('192.168.1.125','4811')
-        '''
+    def __init__(self, host='localhost', port=4810):
+        self.__host = host
+        self.__port = port
         #May implement a one to one host+port with instance in the future.
         self.__baseURL = "http://"+host+':'+str(port)
-
-        conn = urllib2.urlopen(self.__baseURL+'/scans')
-        try:
-            conn.read()
-        except Exception as ex:
-            raise ex
-        finally:
-            conn.close()
     
-    def __do_request(self,url=None,method=None,data=None):
-        #handle all types of HTTP request.
+    def __repr__(self):
+        return "ScanClient('%s', %d)" % (self.__host, self.__port)
+    
+    def __do_request(self, url, method='GET', data=None):
+        """Perform HTTP request with scan server
+        
+        :param url:    URL
+        :param method: 'GET', 'PUT', ...
+        :param data:   Optional data
+       
+        :return: XML response from scan server
+        """
+        response = None
         try:
-            res_text = ''
-            status_code = 0
-            response = None
-            #Register a Request Object with url:
+            # Register a Request Object with url:
             req = urllib2.Request(url)
-            #Add XML header:
-            req.add_header('content-type' , 'text/xml')
-            #Get OpenerDirector Object
+            # Add XML header
+            if data is not None:
+                req.add_header('content-type' , 'text/xml')
+            # Get OpenerDirector Object
             opener = urllib2.build_opener()
             
             if method=='GET':
@@ -70,50 +70,46 @@ class scanclient(object):
                 req.get_method = lambda : 'PUT'
                 response = opener.open(req)
             else:
-                raise Exception,'Undefined HttpRequest Type.'
+                raise Exception('Undefined HttpRequest Type %s' % method)
             
-            res_text = response.read()
-            status_code = response.getcode()
-            
-            return res_text if status_code == 200 else status_code
-              
-        except Exception as ex:
-            raise ex
+            return response.read()
+        except urllib2.URLError as e:
+            if hasattr(e, 'reason'):
+                raise Exception("Failed to reach scan server at %s:%d: %s" % (self.__host, self.__port, e.reason))
+            elif hasattr(e, 'code'):
+                raise Exception("Scan server at %s:%d returned error code %d" % (self.__host, self.__port, e.code))
         finally:
-            response.close()
+            if response:
+                response.close()
         
             
-    def submit(self,cmds=None,scanName='UnNamed'):
-        '''
+    def submit(self, cmds, name='UnNamed'):
+        """Submit scan to scan server for execution
+        
         :param cmds: Support the following 3 types:
-                    1.The .scn XML text
-                    2.A CommandSequnce instance
-                    3.A Python List
-        '''
-        try:
-            if isinstance(cmds,str):
-                self.__submitScanXML(cmds,scanName)
-            
-            elif isinstance(cmds,CommandSequence):
-                self.__submitScanSequence(cmds, scanName)
-            
-            elif isinstance(cmds,list):
-                self.__submitScanList(cmds,scanName)
-            
-            else:
-                raise Exception, '''Invalid Commands input, must be one of these 3 types:
-                1.The .scn XML text. 
-                2.A CommandSequnce instance
-                3.An Array of commands
-                '''
-        except Exception as e:
-            raise e
-            
+                     1. The .scn XML text
+                     2. A CommandSequnce instance
+                     3. A Python List
+        :param name: Name of scan
+        :return: ID of submitted scan
+        """
+        quoted_name = urllib.quote(name, '')
+        if isinstance(cmds, str):
+            result = self.__submitScanXML(cmds, quoted_name)            
+        elif isinstance(cmds, CommandSequence):
+            result = self.__submitScanSequence(cmds, quoted_name)
+        else:
+            # Warp list, tuple, other iterable
+            result = self.__submitScanSequence(CommandSequence(cmds), quoted_name)
+        
+        xml = ET.fromstring(result)
+        if xml.tag != 'id':
+            raise Exception("Expected scan <id>, got <%s>" % xml.tag)
+        return int(xml.text)
         
         
-    def __submitScanXML(self,scanXML=None,scanName='UnNamed'):
-        '''
-        Create and submit a new scan from raw XML-form.
+    def __submitScanXML(self, scanXML, scanName='UnNamed'):
+        """Submit scan in raw XML-form.
         
         Using   POST {BaseURL}/scan/{scanName}
         Return  <id>{scanId}</id>
@@ -126,49 +122,12 @@ class scanclient(object):
         >>> import scan
         >>> ssc=ScanClient('localhost',4810)
         >>> scanId = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
-        '''
+        """
         url = self.__baseURL+self.__scanResource+'/'+scanName
-        try:
-            r =self.__do_request(url=url,method='POST',data=scanXML)
-            return r
-        except Exception,ex:
-            raise Exception,ex
+        r = self.__do_request(url, 'POST', scanXML)
+        return r
         
-    
-    def __submitScanList(self,cmdList=None,scanName='UnNamed'):
-        '''
-        Create and submit a new scan from Command Sequence.
-        
-        Return  <id>{scanId}</id>
-        
-        :param cmdList: The Command Sequence of a new scan
-        :param scanName: The name needed to give the new scan
-        
-        Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> cmds1 = [
-                       Comment(comment='haha'),
-                       Comment('hehe'),
-                       Command(automatic=True),
-                       DelayCommand(seconds=2.0),
-                       Include(scanFile='1.scn',macros='macro=value'),
-                       Log('shutter','xpos','ypos'),
-                       Loop(device='xpos',start=0.0,end=10.0,step=1.0,completion=True,wait=True,
-                                   body=[Comment(comment='haha'),
-                                         Command(automatic=True)
-                                         ]),
-                       Script('submit.py',1,'abc',0.05),
-                       Set(device='shutter',value=0.1,completion=True,wait=False,tolerance=0.1,timeOut=0.1),
-                       Wait(device='shutter',desiredValue=10.0,comparison='=',tolerance=0.1,timeout=5.0)
-                    ]
-        >>> scanId = ssc.__submitScanList(cmds1)
-        '''
-        
-        return self.__submitScanXML(self.genSCN4List(cmdList),scanName)
-     
-    def __submitScanSequence(self,cmdSeq=None,scanName='UnNamed'):
+    def __submitScanSequence(self, cmdSeq, scanName):
         '''
         Create and submit a new scan from Command Sequence.
         

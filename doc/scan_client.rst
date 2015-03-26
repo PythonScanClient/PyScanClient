@@ -1,15 +1,14 @@
 Scan Client
 ===========
 
-Connect to the scan server
+This example shows how to connect to the scan server,
+submit a scan,
+and monitor its progress:
 
+.. literalinclude:: ../example/client1.py
 
+The following chapters will present more details on the avialable commands,
+as well as convenient ways to assemble a scan.
 
-
-Submit a scan
-
-The following chapters will present more convenient ways to assemble a scan,
-but for starters this is how you would submit a scan in its basic XML representation.
-
-
-Fetch information about scans
+.. autoclass:: scan.client.scanclient.ScanClient
+   :members:
