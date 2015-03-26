@@ -21,7 +21,8 @@ class ScanClient(object):
     :param port: The TCP port of the scan server.
     
     Example:
-        >>>sc = ScanClient('localhost')
+    
+    >>> client = ScanClient('localhost')
     """
     __baseURL = None
     __serverResource = "/server"
@@ -133,9 +134,14 @@ class ScanClient(object):
         
         :return: ID of submitted scan
         
-        Example::
+        Examples::
         
-        >>> id = client.submit( [ Comment('Hello'), Set('x', 10) ], "My First Scan")
+        >>> cmds = [ Comment('Hello'), Set('x', 10) ]
+        >>> id = client.submit( cmds, "My First Scan")
+        
+        >>> cmds = CommandSequent(Comment('Hello'))
+        >>> cmds.append(Set('x', 10))
+        >>> id = client.submit( cmds, "My Second Scan")
         """
         quoted_name = urllib.quote(name, '')
         if isinstance(cmds, str):
@@ -265,51 +271,31 @@ class ScanClient(object):
         self.__do_request(url, 'PUT')
         
     def delete(self, id):
-        '''
-        Remove a completed scans.
+        """Remove a completed scan.
         
-        Using DELETE {BaseURL}/scan/{id}.
-        Return HTTP status code.
+        Using `DELETE {BaseURL}/scan/{id}`
         
-        :param id: The id of scan you want to delete.Must be an integer.
+        :param id: The id of scan you want to delete.
         
-        Usage::
+        Example::
 
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.delete(153)
-      
-        Return the status code. 0 if Error parameters.
-        '''
+        >>> id = client.submit(commands)
+        >>> client.abort(id)
+        >>> client.delete(id)
+        """
+        self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id), 'DELETE')
         
-        try:
-            r=self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(id), method='DELETE')
-            return r
-        except Exception as ex:
-            raise  ex
-        return r.status_code
-
     def clear(self):
-        '''
-        Remove completed scan.
+        """Remove all completed scans.
         
-        Using DELETE {BaseURL}/scans/completed.
-        Return HTTP status code.
+        Using `DELETE {BaseURL}/scans/completed`
         
         Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.clear()
-        '''
         
-        try:
-            r = self.__do_request(url=self.__baseURL+self.__scansResource+self.__scansCompletedResource, method='DELETE')
-            return r
-        except Exception as ex:
-            raise ex
-        return r.status_code
-    
+        >>> client.clear()
+        """
+        self.__do_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
+        
             
     def scanList(self):
         '''

@@ -37,6 +37,8 @@ class ScanInfo(object):
     
     # TODO Methods to convert raw seconds into time stamps
     
+    # TODO Turn id, name, ... into @property?
+    
     def __str__(self):
         if self.state == 'Running':
             return "'%s' [%d]: %s, %d %%" % (self.name, self.id, self.state, self.percentage())

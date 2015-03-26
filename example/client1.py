@@ -1,12 +1,13 @@
 import time
 from scan import *
-
   
 client = ScanClient('localhost')
 print client
 
 print client.serverInfo()
  
+# Assemble commands for a scan
+# Much more on that later...
 cmds = [ Comment('Hello'), Set('motor_x', 10) ]
 
 # Optionally, request a simulation that shows
@@ -26,8 +27,7 @@ print info
 info = client.waitUntilDone(id)
 print info
 
-
-# A submitted scan can be paused or even aborted
+# A submitted scan can be paused..
 id = client.submit(cmds, 'Not sure about this one')
 
 client.pause(id)
@@ -36,12 +36,18 @@ print client.scanInfo(id)
 client.resume(id)
 print client.scanInfo(id)
 
+# .. or even aborted  & deleted
 client.abort(id)
 print client.scanInfo(id)
+
+client.delete(id)
+# client.scanInfo(id) would now fail, that id is unknown
 
 
 # get commands
 
 # get data
 
-# delete
+
+# Remove information for all completed scans
+client.clear()
