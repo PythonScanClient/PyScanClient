@@ -27,6 +27,19 @@ info = client.waitUntilDone(id)
 print info
 
 
+# A submitted scan can be paused or even aborted
+id = client.submit(cmds, 'Not sure about this one')
+
+client.pause(id)
+print client.scanInfo(id)
+
+client.resume(id)
+print client.scanInfo(id)
+
+client.abort(id)
+print client.scanInfo(id)
+
+
 # get commands
 
 # get data

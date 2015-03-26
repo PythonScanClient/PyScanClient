@@ -217,8 +217,54 @@ class ScanClient(object):
             time.sleep(1)
             info = self.scanInfo(id)
         return info
-    
-    def delete(self,id = None):
+
+    def pause(self, id=-1):
+        """Pause a running scan
+        
+        :param id: ID of scan or -1 to pause current scan 
+        
+        Using `PUT {BaseURL}/scan/{id}/pause`
+        
+        Example::
+
+        >>> id = client.submit(commands)
+        >>> client.pause(id)
+        """
+        url = self.__baseURL + self.__scanResource + '/' + str(id) + '/pause'
+        self.__do_request(url, 'PUT')
+
+    def resume(self, id=-1):
+        """Resume a paused scan
+        
+        :param id: ID of scan or -1 to resume current scan
+         
+        Using `PUT {BaseURL}/scan/{id}/resume`
+        
+        Example::
+        
+        >>> id = client.submit(commands)
+        >>> client.pause(id)
+        >>> client.resume(id)
+        """
+        url=self.__baseURL + self.__scanResource + '/' + str(id) + '/resume'
+        self.__do_request(url, 'PUT')
+        
+    def abort(self, id=-1):
+        """Abort a running or paused scan
+        
+        :param id: ID of scan or -1 to abort current scan
+
+        Using `PUT {BaseURL}/scan/{id}/abort`
+        
+        Example::
+
+        >>> id = client.submit(commands)
+        >>> client.abort(id)
+        """
+        url = self.__baseURL + self.__scanResource + '/' + str(id) + '/abort'
+        self.__do_request(url, 'PUT')
+        
+    def delete(self, id):
         '''
         Remove a completed scans.
         
@@ -283,69 +329,8 @@ class ScanClient(object):
             raise ex
         return r
 
-    def pause(self,id=None):
-        ''' 
-        Pause a running scan
         
-        Using PUT {BaseURL}/scan/{id}/pause
-        Return Http Status Code.
-        
-        Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.pause(153)
-        '''
-        
-        try:
-            url=self.__baseURL+self.__scanResource+'/'+str(id)+'/pause'
-            r = self.__do_request(url=url, method='PUT')
-            return r
-        except Exception as ex:
-            raise ex 
-        
-    def abort(self,id=None):
-        '''
-        Abort running or paused scan
-        
-        Using PUT {BaseURL}/scan/{id}/abort
-        Return Http Status Code
-        
-        Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.abort(153)
-        '''
-
-        try:
-            url=self.__baseURL+self.__scanResource+'/'+str(id)+'/abort'
-            r = self.__do_request(url=url, method='PUT')
-            return r
-        except Exception as ex:
-            raise ex 
     
-    def resume(self,id=None):
-        '''
-        Resume paused scan
-        Using PUT {BaseURL}/scan/{id}/resume
-        
-        Return Http Status Code
-        
-        Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.abort(153)
-        '''
-        
-        try:
-            url=self.__baseURL+self.__scanResource+'/'+str(id)+'/resume'
-            r = self.__do_request(url=url, method='PUT')
-            return r
-        except Exception as ex:
-            raise ex 
-        
     def update(self,id=None,scanXML=None):
         '''
         Update property of a scan command.
