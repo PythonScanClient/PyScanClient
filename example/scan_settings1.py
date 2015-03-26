@@ -32,3 +32,8 @@ class MyScanSettings(ScanSettings):
         if device_name.startswith("pos"):
             return device_name + ".RBV"
         return device_name
+
+
+# When now creating a `TableScan`,
+# provide an instance of `MyScanSettings`
+# ...

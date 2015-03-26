@@ -85,21 +85,21 @@ This shorter table results in the same scan commands:
 Scan Settings
 -------------
 
-In addition to simply writing to a device,
-the 'Set' command can wait for completion
-and compare a readback from either the original device name (Process Variable)
-or a different one.
-
 When for example accessing a 'position' device associtated with an EPICS motor,
-the 'Set' command should await completion,
-then compare the 'position.RBV' against the desired position.
+the `Set` command should await completion,
+then compare the 'position.RBV' against the desired position::
+
+   Set('position', 2, completion=True, readback='position.RBV', tolerance=0.1)
+
 The tolerance for this comparison as well as a timeout will depend on the actual
 motor.
 
-The 'ScanSettings' class is used to configure which PVs use completion,
-their timeout, the name of an associated readback.
+You may have a known list of device names and how they need to be accessed,
+or you may be able to derive this information based on a naming standard for devices
+at your site.
 
-.. literalinclude:: ../example/scan_settings1.py
+The :mod:`scan.util.scan_settings` module is used to configure how the
+`TableScan` accesses devices.
 
 
 Code Example
@@ -110,7 +110,119 @@ Code Example
 'Wait For', 'Value' Columns
 ---------------------------
 
-These special columns result in `Wait` command.
+These two columns create commands that wait for
+a condition, and then log all devices which
+have been used within the scan up to that point.
+
+If the cell contains a device name,
+a `Wait` command is created for the device to reach the value.
+
++----------+------------+--------+
+|position  |Wait For    |  Value |
++----------+------------+--------+
+|  2       | counter    | 10000  |
++----------+------------+--------+
+
+The table above will create the following scan::
+
+    Set('position', 2.0, completion=true, readback='position.RBV', timeOut=100)
+    Wait('counter', 10000.0, comparison='>=')
+    Log('position', 'counter')
+
+The :class:`scan.util.scan_settings.ScanSettings` passed to the
+`TableScan` determines the detailed options of the `Set` and `Wait` commands.
+In the example above, it causes all access to the 'position' device to
+use completion and readback, which can be overridden by prefixes:
+
+
++--------------+------------+--------+
+|-c position   |Wait For    |  Value |
++--------------+------------+--------+
+|  2           | counter    | 10000  |
++--------------+------------+--------+
+
+creates a scan without completion for the 'position'::
+
+    Set('position', 2.0, readback='position.RBV', timeOut=100)
+    Wait('counter', 10000.0, comparison='>=')
+    Log('position', 'counter')
+
+
+Waiting for `seconds` results in a simple `Delay`.
+
++----------+------------+--------+
+|position  |Wait For    |  Value |
++----------+------------+--------+
+|  2       | counter    | 10000  |
++----------+------------+--------+
+|  4       | seconds    |   20   |
++----------+------------+--------+
+
+The table above will create the following scan::
+
+    Set('position', 2.0, completion=true, readback='position.RBV', timeOut=100)
+    Wait('counter', 10000.0, comparison='>=')
+    Log('position', 'counter')
+    Set('position', 4.0, completion=true, readback='position.RBV', timeOut=100)
+    Delay(20)
+    Log('position', 'counter')
+    
+
+All devices with a `+p` prefix will be accessed in parallel,
+awaiting completion before executing the 'Wait For' condition.
+
+If there is no specific 'Wait For' condition, the cell can be set to
+`completion`.
+
++------+------+------------+--------+
+| +p x | +p y | Wait For   |  Value |
++------+------+------------+--------+
+|  1   |   2  | counter    | 10000  |
++------+------+------------+--------+
+|  3   |   4  | completion |   20   |
++------+------+------------+--------+
+
+Result::
+
+    Parallel(Set('x', 1.0), Set('y', 2.0))
+    Wait('counter', 10000.0, comparison='>=')
+    Log('x', 'y', 'counter')
+    Parallel(Set('x', 3.0), Set('y', 4.0))
+    Log('x', 'y', 'counter')
+
+
+Pre, Post, Start and Stop Commands
+----------------------------------
+
+Both the devices listed in the table column headers
+and the values used in the cells of the rows of the
+table are typically edited for different runs of
+an experiment.
+
+There are, however, often the same actions that need
+to happen before and after the complete table is executed,
+as well as at each step of a table.
+
+You can provide a list of commands executed at the following
+steps:
+
+Pre
+    Before executing the table rows.
+    Example: Open a beam line shutter.
+
+Post
+    After executing all table rows.
+    Example: Close a beam line shutter.
+
+Start
+    Before each 'Wait For'.
+    Example: Zero counter PVs, in fact counters 
+    which the 'Wait For' command will then check
+    to reach a certain value, and start data acquisition.
+
+Stop
+    After each 'Wait For' completes.
+    Example: Stop data acquisition.
 
 """
 # @author: Kay Kasemir
@@ -119,8 +231,15 @@ import scan.commands as cmds
 from range_helper import expandRanges
 
 class TableScan:
-    """
-    Creates scan commands based on a table.
+    """Create Table scan
+    
+    :param settings:     ScanSettings
+    :param headers[]:    Column headers of the table
+    :param rows[][]:     Rows of the scan. Each row must have len(headers) columns.
+    :param pre:          Command or list of commands executed at the start of the table.
+    :param post:         Command or list of commands executed at the end of the table.
+    :param start:        Command or list of commands executed to start each 'Wait For'.
+    :param stop:         Command or list of commands executed at the end of each 'Wait For'.
     """
     
     # Predefined columns
@@ -132,22 +251,6 @@ class TableScan:
     SECONDS = "seconds"
     
     def __init__(self, settings, headers, rows, pre=None, post=None, start=None, stop=None):
-        """
-        Initialize Table scan
-        
-        Parameters:
-        settings:     ScanSettings
-        headers[]:    Column headers of the table
-        rows[][]:     Rows of the scan. Each row must have len(headers) columns.
-        pre:          Command or list of commands executed at the start of the table.
-                      Could be used to 'arm' data aquisition.
-        post:         Command or list of commands executed at the end of the table.
-                      Could be used to close data aquisition.
-        start:        Command or list of commands executed to start each 'Wait For'.
-                      Could be used to reset counters, trigger data acquisition.
-        stop:         Command or list of commands executed at the end of each 'Wait For'.
-                      Could be used to inform data acquisition that one step of the scan has completed.
-        """
         self.settings = settings
         self.name = "Table Scan"
         self.pre = self.__makeList(pre)
@@ -199,8 +302,8 @@ class TableScan:
             return text # Keep as string
     
     def createScan(self):
-        """Create scan for complete table
-           Returns list of commands.
+        """Create scan.
+        :return: List of commands.
         """
         
         # Parse column headers.
