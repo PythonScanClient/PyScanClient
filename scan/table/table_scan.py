@@ -1,6 +1,6 @@
 """
-Table Scan Support
-==================
+Table Scan
+==========
 
 Creates a scan based on a table.
 
@@ -224,6 +224,8 @@ Stop
     After each 'Wait For' completes.
     Example: Stop data acquisition.
 
+API
+---
 """
 # @author: Kay Kasemir
 

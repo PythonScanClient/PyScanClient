@@ -51,10 +51,9 @@ client.pause(id)
 client.patch(id, 1, 'value', 5)
 client.resume(id)
 
-# get commands
+# TODO get log data
 
-# get data
-
+# TODO get commands back from server
 
 # Remove information for all completed scans
 client.clear()

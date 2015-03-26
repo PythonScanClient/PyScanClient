@@ -23,6 +23,8 @@ Example
 
 .. literalinclude:: ../example/scan_settings1.py
 
+API
+---
 """
 #@author: Kay Kasemir
 import re
