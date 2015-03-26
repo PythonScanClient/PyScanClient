@@ -26,7 +26,7 @@ class Parallel(Command):
     Do nothing:
         >>> cmd = Parallel()
         
-    Perform one command, same as directly using `Set('x', 1')`:
+    Perform one command, same as directly using `Set('x', 1)`:
         >>> cmd = Parallel(Set('x', 1))
     
     Set two PVs to a value, each awaiting callback completion:
