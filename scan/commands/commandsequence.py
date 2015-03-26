@@ -15,7 +15,7 @@ class CommandSequence(object):
     with helper methods to pretty-print
     and convert to the raw XML required by the scan server.
     
-    :param commands: One or more commands, or existing list of commands
+    :param commands: One or more commands, or existing list of commands.
     """
     def __init__(self, *commands):
         self.commands=[]
@@ -33,7 +33,8 @@ class CommandSequence(object):
     
     def append(self, *commands):
         """Append more commands to the sequence
-        :param commands: One or more commands, or existing list of commands
+        
+        :param commands: One or more commands, or existing list of commands.
         """
         for command in commands:
             # Append individual command
