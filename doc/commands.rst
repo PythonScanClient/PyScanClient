@@ -1,3 +1,5 @@
+.. _scan_commands:
+
 Scan Commands
 =============
 
