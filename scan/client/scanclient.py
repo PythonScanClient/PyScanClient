@@ -72,7 +72,7 @@ class ScanClient(object):
                 
             elif method=='PUT':
                 req.get_method = lambda : 'PUT'
-                response = opener.open(req)
+                response = opener.open(req, data)
             else:
                 raise Exception('Undefined HttpRequest Type %s' % method)
             
@@ -313,25 +313,30 @@ class ScanClient(object):
         """
         self.__do_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
             
-    def update(self,id=None,scanXML=None):
-        '''
-        Update property of a scan command.
+    def patch(self, id, address, property, value):
+        """Update scan on server.
         
-        Using PUT {BaseURL}/scan/{id}/patch
-        Return Http Status Code.
+        This can be used to update parameters of an existing
+        command in an existing scan on the server.
         
-        Requires description of what to update:
-          
-            <patch>
-                <address>10</address>
-                <property>name_of_property</property>
-                <value>new_value</value>
-            </patch>
-          
-        '''
+        In case the command had already been executed, the change
+        has no effect.
         
-        try:
-            r = self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(id)+'/patch',data=scanXML,method="PUT")
-        except:
-            raise Exception, 'Failed to resume scan '+str(id)
-        return r.status_code
+        Using `PUT {BaseURL}/scan/{id}/patch`
+
+        :param id: The id of scan you want to delete.
+        :param address: Address of the command to update.
+                        Counted within the scan starting at 0.
+        :param property: The property of the command to update.
+        :param value: The new value for that property.
+        
+        Example::
+        
+        >>> id = client.submit([ Delay(5), Set('motor_x', 10) ], 'Changing...')
+        >>> client.pause(id)
+        >>> # Want to set 'motor_x' to 5 instead of 10
+        >>> client.patch(id, 1, 'value', 5)
+        >>> client.resume(id)
+        """
+        xml = "<patch><address>%d</address><property>%s</property><value>%s</value></patch>" % (address, property, str(value))
+        self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id) + '/patch', 'PUT', xml)

@@ -44,6 +44,13 @@ print "Before deleting scan %d:" % id, [ str(info) for info in client.scanInfos(
 client.delete(id)
 print "After  deleting scan %d:" % id, [ str(info) for info in client.scanInfos() ]
 
+# In extreme cases, it is possible to change a running scan
+id = client.submit([ Delay(5), Set('motor_x', 10) ], 'Changing...')
+client.pause(id)
+# Want to set 'motor_x' to 5 instead of 10
+client.patch(id, 1, 'value', 5)
+client.resume(id)
+
 # get commands
 
 # get data

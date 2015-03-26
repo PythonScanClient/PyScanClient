@@ -17,8 +17,13 @@ class ScanInfo(object):
         self.created = int(xml.find('created').text)
         self.state = xml.find('state').text
         self.runtime = int(xml.find('runtime').text)
-        self.total_work_units = int(xml.find('total_work_units').text)
-        self.performed_work_units = int(xml.find('performed_work_units').text)
+        
+        node = xml.find('total_work_units')
+        self.total_work_units = int(node.text) if node else 0
+        
+        node = xml.find('performed_work_units')
+        self.performed_work_units = int(node.text) if node else 0
+        
         self.address = int(xml.find('address').text)
         self.command = xml.find('command').text
     
