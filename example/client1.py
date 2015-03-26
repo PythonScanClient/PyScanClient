@@ -19,11 +19,12 @@ print simulation
 id = client.submit(cmds, 'My First Scan')
 print id
 
-# Could poll scanInfo until scan is done
+# Fetch information about scan
 info = client.scanInfo(id)
 print info
 
-# Shortcut for waiting until it'd done
+# Could poll scanInfo until info.isDone().
+# Shortcut:
 info = client.waitUntilDone(id)
 print info
 
