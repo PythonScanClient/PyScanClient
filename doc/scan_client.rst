@@ -12,3 +12,7 @@ as well as convenient ways to assemble a scan.
 
 .. autoclass:: scan.client.scanclient.ScanClient
    :members:
+
+.. autoclass:: scan.client.scaninfo.ScanInfo
+   :members:
+   

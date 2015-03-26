@@ -3,13 +3,16 @@ Copyright (c) 2014
 All rights reserved. Use is subject to license terms and conditions.
 Created on Dec 30, 2014
 Updated on Mar 19,2015
-@author: Yongxiang Qiu
+@author: Yongxiang Qiu, Kay Kasemir
 '''
 
+import time
+import xml.etree.ElementTree as ET
 import urllib
 import urllib2
+
 from scan.commands.commandsequence import CommandSequence
-import xml.etree.ElementTree as ET
+from scaninfo import ScanInfo
 
 class ScanClient(object):
     """Client interface to the scan server
@@ -82,64 +85,22 @@ class ScanClient(object):
             if response:
                 response.close()
         
-            
-    def submit(self, cmds, name='UnNamed'):
-        """Submit scan to scan server for execution
+    def serverInfo(self):
+        """Get scan server information
         
-        :param cmds: List of commands,
-                     :class:`scan.commands.commandsequence.CommandSequence`
-                     or text with raw XML format.
-        :param name: Name of scan
+        Provides version number, configuration, ... of current server
         
-        :return: ID of submitted scan
-        """
-        quoted_name = urllib.quote(name, '')
-        if isinstance(cmds, str):
-            result = self.__submitScanXML(cmds, quoted_name)            
-        elif isinstance(cmds, CommandSequence):
-            result = self.__submitScanSequence(cmds, quoted_name)
-        else:
-            # Warp list, tuple, other iterable
-            result = self.__submitScanSequence(CommandSequence(cmds), quoted_name)
+        Using `GET {BaseURL}/server/info`
         
-        xml = ET.fromstring(result)
-        if xml.tag != 'id':
-            raise Exception("Expected scan <id>, got <%s>" % xml.tag)
-        return int(xml.text)
+        :return: XML with server info
         
-        
-    def __submitScanXML(self, scanXML, scanName):
-        """Submit scan in raw XML-form.
-        
-        Using   POST {BaseURL}/scan/{scanName}
-        Return  <id>{scanId}</id>
-        
-        :param scanXML: The XML content of your new scan
-        :param scanName: The name you want to give the new scan
-        
-        :return: Raw XML for scan ID
-
         Usage::
 
-        >>> import scan
-        >>> ssc=ScanClient('localhost',4810)
-        >>> scanId = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
+        >>> client = ScanClient()
+        >>> print client.serverInfo()
         """
-        url = self.__baseURL + self.__scanResource + '/' + scanName
-        r = self.__do_request(url, 'POST', scanXML)
-        return r
-        
-    def __submitScanSequence(self, cmdSeq, scanName):
-        """Submit a CommandSequence
-        
-        :param cmdSeq: :class:`scan.commands.commandsequence.CommandSequence`
-        :param scanName: The name needed to give the new scan
-
-        :return: Raw XML for scan ID
-        """
-        return self.__submitScanXML(cmdSeq.genSCN(),scanName)
-            
-    
+        return self.__do_request(self.__baseURL + self.__serverResource + self.__serverInfoResource, 'GET')
+                
     def simulate(self, cmds):
         """Submit scan to scan server for simulation
         
@@ -161,15 +122,110 @@ class ScanClient(object):
 
         simulation = self.__do_request(url, 'POST', scan)
         return simulation
+
+    def submit(self, cmds, name='UnNamed'):
+        """Submit scan to scan server for execution
         
-    def delete(self,scanID = None):
+        :param cmds: List of commands,
+                     :class:`scan.commands.commandsequence.CommandSequence`
+                     or text with raw XML format.
+        :param name: Name of scan
+        
+        :return: ID of submitted scan
+        
+        Example::
+        
+        >>> id = client.submit( [ Comment('Hello'), Set('x', 10) ], "My First Scan")
+        """
+        quoted_name = urllib.quote(name, '')
+        if isinstance(cmds, str):
+            result = self.__submitScanXML(cmds, quoted_name)            
+        elif isinstance(cmds, CommandSequence):
+            result = self.__submitScanSequence(cmds, quoted_name)
+        else:
+            # Warp list, tuple, other iterable
+            result = self.__submitScanSequence(CommandSequence(cmds), quoted_name)
+        
+        xml = ET.fromstring(result)
+        if xml.tag != 'id':
+            raise Exception("Expected scan <id>, got <%s>" % xml.tag)
+        return int(xml.text)
+        
+    def __submitScanXML(self, scanXML, scanName):
+        """Submit scan in raw XML-form.
+        
+        Using   POST {BaseURL}/scan/{scanName}
+        Return  <id>{id}</id>
+        
+        :param scanXML: The XML content of your new scan
+        :param scanName: The name you want to give the new scan
+        
+        :return: Raw XML for scan ID
+
+        Usage::
+
+        >>> import scan
+        >>> ssc=ScanClient('localhost',4810)
+        >>> id = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
+        """
+        url = self.__baseURL + self.__scanResource + '/' + scanName
+        r = self.__do_request(url, 'POST', scanXML)
+        return r
+        
+    def __submitScanSequence(self, cmdSeq, scanName):
+        """Submit a CommandSequence
+        
+        :param cmdSeq: :class:`scan.commands.commandsequence.CommandSequence`
+        :param scanName: The name needed to give the new scan
+
+        :return: Raw XML for scan ID
+        """
+        return self.__submitScanXML(cmdSeq.genSCN(),scanName)
+        
+    def scanInfo(self, id):
+        """Get information about a scan
+        
+        Using `GET {BaseURL}/scan/{id}`
+              
+        :param id: The ID of scan for which to fetch information.
+        :return: :class:`scan.client.scaninfo.ScanInfo`
+        
+        Example::
+        
+        >>> client = ScanClient()
+        >>> print client.scanInfo(42)
+        """
+        url = self.__baseURL+self.__scanResource+'/'+str(id)
+        
+        xml = self.__do_request(url)
+        return ScanInfo(xml)
+    
+    # TODO: GET {BaseURL}/scan/{id}/commands       - get scan commands
+    # TODO: GET {BaseURL}/scan/{id}/data           - get scan data
+    # TODO: GET {BaseURL}/scan/{id}/last_serial    - get scan data's last serial
+    # TODO: GET {BaseURL}/scan/{id}/devices        - get devices used by a scan
+    
+    def waitUntilDone(self, id):
+        """Wait until scan finishes
+        
+        :param id: ID of scan on which to wait
+        
+        :return: Scan info
+        """
+        info = self.scanInfo(id)
+        while not info.isDone():
+            time.sleep(1)
+            info = self.scanInfo(id)
+        return info
+    
+    def delete(self,id = None):
         '''
         Remove a completed scans.
         
-        Using DELETE {BaseURL}/scan/{scanID}.
+        Using DELETE {BaseURL}/scan/{id}.
         Return HTTP status code.
         
-        :param scanID: The id of scan you want to delete.Must be an integer.
+        :param id: The id of scan you want to delete.Must be an integer.
         
         Usage::
 
@@ -181,7 +237,7 @@ class ScanClient(object):
         '''
         
         try:
-            r=self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(scanID), method='DELETE')
+            r=self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(id), method='DELETE')
             return r
         except Exception as ex:
             raise  ex
@@ -208,55 +264,7 @@ class ScanClient(object):
             raise ex
         return r.status_code
     
-    #############Detailed Design Needed#############
-    def scanInfo(self,scanID = None,infoType = None):
-        '''
-        Get all information of one scan.
-        Using  GET {BaseURL}/scan/{scanID}                - get scan info
-               GET {BaseURL}/scan/{scanID}/commands       - get scan commands
-               GET {BaseURL}/scan/{scanID}/data           - get scan data
-               GET {BaseURL}/scan/{scanID}/last_serial    - get scan data's last serial
-               GET {BaseURL}/scan/{scanId}/devices        - get devices used by a scan
-        Return all info of one scan in XML form.
-        
-        :param scanID: The id of scan you want to get.Must be an integer.
-        
-        Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.scanInfo(153,scan)
-        '''
-                    
-        if infoType == 'scan':
-            url = self.__baseURL+self.__scanResource+'/'+str(scanID)
-        else:
-            url = self.__baseURL+self.__scanResource+'/'+str(scanID)+'/'+infoType
-        try:
-            r = self.__do_request(url=url,method="GET")
-        except:
-            raise Exception, 'Failed to get info from scan '+str(scanID)
-        return r.text
-                
-    def serverInfo(self):
-        '''
-        Get information of current server
-        Using GET {BaseURL}/server/info
-        Return:<Server></Server>
-        
-        Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.serverInfo()
-        '''
-        
-        try:
-            r = self.__do_request(url=self.__baseURL+self.__serverResource+self.__serverInfoResource,method='GET')
-        except Exception as e:
-            raise e 
-        return r
-        
+            
     def scanList(self):
         '''
         Get information of all scans 
@@ -275,7 +283,7 @@ class ScanClient(object):
             raise ex
         return r
 
-    def pause(self,scanID=None):
+    def pause(self,id=None):
         ''' 
         Pause a running scan
         
@@ -290,13 +298,13 @@ class ScanClient(object):
         '''
         
         try:
-            url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/pause'
+            url=self.__baseURL+self.__scanResource+'/'+str(id)+'/pause'
             r = self.__do_request(url=url, method='PUT')
             return r
         except Exception as ex:
             raise ex 
         
-    def abort(self,scanID=None):
+    def abort(self,id=None):
         '''
         Abort running or paused scan
         
@@ -311,16 +319,16 @@ class ScanClient(object):
         '''
 
         try:
-            url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/abort'
+            url=self.__baseURL+self.__scanResource+'/'+str(id)+'/abort'
             r = self.__do_request(url=url, method='PUT')
             return r
         except Exception as ex:
             raise ex 
     
-    def resume(self,scanID=None):
+    def resume(self,id=None):
         '''
         Resume paused scan
-        Using PUT {BaseURL}/scan/{scanID}/resume
+        Using PUT {BaseURL}/scan/{id}/resume
         
         Return Http Status Code
         
@@ -332,17 +340,17 @@ class ScanClient(object):
         '''
         
         try:
-            url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/resume'
+            url=self.__baseURL+self.__scanResource+'/'+str(id)+'/resume'
             r = self.__do_request(url=url, method='PUT')
             return r
         except Exception as ex:
             raise ex 
         
-    def update(self,scanID=None,scanXML=None):
+    def update(self,id=None,scanXML=None):
         '''
         Update property of a scan command.
         
-        Using PUT {BaseURL}/scan/{scanID}/patch
+        Using PUT {BaseURL}/scan/{id}/patch
         Return Http Status Code.
         
         Requires description of what to update:
@@ -356,7 +364,7 @@ class ScanClient(object):
         '''
         
         try:
-            r = self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(scanID)+'/patch',data=scanXML,method="PUT")
+            r = self.__do_request(url=self.__baseURL+self.__scanResource+'/'+str(id)+'/patch',data=scanXML,method="PUT")
         except:
-            raise Exception, 'Failed to resume scan '+str(scanID)
+            raise Exception, 'Failed to resume scan '+str(id)
         return r.status_code
