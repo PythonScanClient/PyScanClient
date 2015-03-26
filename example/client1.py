@@ -51,8 +51,29 @@ client.pause(id)
 # Want to set 'motor_x' to 5 instead of 10
 client.patch(id, 1, 'value', 5)
 client.resume(id)
+client.abort(id)
 
 # TODO get log data
+id = client.submit([ Loop('motor_x', 1, 10, 1,
+                      [ Log('motor_x'),
+                        Loop('motor_y', 1, 3, 1,
+                              Log('motor_y'))
+                      ])
+                   ], 'Data Demo')
+# log = client.getLog(id)
+
+# Get data for each channel (sample id, time, value)
+# print log.get('motor_x')
+# print log.get('motor_y')
+#
+# Get numeric value
+# print log.getValues('motor_x')
+# print log.getValues('motor_y')
+#
+# Arrange data by sample serial id into spreadsheet
+# data = log.getValues('motor_x', 'motor_y']
+# --> data[0] has numbers for 'motor_x', data[1] has numbers for 'motor_y'
+
 
 # TODO get commands back from server
 
