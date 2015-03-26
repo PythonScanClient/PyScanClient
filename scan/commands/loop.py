@@ -64,6 +64,8 @@ class Loop(Command):
     This can be useful for scanning the X/Y surface of a sample.    
     """
     def __init__(self, device, start, end, step, body=None, *args, **kwargs):
+        if not isinstance(device, str):
+            raise Exception("Expect device name, got '%s'" % str(device))
         self.__device = device
         self.__start = start
         self.__end = end

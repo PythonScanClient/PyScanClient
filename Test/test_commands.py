@@ -177,6 +177,45 @@ class CommandTest(unittest.TestCase):
         self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><completion>true</completion><timeout>10</timeout><body /></loop>")
 
 
+    def testXMLSequence(self):
+        cmds = CommandSequence()
+        print cmds
+        print cmds.toSeqString()
+        self.assertEqual(len(cmds), 0)
+        print cmds.genSCN()
+        
+        cmds = CommandSequence(Comment('One'))
+        print cmds
+        print cmds.toSeqString()
+        self.assertEqual(len(cmds), 1)
+        print cmds.genSCN()
+       
+        cmds = CommandSequence(Comment('One'), Comment('Two'))
+        print cmds
+        print cmds.toSeqString()
+        self.assertEqual(len(cmds), 2)
+        print cmds.genSCN()
+        self.assertEqual("""<commands><comment><text>One</text></comment><comment><text>Two</text></comment></commands>""",
+                         cmds.genSCN().replace("\n", "").replace(" ", ""))
+
+
+        cmds = CommandSequence(Comment('One'))
+        cmds.append(Comment('Two'))
+        print cmds
+        print cmds.toSeqString()
+        self.assertEqual(len(cmds), 2)
+        print cmds.genSCN()
+
+
+        cmds = CommandSequence( ( Comment('One'), Comment('Two') ) )
+        print cmds
+        print cmds.toSeqString()
+        self.assertEqual(len(cmds), 2)
+        print cmds.genSCN()
+        
+        cmds = CommandSequence(Comment('Example'), Loop('pos', 1, 5, 0.5, Set('run', 1), Delay(2), Set('run', 0)))
+        print cmds.toSeqString()
+        
 
 if __name__ == "__main__":
     unittest.main()

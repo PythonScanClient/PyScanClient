@@ -64,3 +64,9 @@ Script
 ------
 .. autoclass:: scan.commands.script.Script
    :members:
+
+Command Sequence
+----------------
+.. autoclass:: scan.commands.commandsequence.CommandSequence
+   :members:
+   
