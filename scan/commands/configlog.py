@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 class ConfigLog(Command):
     """Config automatic logging.
     
-    :param auto: True to log all write access, False to only log via `Log()` command.
+    :param auto: `True` to log all write access, `False` to only log via `Log()` command.
     
     Example:
         >>> cmd = ConfigLog(True)
