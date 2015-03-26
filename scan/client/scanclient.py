@@ -187,9 +187,28 @@ class ScanClient(object):
         :return: Raw XML for scan ID
         """
         return self.__submitScanXML(cmdSeq.genSCN(),scanName)
+           
+    def scanInfos(self):
+        """Get information of all scans 
         
+        Using `GET {BaseURL}/scans`
+        
+        :return: List of :class:`scan.client.scaninfo.ScanInfo`
+        
+        Example::
+
+        >>> infos = client.scanInfos()
+        >>> print [ str(info) for info in infos ]
+        """
+        xml = self.__do_request(self.__baseURL + self.__scansResource)
+        scans = ET.fromstring(xml)
+        result = list()
+        for scan in scans.findall('scan'):
+            result.append(ScanInfo(scan))
+        return result
+
     def scanInfo(self, id):
-        """Get information about a scan
+        """Get information for a scan
         
         Using `GET {BaseURL}/scan/{id}`
               
@@ -201,10 +220,8 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.scanInfo(42)
         """
-        url = self.__baseURL+self.__scanResource+'/'+str(id)
-        
-        xml = self.__do_request(url)
-        return ScanInfo(xml)
+        xml = self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id))
+        return ScanInfo(ET.fromstring(xml))
     
     # TODO: GET {BaseURL}/scan/{id}/commands       - get scan commands
     # TODO: GET {BaseURL}/scan/{id}/data           - get scan data
@@ -295,28 +312,7 @@ class ScanClient(object):
         >>> client.clear()
         """
         self.__do_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
-        
             
-    def scanList(self):
-        '''
-        Get information of all scans 
-        Using GET {BaseURL}/scans - get all scan infos
-        Return all info of all scans in XML form.
-        
-        Usage::
-
-        >>> import scan
-        >>> ssc=scan('localhost',4810)
-        >>> st = ssc.scanList()
-        '''
-        try:
-            r = self.__do_request(url = self.__baseURL+self.__scansResource,method='GET')
-        except Exception as ex:
-            raise ex
-        return r
-
-        
-    
     def update(self,id=None,scanXML=None):
         '''
         Update property of a scan command.

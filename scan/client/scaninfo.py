@@ -5,16 +5,13 @@ All rights reserved. Use is subject to license terms and conditions
 
 @author: Kay Kasemir
 """
-import xml.etree.ElementTree as ET
 
 class ScanInfo(object):
     """Information about a scan
     
-    :param scan_info_xml: XML for scan info as returned by server 
+    :param xml: XML element for a scan info
     """
-    def __init__(self, scan_info_xml):
-        xml = ET.fromstring(scan_info_xml)
-        
+    def __init__(self, xml):
         self.id = int(xml.find('id').text)
         self.name = xml.find('name').text
         self.created = int(xml.find('created').text)

@@ -40,9 +40,9 @@ print client.scanInfo(id)
 client.abort(id)
 print client.scanInfo(id)
 
+print "Before deleting scan %d:" % id, [ str(info) for info in client.scanInfos() ]
 client.delete(id)
-# client.scanInfo(id) would now fail, that id is unknown
-
+print "After  deleting scan %d:" % id, [ str(info) for info in client.scanInfos() ]
 
 # get commands
 
