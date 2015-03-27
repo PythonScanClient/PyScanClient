@@ -34,9 +34,9 @@ class ScanClient(object):
        
     def __init__(self, host='localhost', port=4810):
         self.__host = host
-        self.__port = port
+        self.__port = int(port) #no matter what type of 'port' input, self._port keeps to be int.
         #May implement a one to one host+port with instance in the future.
-        self.__baseURL = "http://"+host+':'+str(port)
+        self.__baseURL = "http://"+self.__host+':'+str(self.__port)
     
     def __repr__(self):
         return "ScanClient('%s', %d)" % (self.__host, self.__port)
@@ -100,7 +100,7 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.serverInfo()
         """
-        return self.__do_request(self.__baseURL + self.__serverResource + self.__serverInfoResource, 'GET')
+        return self.__do_request(self.__baseURL + self.__serverResource + self.__serverInfoResource)
                 
     def simulate(self, cmds):
         """Submit scan to scan server for simulation
@@ -207,7 +207,7 @@ class ScanClient(object):
             result.append(ScanInfo(scan))
         return result
 
-    def scanInfo(self, id):
+    def scanInfo(self, scanID):
         """Get information for a scan
         
         Using `GET {BaseURL}/scan/{id}`
@@ -220,28 +220,77 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.scanInfo(42)
         """
-        xml = self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id))
+        xml = self.__do_request(self.__baseURL + self.__scanResource + '/' + str(scanID))
         return ScanInfo(ET.fromstring(xml))
     
-    # TODO: GET {BaseURL}/scan/{id}/commands       - get scan commands
-    # TODO: GET {BaseURL}/scan/{id}/data           - get scan data
-    # TODO: GET {BaseURL}/scan/{id}/last_serial    - get scan data's last serial
-    # TODO: GET {BaseURL}/scan/{id}/devices        - get devices used by a scan
+    def scanCmds(self,scanID):
+        '''
+        Get the commands SCN text from a specified scan.
+        Useful for scan reusing.
+        
+        @param scanID:  The ID of scan for which to fetch information.
+        
+        Return the SCN text of a scan.
+        
+        Example::
+        
+        >>> client = ScanClient()
+        >>> scanid = client.submit(...someCMDs...)
+        >>> #Submit it again:
+        >>> client.submit(client.scanCmds(scanid))
+        '''
+        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/commands'
+        xml = self.__do_request(url)
+        return xml
     
-    def waitUntilDone(self, id):
+    def lastSerial(self,scanID):
+        '''
+        Get the last serial number of a scan.Useful to see. Serial Number 
+        is the Sample_id in each data log sample.This method is designed 
+        to check the data integrity.
+        
+        @param scanID: The ID of scan for which to fetch information.
+        
+        Return the last serial number of the scan specified.
+        
+        '''
+        
+        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/last_serial'
+        xml = self.__do_request(url)
+        ET.fromstring(xml)
+        return ET.fromstring(xml).text
+    # --TODO: GET {BaseURL}/scan/{id}/commands       - get scan commands
+    # TODO: GET {BaseURL}/scan/{id}/data           - get scan data
+    # --TODO: GET {BaseURL}/scan/{id}/last_serial    - get scan data's last serial
+    # --TODO: GET {BaseURL}/scan/{id}/devices        - get devices used by a scan
+    
+    def scanDevices(self,scanID):
+        '''
+        Get devices list from a not logged scan.
+        
+        @param scanID: The ID of scan for which to fetch information.
+        
+        Return the devices list of the scan specified.
+        
+        '''
+        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/devices'
+        xml = self.__do_request(url)
+        return xml
+    
+    def waitUntilDone(self, scanID):
         """Wait until scan finishes
         
         :param id: ID of scan on which to wait
         
         :return: Scan info
         """
-        info = self.scanInfo(id)
+        info = self.scanInfo(scanID)
         while not info.isDone():
             time.sleep(1)
             info = self.scanInfo(id)
         return info
 
-    def pause(self, id=-1):
+    def pause(self, scanID=-1):
         """Pause a running scan
         
         :param id: ID of scan or -1 to pause current scan 
@@ -253,10 +302,10 @@ class ScanClient(object):
         >>> id = client.submit(commands)
         >>> client.pause(id)
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(id) + '/pause'
+        url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/pause'
         self.__do_request(url, 'PUT')
 
-    def resume(self, id=-1):
+    def resume(self, scanID=-1):
         """Resume a paused scan
         
         :param id: ID of scan or -1 to resume current scan
@@ -269,10 +318,10 @@ class ScanClient(object):
         >>> client.pause(id)
         >>> client.resume(id)
         """
-        url=self.__baseURL + self.__scanResource + '/' + str(id) + '/resume'
+        url=self.__baseURL + self.__scanResource + '/' + str(scanID) + '/resume'
         self.__do_request(url, 'PUT')
         
-    def abort(self, id=-1):
+    def abort(self, scanID=-1):
         """Abort a running or paused scan
         
         :param id: ID of scan or -1 to abort current scan
@@ -284,10 +333,10 @@ class ScanClient(object):
         >>> id = client.submit(commands)
         >>> client.abort(id)
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(id) + '/abort'
+        url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/abort'
         self.__do_request(url, 'PUT')
         
-    def delete(self, id):
+    def delete(self, scanID):
         """Remove a completed scan.
         
         Using `DELETE {BaseURL}/scan/{id}`
@@ -300,7 +349,7 @@ class ScanClient(object):
         >>> client.abort(id)
         >>> client.delete(id)
         """
-        self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id), 'DELETE')
+        self.__do_request(self.__baseURL + self.__scanResource + '/' + str(scanID), 'DELETE')
         
     def clear(self):
         """Remove all completed scans.
