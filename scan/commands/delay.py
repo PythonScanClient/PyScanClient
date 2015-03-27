@@ -21,7 +21,7 @@ class Delay(Command):
     def genXML(self):
         xml = ET.Element('delay')
         ET.SubElement(xml, 'seconds').text = str(self.__seconds)
-        if self.__errHandler!=None:
+        if self.__errHandler:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
         return xml
     

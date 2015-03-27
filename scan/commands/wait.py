@@ -77,7 +77,7 @@ class Wait(Command):
             result += ', tolerance=%g' % self.__tolerance
         if self.__timeout > 0:
             result += ', timeout=%g' % self.__timeout
-        if self.__errHandler!=None:
+        if self.__errHandler:
             result += ", errhandler='%s'" % self.__errHandler
         result += ')'
         return result

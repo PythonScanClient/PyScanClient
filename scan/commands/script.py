@@ -54,7 +54,7 @@ class Script(Command):
             for arg in self.__args:
                 ET.SubElement(argLst,'argument').text = str(arg)
         
-        if self.__errHandler!=None:
+        if self.__errHandler:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
                 
         return xml

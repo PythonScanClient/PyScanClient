@@ -44,7 +44,7 @@ class Log(Command):
             for dev in self.__devices:
                 ET.SubElement(devices, 'device').text = dev
                 
-        if self.__errHandler!=None:
+        if self.__errHandler:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)
             
         return xml
