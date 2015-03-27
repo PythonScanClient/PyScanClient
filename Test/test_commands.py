@@ -180,19 +180,17 @@ class CommandTest(unittest.TestCase):
     def testXMLSequence(self):
         cmds = CommandSequence()
         print cmds
-        print cmds.toSeqString()
+
         self.assertEqual(len(cmds), 0)
         print cmds.genSCN()
         
         cmds = CommandSequence(Comment('One'))
         print cmds
-        print cmds.toSeqString()
         self.assertEqual(len(cmds), 1)
         print cmds.genSCN()
        
         cmds = CommandSequence(Comment('One'), Comment('Two'))
         print cmds
-        print cmds.toSeqString()
         self.assertEqual(len(cmds), 2)
         print cmds.genSCN()
         self.assertEqual("""<commands><comment><text>One</text></comment><comment><text>Two</text></comment></commands>""",
@@ -202,19 +200,17 @@ class CommandTest(unittest.TestCase):
         cmds = CommandSequence(Comment('One'))
         cmds.append(Comment('Two'))
         print cmds
-        print cmds.toSeqString()
         self.assertEqual(len(cmds), 2)
         print cmds.genSCN()
 
 
         cmds = CommandSequence( ( Comment('One'), Comment('Two') ) )
         print cmds
-        print cmds.toSeqString()
         self.assertEqual(len(cmds), 2)
         print cmds.genSCN()
         
         cmds = CommandSequence(Comment('Example'), Loop('pos', 1, 5, 0.5, Set('run', 1), Delay(2), Set('run', 0)))
-        print cmds.toSeqString()
+        print cmds
         
 
 if __name__ == "__main__":
