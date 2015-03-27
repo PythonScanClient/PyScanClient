@@ -212,7 +212,7 @@ class ScanClient(object):
         
         Using `GET {BaseURL}/scan/{id}`
               
-        :param id: The ID of scan for which to fetch information.
+        :param scanID: The ID of scan for which to fetch information.
         :return: :class:`scan.client.scaninfo.ScanInfo`
         
         Example::
@@ -254,7 +254,7 @@ class ScanClient(object):
         for changes in the logged data without always having to pull
         the complete data log.
         
-        :param scanID:: The ID of scan for which to fetch information.
+        :param scanID: The ID of scan for which to fetch information.
         
         :return: Id of last logged sample of the scan.
         
@@ -271,8 +271,7 @@ class ScanClient(object):
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/last_serial'
         xml = self.__do_request(url)
         ET.fromstring(xml)
-        # TODO Return the actual ID, not the XML
-        return ET.fromstring(xml).text
+        return int(ET.fromstring(xml).text)
     
     # --TODO: GET {BaseURL}/scan/{id}/commands       - get scan commands
     # TODO: GET {BaseURL}/scan/{id}/data           - get scan data
@@ -302,7 +301,7 @@ class ScanClient(object):
         info = self.scanInfo(scanID)
         while not info.isDone():
             time.sleep(1)
-            info = self.scanInfo(id)
+            info = self.scanInfo(scanID)
         return info
 
     def pause(self, scanID=-1):

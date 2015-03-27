@@ -53,14 +53,17 @@ client.patch(id, 1, 'value', 5)
 client.resume(id)
 client.abort(id)
 
-# TODO get log data
+# Log data during scan
 id = client.submit([ Loop('motor_x', 1, 10, 1,
                       [ Log('motor_x'),
                         Loop('motor_y', 1, 3, 1,
                               Log('motor_y'))
                       ])
                    ], 'Data Demo')
-# log = client.getLog(id)
+info = client.waitUntilDone(id)
+print "Number of log calls: %d" % client.lastSerial(id)
+# TODO Details under development
+print str(client.getPlainData(id))
 
 # Get data for each channel (sample id, time, value)
 # print log.get('motor_x')
