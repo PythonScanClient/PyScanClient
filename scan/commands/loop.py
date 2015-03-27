@@ -144,7 +144,7 @@ class Loop(Command):
         if len(self.__body)!=0:
             result += ",\n" + self.indent(level) + "[\n"
             result += ",\n".join([ cmd.format(level+1) for cmd in self.__body ])
-            result += ",\n" + self.indent(level) + "]"
+            result += "\n" + self.indent(level) + "]"
         if self.__completion:
             use_timeout = True
             result += ', completion=True'        
