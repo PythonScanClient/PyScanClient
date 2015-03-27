@@ -30,6 +30,7 @@ API
 import re
 
 from scan.commands.set import Set
+from scan.commands.loop import Loop
 from scan.commands.wait import Wait
 
 class DeviceSettings(object):
@@ -260,6 +261,25 @@ class ScanSettings(object):
         """
         (device, ignored) = self.parseDeviceSettings(prefixed_device)
         return device.Set(value)
+
+    def Loop(self, prefixed_device, start, end, step, body=None):
+        """Create `Loop` command.
+        
+        Creates a `Loop` command that sets a device to
+        the desired values, using completion, readback etc.
+        as per these settings.
+        
+        :param prefixed_device: Device name with optional prefixes
+        :param value: Desired value
+        :return: :class:`scan.commands.loop.Loop` command.
+        """
+        (device, ignored) = self.parseDeviceSettings(prefixed_device)
+        return Loop(device.getName(), start, end, step, body,
+                    completion=device.getCompletion(),
+                    readback=device.getReadback(),
+                    tolerance=device.getTolerance(),
+                    timeout=device.getTimeout())
+                    
 
     def Wait(self, device, value, timeout=None, errhandler=None):
         """Create `Wait` command.

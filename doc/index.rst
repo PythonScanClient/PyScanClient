@@ -14,8 +14,9 @@ Contents:
    overview.rst
    scan_client.rst
    commands.rst
-   table_scan.rst
    scan_settings.rst
+   table_scan.rst
+   ndim_scan.rst
    misc.rst
 
 Indices and tables

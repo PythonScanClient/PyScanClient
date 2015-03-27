@@ -1,0 +1,56 @@
+>>> from scan import *
+
+>>> class MyScanSettings(ScanSettings):
+...     def __init__(self):
+...         super(MyScanSettings, self).__init__()
+...         self.defineDeviceClass(".pos", completion=True)
+... 
+>>> settings = MyScanSettings()
+ 
+>>> print CommandSequence(createNDimScan(settings, ('xpos', 1, 10)))
+[
+    Loop('xpos', 1, 10, 1,
+    [
+        Log('xpos')
+    ], completion=True)
+]
+>>> 
+
+
+>>> print CommandSequence(createNDimScan(settings, ('xpos', 1, 10), 'readback'))
+[
+    Loop('xpos', 1, 10, 1,
+    [
+        Log('xpos', 'readback')
+    ], completion=True)
+]
+   
+>>> print CommandSequence(createNDimScan(settings, ('xpos', 1, 10),
+...                                                ('ypos', 1, 5, 0.2), 'readback'))
+[
+    Loop('xpos', 1, 10, 1,
+    [
+        Loop('ypos', 1, 5, 0.2,
+        [
+            Log('xpos', 'ypos', 'readback')
+        ], completion=True)
+    ], completion=True)
+]
+
+>>> print CommandSequence(createNDimScan(settings,
+...          ('xpos', 1, 10),
+...              ('ypos', 1, 5, 0.2),
+...                   Set('xyz', 1), Set('xyz', 0)))
+[
+    Loop('xpos', 1, 10, 1,
+    [
+        Loop('ypos', 1, 5, 0.2,
+        [
+            Set('xyz', 1),
+            Set('xyz', 0),
+            Log('xpos', 'ypos')
+        ], completion=True)
+    ], completion=True)
+]
+                        
+                          
