@@ -121,7 +121,7 @@ class DeviceSettings(object):
         if rb:
             rb = "'" + rb + "'"
         return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%g, comparison='%s')" % (
-                self.name, str(self.completion), rb,  self.timeout, self.tolerance, self.comparison)
+                self._name, str(self._completion), rb,  self._timeout, self._tolerance, self._comparison)
 
 
 
