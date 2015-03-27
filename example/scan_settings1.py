@@ -36,26 +36,26 @@ class MyScanSettings(ScanSettings):
 
 # When now creating a scan,
 # use an instance of `MyScanSettings`
-
-settings = MyScanSettings()
-
-from scan.commands import *
-cmds = [
-        Comment('Without settings'),
-        Set('temperature', 10),
-        Wait('PerpetualCounter', 10),
-        
-        Comment('With settings'),
-        settings.Set('temperature', 10),
-        settings.Wait('PerpetualCounter', 10),
-       ]
-for cmd in cmds:
-    print cmd
-
-# Result:    
-# Comment('Without settings')
-# Set('temperature', 10)
-# Wait('PerpetualCounter', 10)
-# Comment('With settings')
-# Set('temperature', 10, completion=True, timeOut=300)
-# Wait('PerpetualCounter', 10, comparison='increase by')
+if __name__ == "__main__":
+    settings = MyScanSettings()
+    
+    from scan.commands import *
+    cmds = [
+            Comment('Without settings'),
+            Set('temperature', 10),
+            Wait('PerpetualCounter', 10),
+            
+            Comment('With settings'),
+            settings.Set('temperature', 10),
+            settings.Wait('PerpetualCounter', 10),
+           ]
+    for cmd in cmds:
+        print cmd
+    
+    # Result:    
+    # Comment('Without settings')
+    # Set('temperature', 10)
+    # Wait('PerpetualCounter', 10)
+    # Comment('With settings')
+    # Set('temperature', 10, completion=True, timeOut=300)
+    # Wait('PerpetualCounter', 10, comparison='increase by')
