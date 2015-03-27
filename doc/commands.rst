@@ -7,7 +7,6 @@ Assemble a scan from commands:
 
 .. literalinclude:: ../example/commands1.py
 
-
 Comment
 -------
    

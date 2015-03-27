@@ -53,7 +53,7 @@ class CommandSequence(object):
         indent(scn)
         return ET.tostring(scn)
     
-    def __str__(self):
+    def format(self):
         """Format for printing
         
         Example:
@@ -76,6 +76,9 @@ class CommandSequence(object):
             result += "\n" + cmd.format(1)
         result += "\n]"
         return result
+
+    def __str__(self):
+        return self.format()
     
     def __repr__(self):
         return "CommandSequence(" + str(self.commands) + ")"
