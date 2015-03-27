@@ -223,42 +223,57 @@ class ScanClient(object):
         xml = self.__do_request(self.__baseURL + self.__scanResource + '/' + str(scanID))
         return ScanInfo(ET.fromstring(xml))
     
-    def scanCmds(self,scanID):
-        '''
-        Get the commands SCN text from a specified scan.
-        Useful for scan reusing.
+    def scanCmds(self, scanID):
+        """Get the commands of scan.
         
-        @param scanID:  The ID of scan for which to fetch information.
+        Reads scan commands from scan server.
+        Only possible for scans that are still available
+        on the server, not for older scans that only
+        have logged data but no command detail.
         
-        Return the SCN text of a scan.
+        :param scanID::  The ID of scan for which to fetch information.
+        
+        :return: Scan commands in XML format of a scan.
         
         Example::
         
         >>> client = ScanClient()
         >>> scanid = client.submit(...someCMDs...)
-        >>> #Submit it again:
+        >>> # Submit it again:
         >>> client.submit(client.scanCmds(scanid))
-        '''
+        """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/commands'
         xml = self.__do_request(url)
         return xml
     
-    def lastSerial(self,scanID):
-        '''
-        Get the last serial number of a scan.Useful to see. Serial Number 
-        is the Sample_id in each data log sample.This method is designed 
-        to check the data integrity.
+    def lastSerial(self, scanID):
+        """Get the last log data serial.
         
-        @param scanID: The ID of scan for which to fetch information.
+        Obtains the serial ID of the last logged sample of a scan.
+        Allows clients which monitor the progress of a scan to poll
+        for changes in the logged data without always having to pull
+        the complete data log.
         
-        Return the last serial number of the scan specified.
+        :param scanID:: The ID of scan for which to fetch information.
         
-        '''
+        :return: Id of last logged sample of the scan.
         
+        Example::
+        
+        >>> last_log_fetched = -1
+        >>> while not client.scanInfo(id).isDone:
+        >>>     last_logged = client.lastSerial(id)
+        >>>     if last_log_fetched != last_logged:
+        >>>        # .. fetch logged data, because it has changed..
+        >>>        last_log_fetched = last_logged
+        >>>     time.sleep(10
+        """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/last_serial'
         xml = self.__do_request(url)
         ET.fromstring(xml)
+        # TODO Return the actual ID, not the XML
         return ET.fromstring(xml).text
+    
     # --TODO: GET {BaseURL}/scan/{id}/commands       - get scan commands
     # TODO: GET {BaseURL}/scan/{id}/data           - get scan data
     # --TODO: GET {BaseURL}/scan/{id}/last_serial    - get scan data's last serial
