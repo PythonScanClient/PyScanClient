@@ -278,15 +278,20 @@ class ScanClient(object):
     # --TODO: GET {BaseURL}/scan/{id}/last_serial    - get scan data's last serial
     # --TODO: GET {BaseURL}/scan/{id}/devices        - get devices used by a scan
     
-    def scanDevices(self,scanID):
-        '''
-        Get devices list from a not logged scan.
+    def scanDevices(self, scanID):
+        """Get list of devices used by scan.
         
-        @param scanID: The ID of scan for which to fetch information.
+        :param scanID: The ID of scan that is still held in scan server,
+                       -1 to fetch default devices.
         
-        Return the devices list of the scan specified.
+        Provides a list of devices used by a scan.
+        For a running scan, this includes devices accessed
+        in the pre- and post-scan.
+        Also includes devices configured with alias names,
+        but not necessarily used by the scan.
         
-        '''
+        :return: XML with info about devices.
+        """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/devices'
         xml = self.__do_request(url)
         return xml
