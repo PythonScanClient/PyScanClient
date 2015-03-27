@@ -10,7 +10,7 @@ import time
 import xml.etree.ElementTree as ET
 import urllib
 import urllib2
-
+from scan.client.data import Data
 from scan.commands.commandsequence import CommandSequence
 from scaninfo import ScanInfo
 
@@ -373,7 +373,7 @@ class ScanClient(object):
         
         Using `PUT {BaseURL}/scan/{id}/patch`
 
-        :param id: The id of scan you want to delete.
+        :param id: The id of scan you want to update.
         :param address: Address of the command to update.
                         Counted within the scan starting at 0.
         :param property: The property of the command to update.
@@ -389,3 +389,23 @@ class ScanClient(object):
         """
         xml = "<patch><address>%d</address><property>%s</property><value>%s</value></patch>" % (address, property, str(value))
         self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id) + '/patch', 'PUT', xml)
+
+    def getPlainData(self,scanID):
+        '''
+        Get Logged data of one scan.
+        @param scanID:  ID of scan from which to get data.
+        
+        Return:
+        The data returned will be in the following form:
+        data = {
+        'PV1':[(serial11,time11,value11,),(),...,()]
+        
+        
+        }
+        '''
+        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/data'
+        xml = self.__do_request(url)
+        last_serial = self.lastSerial(scanID)
+        #return xml
+        return Data(xml,last_serial)
+    
