@@ -74,7 +74,7 @@ class Set(Command):
         use_timeout = False
         if self.__completion:
             use_timeout = True
-            result += ', completion=true'
+            result += ', completion=True'
         if isinstance(self.__readback, str):
             use_timeout = True
             result += ", readback='%s'" % self.__readback
