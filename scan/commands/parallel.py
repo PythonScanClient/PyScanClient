@@ -68,14 +68,23 @@ class Parallel(Command):
         return xml
     
     def __repr__(self):
-        return self.toCmdString()
-        
-    def toCmdString(self):
         result = 'Parallel('
-        result += ", ".join([ cmd.toCmdString() for cmd in self.__body ])
+        result += ", ".join([ cmd.__repr__() for cmd in self.__body ])
         if self.__timeout > 0:
             result += ', timeout=%g' % self.__timeout
         if self.__errHandler:
             result += ", errhandler='%s'" % self.__errHandler
         result += ')'
         return result
+    
+    def format(self, level=0):
+        result = self.indent(level) + 'Parallel(\n'
+        result += ",\n".join([ cmd.format(level+1) for cmd in self.__body ])
+        result += "\n" + self.indent(level) 
+        if self.__timeout > 0:
+            result += ', timeout=%g' % self.__timeout
+        if self.__errHandler:
+            result += ", errhandler='%s'" % self.__errHandler
+        result += ')'
+        return result
+

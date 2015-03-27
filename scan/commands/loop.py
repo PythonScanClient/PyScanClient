@@ -116,20 +116,38 @@ class Loop(Command):
         return xml
     
     def __repr__(self):
-        return self.toCmdString()
-        
-    def toCmdString(self):
         result = "Loop('%s', %g, %g, %g" % (self.__device, self.__start, self.__end, self.__step)
         use_timeout = False
-        if self.__completion:
-            use_timeout = True
-            result += ', completion=True'
-        
         if len(self.__body)!=0:
             result += ", [ "
-            result += ", ".join([ cmd.toCmdString() for cmd in self.__body ])
+            result += ", ".join([ cmd.__repr__() for cmd in self.__body ])
             result+= " ]"
+        if self.__completion:
+            use_timeout = True
+            result += ', completion=True'        
+        if self.__readback:
+            use_timeout = True
+            if self.__readback == True:
+                result += ", readback=True"
+            else:
+                result += ", readback='%s'" % self.__readback
+            if self.__tolerance > 0:
+                result += ', tolerance=%g' % self.__tolerance
+        if use_timeout  and self.__timeout > 0:
+            result += ', timeout=%g' % self.__timeout
+        result += ')'
+        return result
 
+    def format(self, level=0):
+        result = self.indent(level) + "Loop('%s', %g, %g, %g" % (self.__device, self.__start, self.__end, self.__step)
+        use_timeout = False
+        if len(self.__body)!=0:
+            result += ",\n" + self.indent(level) + "[\n"
+            result += ",\n".join([ cmd.format(level+1) for cmd in self.__body ])
+            result += ",\n" + self.indent(level) + "]"
+        if self.__completion:
+            use_timeout = True
+            result += ', completion=True'        
         if self.__readback:
             use_timeout = True
             if self.__readback == True:

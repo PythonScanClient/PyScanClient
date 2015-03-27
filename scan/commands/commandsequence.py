@@ -53,7 +53,7 @@ class CommandSequence(object):
         indent(scn)
         return ET.tostring(scn)
     
-    def toSeqString(self):
+    def __str__(self):
         """Format for printing
         
         Example:
@@ -70,7 +70,62 @@ class CommandSequence(object):
         """
         if len(self.commands) == 0:
             return "[]"
-        return "[\n  " + ",\n  ".join([ cmd.toCmdString() for cmd in self.commands ]) + "\n]";
+
+        result = "["
+        for cmd in self.commands:
+            result += "\n" + cmd.format(1)
+        result += "\n]"
+        return result
     
     def __repr__(self):
         return "CommandSequence(" + str(self.commands) + ")"
+
+
+if __name__ == "__main__":
+    from comment import Comment
+    from loop import Loop
+    from parallel import Parallel
+    
+    print CommandSequence(
+          [
+               Loop('x', 1, 10, 0.5)
+          ])
+
+    print CommandSequence(
+          [
+               Loop('x', 1, 10, 0.5, Comment("Hello"))
+          ])
+
+    print CommandSequence(
+          [
+               Loop('x', 1, 10, 0.5, Comment("Hello"), completion=True)
+          ])
+ 
+    print CommandSequence(
+          [
+               Loop('x', 1, 10, 0.5,
+               [
+                   Comment("Hello"),
+                   Comment("World")
+               ], completion=True, timeout=10)
+          ])
+
+    print CommandSequence(
+          [
+               Loop('x', 2, 20, 5,
+               [
+                   Loop('y', 1, 10, 0.5,
+                   [
+                       Comment("Hello"),
+                       Comment("World")
+                   ], completion=True, timeout=10)
+               ])
+          ])
+
+    print CommandSequence(
+          [
+               Parallel(
+                    Loop('x', 1, 10, 0.5, Comment("Hello")),
+                    Loop('y', 1, 10, 0.5, Comment("There"))
+               )
+          ])

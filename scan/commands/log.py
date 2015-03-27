@@ -60,6 +60,3 @@ class Log(Command):
         result += ')'
         return result
     
-    def toCmdString(self):
-        return self.__repr__()
-    

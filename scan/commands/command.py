@@ -16,9 +16,21 @@ class Command(object):
     def __repr__(self):
         """:return: Representation that can be used to create the command in python."""
         return "Command()"
-    
-    def toCmdString(self):
+
+    def __str__(self):
         """By default, calls `__repr__()`.
-        :return: Human-readable, concise representation.
+        :return: Concise, human-readable representation.
         """
         return self.__repr__()
+
+    def indent(self, level):
+        return "    " * level
+    
+    def format(self, level=0):
+        """Format the command, possible over multiple lines.
+        
+        :param level: Indentation level
+        
+        :return: Human-readable, possibly multi-line representation.
+        """
+        return self.indent(level) + self.__str__()

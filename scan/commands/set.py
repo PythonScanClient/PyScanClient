@@ -63,9 +63,6 @@ class Set(Command):
         return xml
     
     def __repr__(self):
-        return self.toCmdString()
-    
-    def toCmdString(self):
         result = "Set('%s'" % self.__device
         if isinstance(self.__value, str):
             result += ", '%s'" % self.__value

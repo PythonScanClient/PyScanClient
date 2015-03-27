@@ -60,9 +60,6 @@ class Script(Command):
         return xml
     
     def __repr__(self):
-        return self.toCmdString()
-        
-    def toCmdString(self):
         result= "Script('%s'" % self.__path
         for arg in self.__args:
             if isinstance(arg, str):
