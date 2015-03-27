@@ -409,19 +409,17 @@ class TableScan:
                         if value:
                             commands.append(cmds.Delay(parseSeconds(value)))
                     else:
-                        (device, parallel) = self.settings.parseDeviceSettings(waitfor)
-                        timeout = device.getTimeout()
+                        timeout = None
                         errhandler = None
                         if i+2 < self.cols  and  self.headers[i+2] == TableScan.OR_TIME:
                             or_time = row[i+2].strip()
                             if len(or_time) > 0:
                                 timeout = parseSeconds(or_time)
                                 errhandler = "OnErrorContinue"
-                        cmd = cmds.Wait(device.getName(), value, comparison=device.getComparison(),
-                                        tolerance=device.getTolerance(), timeout=timeout, errhandler=errhandler)
+                        cmd = self.settings.Wait(waitfor, value, timeout=timeout, errhandler=errhandler)
                         commands.append(cmd)
-                        if not device.getName() in log_devices:
-                            log_devices.append(device.getName())
+                        if not waitfor in log_devices:
+                            log_devices.append(waitfor)
                     
                     if len(log_devices) > 0:
                         commands.append(cmds.Log(log_devices))
@@ -444,9 +442,7 @@ class TableScan:
                     # 'Normal' column that sets a device
                     device = col_device[i]
                     value = self.__getValue(row[i])
-                    command = cmds.Set(device.getName(), value,
-                                       completion=device.getCompletion(), readback=device.getReadback(),
-                                       timeout=device.getTimeout(), tolerance=device.getTolerance())
+                    command = device.Set(value)
                         
                     if col_parallel[i]:
                         parallel_commands.append(command)

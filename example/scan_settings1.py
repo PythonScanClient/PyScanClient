@@ -24,8 +24,8 @@ class MyScanSettings(ScanSettings):
         # Name of readback is based on motor name, see getReadbackName()
         self.defineDeviceClass("pos.*", completion=True, readback=True, timeout=100)
         
-        # When waiting for this counter, use 'to increase by' instead of '='
-        self.defineDeviceClass("PerpetualCounter", comparison='to increase by')
+        # When waiting for this counter, use 'increase by' instead of '='
+        self.defineDeviceClass("PerpetualCounter", comparison='increase by')
         
     def getReadbackName(self, device_name):
         # Motors use their *.RBV field for readback
@@ -34,6 +34,28 @@ class MyScanSettings(ScanSettings):
         return device_name
 
 
-# When now creating a `TableScan`,
-# provide an instance of `MyScanSettings`
-# ...
+# When now creating a scan,
+# use an instance of `MyScanSettings`
+
+settings = MyScanSettings()
+
+from scan.commands import *
+cmds = [
+        Comment('Without settings'),
+        Set('temperature', 10),
+        Wait('PerpetualCounter', 10),
+        
+        Comment('With settings'),
+        settings.Set('temperature', 10),
+        settings.Wait('PerpetualCounter', 10),
+       ]
+for cmd in cmds:
+    print cmd
+
+# Result:    
+# Comment('Without settings')
+# Set('temperature', 10)
+# Wait('PerpetualCounter', 10)
+# Comment('With settings')
+# Set('temperature', 10, completion=True, timeOut=300)
+# Wait('PerpetualCounter', 10, comparison='increase by')

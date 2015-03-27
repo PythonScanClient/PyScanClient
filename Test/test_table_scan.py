@@ -12,7 +12,7 @@ class MyScanSettings(ScanSettings):
         super(MyScanSettings, self).__init__()
         # Define special settings for some devices
         self.defineDeviceClass("Motor.*", completion=True, readback=True, timeout=100)
-        self.defineDeviceClass("InfiniteCounter", comparison="to increase by")
+        self.defineDeviceClass("InfiniteCounter", comparison="increase by")
         
     def getReadbackName(self, device_name):
         # Motors use their *.RBV field for readback
@@ -122,7 +122,7 @@ class TableScanTest(unittest.TestCase):
                   ],
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('shutter', 1), Set('X', 1.0), Set('Y', 2.0), Set('counter:reset', 1, completion=true), Set('counter:enable', 1, completion=true), Set('daq:enable', 1, completion=true), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=true), Set('counter:enable', 0, completion=true), Set('X', 3.0), Set('Y', 4.0), Set('counter:reset', 1, completion=true), Set('counter:enable', 1, completion=true), Set('daq:enable', 1, completion=true), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=true), Set('counter:enable', 0, completion=true), Set('shutter', 0)]")
+        self.assertEqual(str(cmds), "[Set('shutter', 1), Set('X', 1.0), Set('Y', 2.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('X', 3.0), Set('Y', 4.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('shutter', 0)]")
 
 
     def testScanSettings(self):
@@ -134,7 +134,7 @@ class TableScanTest(unittest.TestCase):
           ]
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Motor1', 2.0, completion=true, readback='Motor1.RBV', timeOut=100)]")
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Motor1', 2.0, completion=True, readback='Motor1.RBV', timeOut=100)]")
 
 
         print "\n=== Override ScanSettings for Motor ==="
@@ -145,7 +145,7 @@ class TableScanTest(unittest.TestCase):
           ]
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('Motor1', 1.0, completion=true, readback='Motor1.RBV', timeOut=100), Set('Motor2', 2.0)]")
+        self.assertEqual(str(cmds), "[Set('Motor1', 1.0, completion=True, readback='Motor1.RBV', timeOut=100), Set('Motor2', 2.0)]")
 
 
     def testParallel(self):
