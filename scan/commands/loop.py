@@ -21,7 +21,7 @@ class Loop(Command):
                        `True` to wait for readback from the 'device',
                        or name of specific device to check for readback.
     :param tolerance:  Tolerance when checking numeric `readback`.
-                       When left as none, will default to 10% of step size.
+                       Defaults to 0.
     :param timeout:    Timeout in seconds, used for `completion` and `readback` check.
     :param errhandler: Error handler
     
@@ -81,7 +81,7 @@ class Loop(Command):
             self.__body += args        
         self.__completion = kwargs['completion'] if 'completion' in kwargs else False
         self.__readback = kwargs['readback'] if 'readback' in kwargs else False
-        self.__tolerance = kwargs['tolerance'] if 'tolerance' in kwargs else 0.1 * abs(step)
+        self.__tolerance = kwargs['tolerance'] if 'tolerance' in kwargs else 0
         self.__timeout = kwargs['timeout'] if 'timeout' in kwargs else 0
         self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
         
