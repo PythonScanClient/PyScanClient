@@ -10,3 +10,4 @@ from scan.commands.script import Script
 from scan.commands.set import Set
 from scan.commands.wait import Wait
 from scan.commands.parallel import Parallel
+from scan.commands.sequence import Sequence

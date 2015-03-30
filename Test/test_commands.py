@@ -67,6 +67,17 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>true</wait><readback>some_device.RBV</readback><tolerance>1</tolerance><timeout>10.0</timeout></set>")
 
+    def testSequence(self):
+        # Nothing
+        cmd = Sequence()
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<sequence />")
+
+        # A few
+        cmd = Sequence(Comment("One"), Comment("Two"))
+        print cmd.format()
+        self.assertEqual(ET.tostring(cmd.genXML()), "<sequence><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></sequence>")
+
     def testParallel(self):
         # Nothing
         cmd = Parallel()
@@ -212,6 +223,14 @@ class CommandTest(unittest.TestCase):
         cmds = CommandSequence(Comment('Example'), Loop('pos', 1, 5, 0.5, Set('run', 1), Delay(2), Set('run', 0)))
         print cmds
         
+    def testCommandSequenceFormat(self):
+        cmds = CommandSequence(Parallel(
+                                        Sequence(Comment('Chain1'), Set('run', 1), Delay(2), Set('run', 0)),
+                                        Sequence(Comment('Chain2'), Set('foo', 1), Delay(2), Set('foo', 0))
+                                        ))
+        print cmds
+        self.assertEqual(str(cmds), "[\n    Parallel(\n        Sequence(\n            Comment('Chain1'),\n            Set('run', 1),\n            Delay(2),\n            Set('run', 0)\n        ),\n        Sequence(\n            Comment('Chain2'),\n            Set('foo', 1),\n            Delay(2),\n            Set('foo', 0)\n        )\n    )\n]")
+    
 
 if __name__ == "__main__":
     unittest.main()

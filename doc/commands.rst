@@ -30,12 +30,6 @@ Loop
 .. autoclass:: scan.commands.loop.Loop
    :members:
 
-Parallel
---------
-
-.. autoclass:: scan.commands.parallel.Parallel
-   :members:
-
 Delay
 -----
 
@@ -48,12 +42,23 @@ Log
 .. autoclass:: scan.commands.log.Log
    :members:
 
+Sequence
+--------
+
+.. autoclass:: scan.commands.sequence.Sequence
+   :members:
+
+Parallel
+--------
+
+.. autoclass:: scan.commands.parallel.Parallel
+   :members:
+
 Include
 -------
 
 .. autoclass:: scan.commands.include.Include
    :members:
-
 
 ConfigLog
 ---------
