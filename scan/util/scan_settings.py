@@ -161,6 +161,11 @@ class ScanSettings(object):
         
         Call this in the constructor of your derived class.
         
+        The order of registration matters.
+        First, define generic settings, for example for ".*" to set the general defaults.
+        Then register more and more specific patterns,
+        until eventually registering specific device names.
+        
         :param name_pattern: Device name pattern (regular expression)
         :param completion:   True to use completion
         :param readback:     False to not use a readback,
@@ -170,7 +175,7 @@ class ScanSettings(object):
         :param tolerance:    Tolerance for numeric readback comparison.
         :param comparison:   Comparison to use in Wait commands.
         """
-        self.device_settings.append(DeviceSettings(name_pattern, completion, readback, timeout, tolerance, comparison))                
+        self.device_settings.insert(0, DeviceSettings(name_pattern, completion, readback, timeout, tolerance, comparison))                
                         
     def getDefaultSettings(self, name):
         """Get the default settings for a device

@@ -9,9 +9,16 @@ from scan.util.scan_settings import DeviceSettings, ScanSettings
 class MyScanSettings(ScanSettings):
     def __init__(self):
         super(MyScanSettings, self).__init__()
+        # Settings are added in the order of 'most generic first'.
+        # By default, always use readback:
+        self.defineDeviceClass(".*", readback=True)
+        
         # Define special settings for some devices
+        # Temperature controller uses completion, but no readback
         self.defineDeviceClass("My:Lakeshore.*", completion=True, readback=False, timeout=300, tolerance=10)
+        # Motor uses completion and readback (with special readback name, see below)
         self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
+        # Counter comared by increment, not absolute value
         self.defineDeviceClass("PerpetualCounter", comparison='to increase by')
         
     def getReadbackName(self, device_name):
@@ -41,6 +48,15 @@ class DeviceSettingsTest(unittest.TestCase):
     def testCustomSettings(self):
         settings = MyScanSettings()
         
+        # Device that has no specific settings, using the default
+        s = settings.getDefaultSettings("SomeRandomDevice")
+        print s
+        self.assertEquals(s.getName(), "SomeRandomDevice")
+        self.assertEquals(s.getCompletion(), False)
+        self.assertEquals(s.getReadback(), "SomeRandomDevice")
+        self.assertEquals(s.getTimeout(), 0)
+        self.assertEquals(s.getTolerance(), 0)
+        
         # Check device that should have special settings
         s = settings.getDefaultSettings("My:Lakeshore1")
         print s
@@ -55,7 +71,7 @@ class DeviceSettingsTest(unittest.TestCase):
         print s
         self.assertEquals(s.getName(), "Your:Lakeshore1")
         self.assertEquals(s.getCompletion(), False)
-        self.assertEquals(s.getReadback(), None)
+        self.assertEquals(s.getReadback(), "Your:Lakeshore1")
         
         # 'Motor' that uses *.RBV for a readback
         s = settings.getDefaultSettings("My:Motor:47")
