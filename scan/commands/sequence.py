@@ -31,18 +31,27 @@ class Sequence(Command):
     This example performs two sequences in parallel:
         >>> Parallel( Sequence(Set('x', 1), Wait('x_loc', 10) ),
         >>>           Sequence(Set('y', 2), Wait('y_loc', 20) )  )
+    
+    Nested Sequences are flattened:
+        >>> # Results in the same sequence
+        >>> cmd = Sequence( Sequence(Comment("One"), Comment("Two")), Comment("Three"))
+        >>> cmd = Sequence( Comment("One"), Comment("Two"), Comment("Three"))
         
     """
     def __init__(self, body=None, *args, **kwargs):
-        if isinstance(body, Command):
-            self.__body = [ body ]
-        elif body:
-            self.__body = list(body)
-        else:
-            self.__body = list()
+        self.__body = list()
+        if body:
+            self.append(body)
         if args:
-            self.__body += args
+            self.append(*args)
         self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
+        
+    def append(self, *commands):
+        for cmd in commands:
+            if isinstance(cmd, Sequence):
+                self.append(*cmd.__body)
+            else:
+                self.__body.append(cmd)
         
     def genXML(self):
         xml = ET.Element('sequence')

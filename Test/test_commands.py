@@ -78,6 +78,17 @@ class CommandTest(unittest.TestCase):
         print cmd.format()
         self.assertEqual(ET.tostring(cmd.genXML()), "<sequence><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></sequence>")
 
+        # Sequences are 'flattened'
+        s1 = Sequence(Comment("One"), Comment("Two"))
+        s2 = Sequence(Comment("Four"), Comment("Five"))
+        seq1 = Sequence(s1, Comment("Three"), s2)
+        print seq1.format()
+        
+        seq2 = Sequence(Comment("One"), Comment("Two"), Comment("Three"), s2)
+        print seq2.format()
+        
+        self.assertEqual(ET.tostring(seq1.genXML()), ET.tostring(seq2.genXML()) )
+                         
     def testParallel(self):
         # Nothing
         cmd = Parallel()
