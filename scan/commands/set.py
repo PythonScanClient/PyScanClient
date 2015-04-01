@@ -109,7 +109,7 @@ class Set(Command):
             use_timeout = True
             result += ", readback=%s" % str(self.__readback)
         if use_timeout  and  self.__timeout!=0.0:
-            result += ', timeOut='+str(self.__timeout)
+            result += ', timeout='+str(self.__timeout)
         if self.__errHandler:
             result += ", errhandler='%s'" % self.__errHandler
         result+=')'
