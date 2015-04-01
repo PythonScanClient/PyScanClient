@@ -14,7 +14,7 @@ class BeamlineScanSettings(ScanSettings):
         # Define several PVs to use completion etc.
         self.defineDeviceClass("shutter", readback=True)
         self.defineDeviceClass("chopper:.*", completion=True)
-        self.defineDeviceClass(".*daq", completion=True)
+        self.defineDeviceClass(".*daq.*", completion=True)
         self.defineDeviceClass("motor_.", completion=True, readback=True)
         self.defineDeviceClass("setpoint", completion=True, readback="readback", tolerance=0.1)
         self.defineDeviceClass("pcharge", comparison="increase by")
@@ -90,10 +90,14 @@ def Wait(device, value, **kvargs):
 
 # 'Meta Commands'
 def Start():
-    return Set('shutter', 1)
+    """Start data acquisition"""
+    return Sequence( Set('loc://daq_reset(0)', 1),
+                     Set('loc://daq(0)', 1)
+                   )
 
 def Stop():
-    return Set('shutter', 0)
+    """Stop data acquisition"""
+    return Set('loc://daq(0)', 0)
 
 def TakeData(counter, limit):
     return  Sequence(Start(), Wait(counter, limit), Stop())
