@@ -134,7 +134,7 @@ class TableScanTest(unittest.TestCase):
           ]
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Motor1', 2.0, completion=True, readback='Motor1.RBV', timeOut=100)]")
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Motor1', 2.0, completion=True, readback='Motor1.RBV', timeout=100)]")
 
 
         print "\n=== Override ScanSettings for Motor ==="
@@ -145,7 +145,7 @@ class TableScanTest(unittest.TestCase):
           ]
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('Motor1', 1.0, completion=True, readback='Motor1.RBV', timeOut=100), Set('Motor2', 2.0)]")
+        self.assertEqual(str(cmds), "[Set('Motor1', 1.0, completion=True, readback='Motor1.RBV', timeout=100), Set('Motor2', 2.0)]")
 
 
     def testParallel(self):
