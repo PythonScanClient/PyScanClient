@@ -1,22 +1,28 @@
-"""Example for beamline specific setup"""
+"""Example for beamline specific setup
+
+Uses the scan server example database
+plus some local PVs to fake devices.
+"""
 
 from scan import *
-from scan.commands.set import Set as OriginalSet
 
 # Custom scan settings
 class BeamlineScanSettings(ScanSettings):
     def __init__(self):
         super(BeamlineScanSettings, self).__init__()
         # Define several PVs to use completion etc.
+        self.defineDeviceClass("shutter", readback=True)
         self.defineDeviceClass("chopper:.*", completion=True)
-        self.defineDeviceClass("daq", completion=True)
-        self.defineDeviceClass(".*:reset", completion=True)
-        self.defineDeviceClass(".pos", completion=True, readback=True)
+        self.defineDeviceClass(".*daq", completion=True)
+        self.defineDeviceClass("motor_.", completion=True, readback=True)
+        self.defineDeviceClass("setpoint", completion=True, readback="readback", tolerance=0.1)
+        self.defineDeviceClass("pcharge", comparison="increase by")
+        self.defineDeviceClass("neutrons", comparison="increase by")
 
     def getReadbackName(self, device_name):
-        # Anything ending in 'pos' is a motor with custom readback PV
-        if device_name.endswith("pos"):
-            return device_name + ".RBV"
+        # Prime example would be a motor, but not in this example..
+#         if "motor" in device_name:
+#             return device_name + ".RBV"
         return device_name
 
 scan_settings = BeamlineScanSettings()
@@ -54,22 +60,26 @@ def Set(device, value, **kvargs):
         cmd.setTimeout(kvargs['timeout'])
     return cmd
 
+def Wait(device, value, **kvargs):
+    cmd = scan_settings.Wait(device, value)
+    # TODO Handle kvargs 'comparison', 'tolerance', 'timeout'
+    return cmd
+
 # 'Meta Commands'
 def Start():
-    return Sequence(scan_settings.Set('counters:reset', 1),
-                    scan_settings.Set('daq', 1) )
+    return Set('shutter', 1)
 
 def Stop():
-    return scan_settings.Set('daq', 0)
+    return Set('shutter', 0)
 
 def TakeData(counter, limit):
     return  Sequence(Start(), Wait(counter, limit), Stop())
 
 def SetChopper(wavelength, phase):
-    return  Sequence(scan_settings.Set('chopper:run', 0),
-                     scan_settings.Set('chopper:wlen', wavelength),
-                     scan_settings.Set('chopper:phs', phase),
-                     scan_settings.Set('chopper:run', 1)
+    return  Sequence(scan_settings.Set('loc://chopper:run(0)', 0),
+                     scan_settings.Set('loc://chopper:wlen(0)', wavelength),
+                     scan_settings.Set('loc://chopper:phs(0)', phase),
+                     scan_settings.Set('loc://chopper:run(0)', 1)
                     )
 
 

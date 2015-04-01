@@ -3,8 +3,17 @@ from beamline_setup import *
 scan.ls()
 
 # N-Dim scan
-print scan.ndim(('xpos', 1, 10))
-print scan.ndim(('xpos', 1, 10), Comment('New X'), ('ypos', 1, 3), TakeData('beam_monitor', 1e12), 'neutrons')
+cmds = scan.ndim(('xpos', 1, 10), Delay(0.2))
+print cmds
+id = scan.submit(cmds)
+scan.waitUntilDone(id)
+
+# In simulation, pcharge rises at about 1e9 per second
+cmds = scan.ndim(('xpos', 1, 3), ('ypos', 1, 3), Wait('pcharge', 3e9), 'pcharge', 'neutrons')
+print cmds
+id = scan.submit(cmds)
+scan.waitUntilDone(id)
+
 
 # Table
 print scan.table( [ 'xpos', 'ypos',     'Wait For', 'Value'],
@@ -29,9 +38,10 @@ import unittest
 
 class TestScanClient(unittest.TestCase):
     def testSet(self):
-        self.assertEqual(str(Set('xpos', 1)), "Set('xpos', 1, completion=True, readback='xpos.RBV')")
-        self.assertEqual(str(Set('xpos', 1, completion=False)), "Set('xpos', 1, readback='xpos.RBV')")
-        self.assertEqual(str(Set('xpos', 1, completion=False, timeout=10)), "Set('xpos', 1, readback='xpos.RBV', timeOut=10)")
+        self.assertEqual(str(Set('setpoint', 1)), "Set('setpoint', 1, completion=True, readback='readback')")
+        self.assertEqual(str(Set('setpoint', 1, completion=False)), "Set('setpoint', 1, readback='readback')")
+        self.assertEqual(str(Set('setpoint', 1, readback=False)), "Set('setpoint', 1, completion=True)")
+        self.assertEqual(str(Set('setpoint', 1, timeout=10)), "Set('setpoint', 1, completion=True, readback='readback', timeout=10)")
 
 if __name__ == '__main__':
     unittest.main()
