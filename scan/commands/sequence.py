@@ -24,9 +24,9 @@ class Sequence(Command):
         >>> cmd = Sequence(Set('x', 1))
     
     Set two PVs to a value:
-        >>> cmd = Sequence(Set('x', 1),
-        >>>                Set('y', 2))
-    
+        >>> cmd = Sequence( Set('x', 1),
+        >>>                 Set('y', 2))
+
     Becomes more useful in combination with :class:`scan.commands.parallel.Parallel`.
     This example performs two sequences in parallel:
         >>> Parallel( Sequence(Set('x', 1), Wait('x_loc', 10) ),
