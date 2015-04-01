@@ -17,17 +17,17 @@ class Sequence(Command):
     
     Examples:
     
-    Do nothing:
+    Do nothing::
         >>> cmd = Sequence()
-        
+    
     Perform one command, same as directly using `Set('x', 1)`:
         >>> cmd = Sequence(Set('x', 1))
     
     Set two PVs to a value:
-        >>> cmd = Sequence( Set('x', 1),
-        >>>                 Set('y', 2))
-
+        >>> cmd = Sequence( Set('x', 1), Set('y', 2) )
+    
     Becomes more useful in combination with :class:`scan.commands.parallel.Parallel`.
+    
     This example performs two sequences in parallel:
         >>> Parallel( Sequence(Set('x', 1), Wait('x_loc', 10) ),
         >>>           Sequence(Set('y', 2), Wait('y_loc', 20) )  )
@@ -36,7 +36,7 @@ class Sequence(Command):
         >>> # Results in the same sequence
         >>> cmd = Sequence( Sequence(Comment("One"), Comment("Two")), Comment("Three"))
         >>> cmd = Sequence( Comment("One"), Comment("Two"), Comment("Three"))
-        
+    
     """
     def __init__(self, body=None, *args, **kwargs):
         self.__body = list()
