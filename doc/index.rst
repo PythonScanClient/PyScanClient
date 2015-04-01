@@ -17,6 +17,7 @@ Contents:
    scan_settings.rst
    table_scan.rst
    ndim_scan.rst
+   site.rst
    misc.rst
 
 Indices and tables

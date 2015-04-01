@@ -84,6 +84,36 @@ class Loop(Command):
         self.__tolerance = kwargs['tolerance'] if 'tolerance' in kwargs else 0
         self.__timeout = kwargs['timeout'] if 'timeout' in kwargs else 0
         self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
+            
+    def setCompletion(self, completion):
+        """Change completion
+        
+        :param completion: Await callback completion?
+        """
+        self.__completion = completion
+
+    def setReadback(self, readback):
+        """Change readback
+        
+        :param readback: `False` to not check any readback,
+               `True` to wait for readback from the `device`,
+               or name of specific device to check for readback.
+        """
+        self.__readback = readback
+
+    def setTolerance(self, tolerance):
+        """Change tolerance
+        
+        :param tolerance:  Tolerance when checking numeric `readback`.
+        """
+        self.__tolerance = tolerance
+
+    def setTimeout(self, timeout):
+        """Change timeout
+        
+        :param timeout:    Timeout in seconds, used for `completion` and `readback`.
+        """
+        self.__timeout = timeout
         
     def genXML(self):
         xml = ET.Element('loop')

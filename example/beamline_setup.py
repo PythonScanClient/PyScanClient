@@ -21,16 +21,16 @@ class BeamlineScanSettings(ScanSettings):
         self.defineDeviceClass("neutrons", comparison="increase by")
 
     def getReadbackName(self, device_name):
-        # Prime example would be a motor, but not in this example..
-#         if "motor" in device_name:
-#             return device_name + ".RBV"
+        # Prime example would be a motor:
+        #if "motor" in device_name:
+        #    return device_name + ".RBV"
         return device_name
 
 scan_settings = BeamlineScanSettings()
 
 
 # Redefine plain commands to use the scan settings
-def Set(device, value, **kvargs):
+def Set(device, value, **kwargs):
     """Set a device to a value.
     
     With optional check of completion and readback verification.
@@ -52,17 +52,61 @@ def Set(device, value, **kvargs):
         
     """
     cmd = scan_settings.Set(device, value)
-    if 'completion' in kvargs:
-        cmd.setCompletion(kvargs['completion'])
-    if 'readback' in kvargs:
-        cmd.setReadback(kvargs['readback'])
-    if 'tolerance' in kvargs:
-        cmd.setTolerance(kvargs['tolerance'])
-    if 'timeout' in kvargs:
-        cmd.setTimeout(kvargs['timeout'])
+    if 'completion' in kwargs:
+        cmd.setCompletion(kwargs['completion'])
+    if 'readback' in kwargs:
+        cmd.setReadback(kwargs['readback'])
+    if 'tolerance' in kwargs:
+        cmd.setTolerance(kwargs['tolerance'])
+    if 'timeout' in kwargs:
+        cmd.setTimeout(kwargs['timeout'])
     return cmd
 
-def Wait(device, value, **kvargs):
+def Loop(device, start, end, step, body=None, *args, **kwargs):
+    """Set a device to various values in a loop.
+    
+    Optional check of completion and readback verification.
+    
+    :param device:     Device name
+    :param start:      Initial value
+    :param end:        Final value
+    :param step:       Step size
+    :param body:       One or more commands
+    
+    Uses beam line specific defaults, but may override the following:
+
+    :param completion: Await callback completion?
+    :param readback:   `False` to not check any readback,
+                       `True` to wait for readback from the `device`,
+                       or name of specific device to check for readback.
+    :param tolerance:  Tolerance when checking numeric `readback`.
+    :param timeout:    Timeout in seconds, used for `completion` and `readback`.
+    
+    Example:
+        >>> cmd = Loop('position', 1, 10, 0.5, body_commands)
+        
+    """
+    if isinstance(body, Command):
+        body = [ body ]
+    elif body:
+        body = list(body)
+    else:
+        body = list()
+    if args:
+        body += args        
+
+    cmd = scan_settings.Loop(device, start, end, step, body)
+    if 'completion' in kwargs:
+        cmd.setCompletion(kwargs['completion'])
+    if 'readback' in kwargs:
+        cmd.setReadback(kwargs['readback'])
+    if 'tolerance' in kwargs:
+        cmd.setTolerance(kwargs['tolerance'])
+    if 'timeout' in kwargs:
+        cmd.setTimeout(kwargs['timeout'])
+    return cmd
+
+def Wait(device, value, **kwargs):
     """Wait until a condition is met, i.e. a device reaches a value.
     
     :param  device:      Name of PV or device.
@@ -78,14 +122,15 @@ def Wait(device, value, **kvargs):
         
     Example:
         >>> cmd = Wait('shutter', 1)
+        
     """
     cmd = scan_settings.Wait(device, value)
-    if 'comparison' in kvargs:
-        cmd.setComparison(kvargs['comparison'])
-    if 'tolerance' in kvargs:
-        cmd.setTolerance(kvargs['tolerance'])
-    if 'timeout' in kvargs:
-        cmd.setTimeout(kvargs['timeout'])
+    if 'comparison' in kwargs:
+        cmd.setComparison(kwargs['comparison'])
+    if 'tolerance' in kwargs:
+        cmd.setTolerance(kwargs['tolerance'])
+    if 'timeout' in kwargs:
+        cmd.setTimeout(kwargs['timeout'])
     return cmd
 
 # 'Meta Commands'
@@ -109,7 +154,8 @@ def SetChopper(wavelength, phase):
                      scan_settings.Set('loc://chopper:run(0)', 1)
                     )
 
-
+# Beamline version of ScanClient
+# Offers shortcuts to n-dim and table scans
 class BeamlineScanClient(ScanClient):
     """Scan Client for beam line"""
     def __init__(self):
@@ -151,6 +197,18 @@ class TestScanClient(unittest.TestCase):
         self.assertEqual(str(Set('setpoint', 1, readback=False)), "Set('setpoint', 1, completion=True)")
         self.assertEqual(str(Set('setpoint', 1, timeout=10)), "Set('setpoint', 1, completion=True, readback='readback', timeout=10)")
 
+    def testLoop(self):
+        self.assertEqual(str(Loop('x', 1, 5, 0.5)), "Loop('x', 1, 5, 0.5)")
+        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5)), "Loop('motor_x', 1, 5, 0.5, completion=True, readback='motor_x')")
+        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, completion=False)), "Loop('motor_x', 1, 5, 0.5, readback='motor_x')")
+        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, completion=False, readback=False)), "Loop('motor_x', 1, 5, 0.5)")
+        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, Comment(''), completion=False, readback=False)),
+                         "Loop('motor_x', 1, 5, 0.5, [ Comment('') ])")
+        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, Comment('a'), Comment('b'), completion=False, readback=False)),
+                         "Loop('motor_x', 1, 5, 0.5, [ Comment('a'), Comment('b') ])")
+        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, [ Comment('a'), Comment('b') ], completion=False, readback=False)),
+                         "Loop('motor_x', 1, 5, 0.5, [ Comment('a'), Comment('b') ])")
+        
     def testWait(self):
         self.assertEqual(str(Wait('whatever', 1)), "Wait('whatever', 1, comparison='>=')")
         self.assertEqual(str(Wait('pcharge', 1)), "Wait('pcharge', 1, comparison='increase by')")
