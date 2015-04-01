@@ -10,7 +10,7 @@ def parseXMLData(xml_text):
     
     :param xml_text: XML Log data as returned from scan server
     
-    :return: { 'device1': { 'id': ids.., 'time': times.., 'value': values.. }
+    :return: { 'device1': { 'id': ids.., 'time': times.., 'value': values.. } }
     """
     data = dict()
     xml = ET.fromstring(xml_text)
@@ -33,7 +33,6 @@ def parseXMLData(xml_text):
             ids.append(id)
             times.append(time)
             values.append(value)
-
         
         data[name] = { 'id': ids, 'time': times, 'value': values }
     return data
@@ -108,7 +107,8 @@ def createTable(data, *devices):
             if raw_data[i]:
                 if current_id is None   or  raw_data[i][0] < current_id:
                     current_id = raw_data[i][0]
-            
+        
+        # Any data left?
         if current_id is None:
             break
         
@@ -122,8 +122,9 @@ def createTable(data, *devices):
                     raw_data[i] = iters[i].next()
                 except StopIteration:
                     raw_data[i] = None
-            # else: leave values[i] unchanged
+            # else: leave values[i] unchanged, repeating previous data
         
+        # Add values for current_id to result
         for i in range(N):
             result[i].append(values[i])
     return result
