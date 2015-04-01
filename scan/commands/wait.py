@@ -36,14 +36,38 @@ class Wait(Command):
                     'decrease by':'DECREASE_BY'}
 
     def __init__(self, device, value, comparison='=', tolerance=0.0, timeout=0.0, errhandler=None):
-        self.__device=device
-        self.__desiredValue=value
+        self.__device = device
+        self.__desiredValue = value
         if not comparison in Wait.__comparisons:
             raise Exception("Invalid comparison '%s'" % comparison)
-        self.__comparison=comparison
-        self.__tolerance=tolerance
-        self.__timeout=timeout
-        self.__errHandler=errhandler
+        self.__comparison = comparison
+        self.__tolerance = tolerance
+        self.__timeout = timeout
+        self.__errHandler = errhandler
+        
+    def setComparison(self, comparison):
+        """Change comparison
+        
+        :param  comparison:  How current value is compared to the desired value.
+                             Options: '=', '>', '>=', '<' , '<=', 'increase by','decrease by'
+         """
+        if not comparison in Wait.__comparisons:
+            raise Exception("Invalid comparison '%s'" % comparison)
+        self.__comparison = comparison
+
+    def setTolerance(self, tolerance):
+        """Change tolerance
+        
+        :param tolerance:  Tolerance when checking numeric `readback`.
+        """
+        self.__tolerance = tolerance
+
+    def setTimeout(self, timeout):
+        """Change timeout
+        
+        :param timeout:    Timeout in seconds, used for `completion` and `readback`.
+        """
+        self.__timeout = timeout
         
     def genXML(self):
         xml = ET.Element('wait')

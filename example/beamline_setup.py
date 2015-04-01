@@ -5,6 +5,7 @@ plus some local PVs to fake devices.
 """
 
 from scan import *
+from symbol import comparison
 
 # Custom scan settings
 class BeamlineScanSettings(ScanSettings):
@@ -38,6 +39,7 @@ def Set(device, value, **kvargs):
     :param value:      Value
     
     Uses beam line specific defaults, but may override the following:
+
     :param completion: Await callback completion?
     :param readback:   `False` to not check any readback,
                        `True` to wait for readback from the `device`,
@@ -61,8 +63,29 @@ def Set(device, value, **kvargs):
     return cmd
 
 def Wait(device, value, **kvargs):
+    """Wait until a condition is met, i.e. a device reaches a value.
+    
+    :param  device:      Name of PV or device.
+    :param  value:       Desired value.
+
+    Uses beam line specific defaults, but may override the following:
+
+    :param  comparison:  How current value is compared to the desired value.
+                         Defaults to '='.
+                         Other options: '>', '>=', '<' , '<=', 'increase by','decrease by'
+    :param  tolerance:  Tolerance used for numeric comparison. Defaults to 0, not used for string values.
+    :param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
+        
+    Example:
+        >>> cmd = Wait('shutter', 1)
+    """
     cmd = scan_settings.Wait(device, value)
-    # TODO Handle kvargs 'comparison', 'tolerance', 'timeout'
+    if 'comparison' in kvargs:
+        cmd.setComparison(kvargs['comparison'])
+    if 'tolerance' in kvargs:
+        cmd.setTolerance(kvargs['tolerance'])
+    if 'timeout' in kvargs:
+        cmd.setTimeout(kvargs['timeout'])
     return cmd
 
 # 'Meta Commands'
@@ -111,3 +134,25 @@ class BeamlineScanClient(ScanClient):
 
 scan = BeamlineScanClient()
 
+
+
+
+
+import unittest
+
+class TestScanClient(unittest.TestCase):
+    def testSet(self):
+        self.assertEqual(str(Set('setpoint', 1)), "Set('setpoint', 1, completion=True, readback='readback')")
+        self.assertEqual(str(Set('setpoint', 1, completion=False)), "Set('setpoint', 1, readback='readback')")
+        self.assertEqual(str(Set('setpoint', 1, readback=False)), "Set('setpoint', 1, completion=True)")
+        self.assertEqual(str(Set('setpoint', 1, timeout=10)), "Set('setpoint', 1, completion=True, readback='readback', timeout=10)")
+
+    def testWait(self):
+        self.assertEqual(str(Wait('whatever', 1)), "Wait('whatever', 1, comparison='>=')")
+        self.assertEqual(str(Wait('pcharge', 1)), "Wait('pcharge', 1, comparison='increase by')")
+        self.assertEqual(str(Wait('pcharge', 1, timeout=5)), "Wait('pcharge', 1, comparison='increase by', timeout=5)")
+        self.assertEqual(str(Wait('pcharge', 1, timeout=5, comparison='>=')), "Wait('pcharge', 1, comparison='>=', timeout=5)")
+
+
+if __name__ == '__main__':
+    unittest.main()
