@@ -78,7 +78,15 @@ def getDatetime(time):
 
 
 def createTable(data, *devices):
-    # Iterators for the device data
+    """Create data table
+    
+    Aligns samples for given list of devices by sample ID.
+    
+    :param data: Data dict 
+    :param devices: One or more devices
+    
+    :return: Table. result[0] has values for first device, result[1] for second device and so on.     
+    """
     N = len(devices)
     iters = [ SampleIterator(data, device) for device in devices ]
     
