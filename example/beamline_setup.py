@@ -1,6 +1,7 @@
 """Example for beamline specific setup"""
 
 from scan import *
+from scan.commands.set import Set as OriginalSet
 
 # Custom scan settings
 class BeamlineScanSettings(ScanSettings):
@@ -21,24 +22,55 @@ class BeamlineScanSettings(ScanSettings):
 scan_settings = BeamlineScanSettings()
 
 
+# Redefine plain commands to use the scan settings
+def Set(device, value, **kvargs):
+    """Set a device to a value.
+    
+    With optional check of completion and readback verification.
+    
+    :param device:     Device name
+    :param value:      Value
+    
+    Uses beam line specific defaults, but may override the following:
+    :param completion: Await callback completion?
+    :param readback:   `False` to not check any readback,
+                       `True` to wait for readback from the `device`,
+                       or name of specific device to check for readback.
+    :param tolerance:  Tolerance when checking numeric `readback`.
+    :param timeout:    Timeout in seconds, used for `completion` and `readback`.
+    
+    Example:
+        >>> cmd = Set('position', 10.5)
+        
+    """
+    cmd = scan_settings.Set(device, value)
+    if 'completion' in kvargs:
+        cmd.setCompletion(kvargs['completion'])
+    if 'readback' in kvargs:
+        cmd.setReadback(kvargs['readback'])
+    if 'tolerance' in kvargs:
+        cmd.setTolerance(kvargs['tolerance'])
+    if 'timeout' in kvargs:
+        cmd.setTimeout(kvargs['timeout'])
+    return cmd
+
 # 'Meta Commands'
 def Start():
-    return [ scan_settings.Set('counters:reset', 1),
-             scan_settings.Set('daq', 1)
-           ]
+    return Sequence(scan_settings.Set('counters:reset', 1),
+                    scan_settings.Set('daq', 1) )
 
 def Stop():
-    return [ scan_settings.Set('daq', 0) ]
+    return scan_settings.Set('daq', 0)
 
 def TakeData(counter, limit):
-    return  Start() + [ Wait(counter, limit) ] + Stop()
+    return  Sequence(Start(), Wait(counter, limit), Stop())
 
 def SetChopper(wavelength, phase):
-    return  [ scan_settings.Set('chopper:run', 0),
-              scan_settings.Set('chopper:wlen', wavelength),
-              scan_settings.Set('chopper:phs', phase),
-              scan_settings.Set('chopper:run', 1)
-            ]
+    return  Sequence(scan_settings.Set('chopper:run', 0),
+                     scan_settings.Set('chopper:wlen', wavelength),
+                     scan_settings.Set('chopper:phs', phase),
+                     scan_settings.Set('chopper:run', 1)
+                    )
 
 
 class BeamlineScanClient(ScanClient):

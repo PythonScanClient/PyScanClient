@@ -27,18 +27,48 @@ class Set(Command):
     """
 
     def __init__(self, device, value, completion=False, readback=False, tolerance=0.0, timeout=0.0, errhandler=None):
-        self.__device=device
-        self.__value=value
-        self.__completion=completion
-        self.__readback=readback
-        self.__tolerance=tolerance
-        self.__timeout=timeout
-        self.__errHandler=errhandler
+        self.__device = device
+        self.__value = value
+        self.__completion = completion
+        self.__readback = readback
+        self.__tolerance = tolerance
+        self.__timeout = timeout
+        self.__errHandler = errhandler
+    
+    def setCompletion(self, completion):
+        """Change completion
+        
+        :param completion: Await callback completion?
+        """
+        self.__completion = completion
+
+    def setReadback(self, readback):
+        """Change readback
+        
+        :param readback: `False` to not check any readback,
+               `True` to wait for readback from the `device`,
+               or name of specific device to check for readback.
+        """
+        self.__readback = readback
+
+    def setTolerance(self, tolerance):
+        """Change tolerance
+        
+        :param tolerance:  Tolerance when checking numeric `readback`.
+        """
+        self.__tolerance = tolerance
+
+    def setTimeout(self, timeout):
+        """Change timeout
+        
+        :param timeout:    Timeout in seconds, used for `completion` and `readback`.
+        """
+        self.__timeout = timeout
         
     def genXML(self):
         xml = ET.Element('set')
 
-        dev=ET.SubElement(xml, 'device')
+        dev = ET.SubElement(xml, 'device')
         if self.__device:
             dev.text = self.__device
             
