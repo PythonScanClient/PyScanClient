@@ -273,12 +273,7 @@ class ScanClient(object):
         ET.fromstring(xml)
         return int(ET.fromstring(xml).text)
     
-    # --TODO: GET {BaseURL}/scan/{id}/commands       - get scan commands
-    # TODO: GET {BaseURL}/scan/{id}/data           - get scan data
-    # --TODO: GET {BaseURL}/scan/{id}/last_serial    - get scan data's last serial
-    # --TODO: GET {BaseURL}/scan/{id}/devices        - get devices used by a scan
-    
-    def scanDevices(self, scanID):
+    def scanDevices(self, scanID=-1):
         """Get list of devices used by scan.
         
         :param scanID: The ID of scan that is still held in scan server,
