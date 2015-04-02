@@ -9,6 +9,9 @@ and monitor its progress using the basic API,
 without using site-specific settings
 or abstractions like the table-based scan.
 
+Example
+-------
+
 .. literalinclude:: ../example/client1.py
 
 

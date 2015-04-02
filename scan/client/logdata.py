@@ -41,6 +41,12 @@ class SampleIterator(object):
     """Sample iterator
     
     Iterator over samples of one device.
+    At each step of the iteration, it provides a logged sample
+    as a tuple containing
+     1) Sample id
+     2) Time stamp in Posix millisecond
+     3) Value
+     
     
     :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
     :param device: Device for which to iterate over samples
