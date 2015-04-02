@@ -14,7 +14,7 @@ Use Case: CS-Studio Displays
 For routine execution of the same scan where just a few parameters change,
 create a CS-Studio display that allows configuring them.
 A "Submit" button then invokes a jython script which assembles
-as scan.
+a scan.
 
 
 Use Case: Table-Based Scans
