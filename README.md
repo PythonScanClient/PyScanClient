@@ -24,3 +24,23 @@ Then view `doc/_build/html/index.html` in web browser.
 This repository is at https://github.com/PythonScanClient/PyScanClient
 
 When reaching initial production state, it may be transferred to https://github.com/ControlSystemStudio/PyScanClient
+
+Install
+-------
+
+Global installation:
+
+    sudo python setup.py install
+   
+Local installation:
+   
+    python setup.py install --prefix=$HOME
+   
+and then add the resulting $HOME/lib/python*/site-packages directory to your PYTHONPATH.
+
+
+Uninstall
+---------
+
+    # cd to where it was installed
+    rm -rf PyScanClient*.egg-info scan 

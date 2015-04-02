@@ -1,13 +1,13 @@
 Metadata-Version: 1.1
 Name: PyScanClient
 Version: 0.9.5
-Summary: Python Scna Server Client Lib
+Summary: Python Scan Server Client Lib
 Home-page: https://github.com/ksdj/PyScanClient.git
-Author: Qiu Yongxiang
-Author-email: qiuyongxiang05@gmail.com
-License: UNKNOWN
-Description: UNKNOWN
-Platform: UNKNOWN
+Author: Qiu Yongxiang, Kay Kasemir
+Author-email: qiuyongxiang05@gmail.com, kasemirk@ornl.gov
+License: Eclipse Public License - v 1.0
+Description: Python Scan Server Client Lib
+Platform: Any
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
 Classifier: Programming Language :: Python :: 2.7

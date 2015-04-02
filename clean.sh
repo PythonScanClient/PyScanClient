@@ -5,3 +5,6 @@ find . -name *.pyc -exec rm {} \;
 
 # Delete doc
 (cd doc; make clean)
+
+# Remove setup/bdist
+rm -rf build dist
