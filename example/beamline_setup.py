@@ -5,7 +5,6 @@ plus some local PVs to fake devices.
 """
 
 from scan import *
-from symbol import comparison
 
 # Custom scan settings
 class BeamlineScanSettings(ScanSettings):

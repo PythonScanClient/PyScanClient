@@ -11,5 +11,8 @@ print cmds
 id = scan.submit(cmds)
 scan.waitUntilDone(id)
 
-# TODO Details of data API change
-print scan.getPlainData(id)
+# Dump motor positions
+data = scan.getData(id)
+table = createTable(data, 'xpos', 'ypos')
+for (x, y) in zip(*table):
+    print "%d, %d" % (x, y)
