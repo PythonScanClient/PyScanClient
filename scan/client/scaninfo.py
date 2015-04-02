@@ -19,10 +19,10 @@ class ScanInfo(object):
         self.runtime = int(xml.find('runtime').text)
         
         node = xml.find('total_work_units')
-        self.total_work_units = int(node.text) if node else 0
+        self.total_work_units = 0 if node is None else int(node.text)
         
         node = xml.find('performed_work_units')
-        self.performed_work_units = int(node.text) if node else 0
+        self.performed_work_units = 0 if node is None else int(node.text)
         
         self.address = int(xml.find('address').text)
         self.command = xml.find('command').text
