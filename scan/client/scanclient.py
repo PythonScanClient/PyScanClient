@@ -10,7 +10,7 @@ import time
 import xml.etree.ElementTree as ET
 import urllib
 import urllib2
-from scan.client.data import Data
+from scan.client.logdata import parseXMLData
 from scan.commands.commandsequence import CommandSequence
 from scaninfo import ScanInfo
 
@@ -299,7 +299,7 @@ class ScanClient(object):
     def waitUntilDone(self, scanID):
         """Wait until scan finishes
         
-        :param id: ID of scan on which to wait
+        :param scanID: ID of scan on which to wait
         
         :return: Scan info
         """
@@ -312,7 +312,7 @@ class ScanClient(object):
     def pause(self, scanID=-1):
         """Pause a running scan
         
-        :param id: ID of scan or -1 to pause current scan 
+        :param scanID: ID of scan or -1 to pause current scan 
         
         Using `PUT {BaseURL}/scan/{id}/pause`
         
@@ -327,7 +327,7 @@ class ScanClient(object):
     def resume(self, scanID=-1):
         """Resume a paused scan
         
-        :param id: ID of scan or -1 to resume current scan
+        :param scanID: ID of scan or -1 to resume current scan
          
         Using `PUT {BaseURL}/scan/{id}/resume`
         
@@ -343,7 +343,7 @@ class ScanClient(object):
     def abort(self, scanID=-1):
         """Abort a running or paused scan
         
-        :param id: ID of scan or -1 to abort current scan
+        :param scanID: ID of scan or -1 to abort current scan
 
         Using `PUT {BaseURL}/scan/{id}/abort`
         
@@ -360,7 +360,7 @@ class ScanClient(object):
         
         Using `DELETE {BaseURL}/scan/{id}`
         
-        :param id: The id of scan you want to delete.
+        :param scanID: The id of scan you want to delete.
         
         Example::
 
@@ -409,22 +409,40 @@ class ScanClient(object):
         xml = "<patch><address>%d</address><property>%s</property><value>%s</value></patch>" % (address, property, str(value))
         self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id) + '/patch', 'PUT', xml)
 
-    def getPlainData(self,scanID):
-        '''
-        Get Logged data of one scan.
-        @param scanID:  ID of scan from which to get data.
+    def getData(self, scanID):
+        """Fetch logged data of a scan
         
-        Return:
-        The data returned will be in the following form:
-        data = {
-        'PV1':[(serial11,time11,value11,),(),...,()]
+        :param scanID: ID of scan
         
+        :return: Data dictionary
         
-        }
-        '''
+        Example:
+           >>> data = client.getData(id)
+           >>> print data
+           
+        Format of the data::
+        
+           { 'device1': {'id': [0, 1, 2, 3, 4 ],
+                         'value': [2.0, 3.0, 4.0, 2.0, 4.0],
+                         'time': [1427913270352, 1427913270470, 1427913270528, 1427913270596, 1427913270695]
+                        },
+             'device2': {'id': [0, 3, 6, 9, 12],
+                         'value': [1.0, 2.0, 3.0, 4.0, 5.0],
+                         'time': [1427913270351, 1427913270595, 1427913270795, 1427913271076, 1427913271393]
+                        }
+           }
+
+        The data dictionary has one entry per logged device.
+        Its value is again a dictionary with entries
+        
+        id:
+           Sample IDs, starting from 0
+        value:
+           Sample values
+        time:
+           Times in Posix milliseconds
+        """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/data'
         xml = self.__do_request(url)
-        last_serial = self.lastSerial(scanID)
-        #return xml
-        return Data(xml,last_serial)
+        return parseXMLData(xml)
     

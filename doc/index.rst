@@ -14,6 +14,7 @@ Contents:
    overview.rst
    scan_client.rst
    commands.rst
+   logdata.rst
    scan_settings.rst
    table_scan.rst
    ndim_scan.rst

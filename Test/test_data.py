@@ -1,4 +1,4 @@
-from scan.client.prelimdata import SampleIterator, getDatetime, parseXMLData, createTable
+from scan.client.logdata import SampleIterator, getDatetime, parseXMLData, createTable
 
 # client = ScanClient()
 # id = client.submit(Loop('motor_x', 1, 5, 1, Loop('motor_y', 2, 4, 1, Log('motor_x', 'motor_y'))))

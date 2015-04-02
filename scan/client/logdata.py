@@ -42,7 +42,7 @@ class SampleIterator(object):
     
     Iterator over samples of one device.
     
-    :param data: Data dict
+    :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
     :param device: Device for which to iterate over samples
     """
     def __init__(self, data, device):
@@ -75,13 +75,12 @@ def getDatetime(time):
     return datetime.fromtimestamp(secs)
 
 
-
 def createTable(data, *devices):
     """Create data table
     
     Aligns samples for given list of devices by sample ID.
     
-    :param data: Data dict 
+    :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
     :param devices: One or more devices
     
     :return: Table. result[0] has values for first device, result[1] for second device and so on.     
