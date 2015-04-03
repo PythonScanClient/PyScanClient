@@ -440,5 +440,4 @@ class ScanClient(object):
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/data'
         xml = self.__do_request(url)
-        return Data(xml)
-    
+        return parseXMLData(xml)

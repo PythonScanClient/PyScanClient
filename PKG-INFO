@@ -6,8 +6,8 @@ Home-page: https://github.com/PythonScanClient
 Author: Qiu Yongxiang, Kay Kasemir
 Author-email: qiuyongxiang05@gmail.com, kasemirk@ornl.gov
 License: Eclipse Public License - v 1.0
-Description: UNKNOWN
-Platform: UNKNOWN
+Description: Python Scan Server Client Lib
+Platform: Any
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
 Classifier: Programming Language :: Python :: 2.7
