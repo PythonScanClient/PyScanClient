@@ -1,5 +1,5 @@
 from scan.client.scanclient import ScanClient
-from scan.client.data import Data
+from scan.client.data import Data, getDatetime, getTimeSeries, alignSerial, getTable
 sc = ScanClient('localhost',4810)
 
 #xml = sc.getData(449)
@@ -71,10 +71,7 @@ xml='''<data>
         <time>1427396670265</time>
         <value>0.0</value>
       </sample>
-      <sample id="2">
-        <time>1427396679897</time>
-        <value>1.0</value>
-      </sample>
+      
       <sample id="3">
         <time>1427396679900</time>
         <value>2.0</value>
@@ -108,6 +105,10 @@ xml='''<data>
   <device>
     <name>ypos</name>
     <samples>
+      <sample id="2">
+        <time>1427396679897</time>
+        <value>1.0</value>
+      </sample>
       <sample id="4">
         <time>1427396670265</time>
         <value>0.0</value>
@@ -136,6 +137,22 @@ xml='''<data>
   </device>
 </data>
 '''
-d = Data(Xml=xml,last_serial=21)
-print '-----------------plain data----------------------'
-d.printPlain()
+d = Data(Xml=xml)
+getTimeSeries(d, 'xpos', 'datetime')[1][0] = 11
+print getTimeSeries(d, 'xpos', 'datetime')
+print '-----------------xpos----------------------'
+it = alignSerial(d, 'xpos')
+for t in it:
+    print "%s : %s" %  (t[0], str(t[1]))
+print '-----------------ypos----------------------'
+it = alignSerial(d, 'ypos')
+for t in it:
+    print "%s : %s" %  (t[0], str(t[1]))
+print '-----------------pcharge----------------------'
+it = alignSerial(d, 'pcharge')
+for t in it:
+    print "%s : %s" %  (t[0], str(t[1]))
+
+print '-----------------x, y----------------------'
+print getTable(d, 'xpos', 'ypos', 'pcharge')
+

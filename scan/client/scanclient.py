@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 import urllib
 import urllib2
 from scan.client.logdata import parseXMLData
+from scan.client.data import Data
 from scan.commands.commandsequence import CommandSequence
 from scaninfo import ScanInfo
 
@@ -439,5 +440,5 @@ class ScanClient(object):
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/data'
         xml = self.__do_request(url)
-        return parseXMLData(xml)
+        return Data(xml)
     
