@@ -45,7 +45,7 @@ class CommandTest(unittest.TestCase):
         cmd = Set("some_device", "Text")
         print cmd
         self.assertEqual(str(cmd), "Set('some_device', 'Text')")
-        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>Text</value></set>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>\"Text\"</value></set>")
 
         # With completion
         cmd = Set("some_device", 3.14, completion=True)

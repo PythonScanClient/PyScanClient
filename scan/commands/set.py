@@ -71,8 +71,11 @@ class Set(Command):
         dev = ET.SubElement(xml, 'device')
         if self.__device:
             dev.text = self.__device
-            
-        ET.SubElement(xml, 'value').text = str(self.__value)
+        
+        if isinstance(self.__value, str):
+            ET.SubElement(xml, 'value').text = '"%s"' % self.__value
+        else:
+            ET.SubElement(xml, 'value').text = str(self.__value)
         
         need_timeout = False
         if self.__completion:
