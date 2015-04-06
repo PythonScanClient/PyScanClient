@@ -161,6 +161,12 @@ class CommandTest(unittest.TestCase):
         self.assertEqual(str(cmd), "Script('MyCustomCommand', 'arg1', 42.3)")
         self.assertEqual(ET.tostring(cmd.genXML()), "<script><path>MyCustomCommand</path><arguments><argument>arg1</argument><argument>42.3</argument></arguments></script>")
 
+        # Arguments already provided as list
+        cmd = Script("MyCustomCommand", [ "arg1", 42.3 ])
+        print cmd
+        self.assertEqual(str(cmd), "Script('MyCustomCommand', 'arg1', 42.3)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<script><path>MyCustomCommand</path><arguments><argument>arg1</argument><argument>42.3</argument></arguments></script>")
+
     def testWait(self):
         cmd = Wait('device', 3.14)
         print cmd

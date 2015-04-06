@@ -42,7 +42,11 @@ class Script(Command):
     """
     def __init__(self, script='the_script.py', *args, **kwargs):
         self.__path = script
-        self.__args = args
+        # If args[0] is already a list, use that
+        if len(args) == 1  and  len(args[0]) > 0:
+            self.__args = args[0]
+        else:
+            self.__args = args
         self.__errHandler = kwargs['errHandler'] if 'errHandler' in kwargs else None
         
     def genXML(self):
