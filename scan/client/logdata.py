@@ -37,39 +37,6 @@ def parseXMLData(xml_text):
         data[name] = { 'id': ids, 'time': times, 'value': values }
     return data
 
-class SampleIterator(object):
-    """Sample iterator
-    
-    Iterator over samples of one device.
-    At each step of the iteration, it provides a logged sample
-    as a tuple containing
-     1) Sample id
-     2) Time stamp in Posix millisecond
-     3) Value
-     
-    
-    :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
-    :param device: Device for which to iterate over samples
-    """
-    def __init__(self, data, device):
-        self.__ids = data[device]['id']
-        self.__times = data[device]['time']
-        self.__values = data[device]['value']
-        self.__index = 0
-        self.__size = len(self.__values)
-        
-    def __iter__(self):
-        return self
-
-    def next(self):
-        """:return: Tuple with next ( id, time, value )"""
-        if self.__index >= self.__size:
-            raise StopIteration
-        i = self.__index
-        result = ( self.__ids[i], self.__times[i], self.__values[i] )
-        self.__index += 1
-        return result
-
 
 def getDatetime(time):
     """Convert log time
@@ -81,18 +48,48 @@ def getDatetime(time):
     return datetime.fromtimestamp(secs)
 
 
-def createTable(data, *devices):
-    """Create data table
+def iterateSamples(data, device):
+    """Sample iterator
     
-    Aligns samples for given list of devices by sample ID.
+    Iterator over samples of one device.
+    At each step of the iteration, it provides a logged sample
+    as a tuple containing
+    
+    1) Sample id
+    2) Time stamp in Posix milliseconds
+    3) Value, which is a number or a string
     
     :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
-    :param devices: One or more devices
+    :param device: Device for which to iterate over samples
     
-    :return: Table. result[0] has values for first device, result[1] for second device and so on.     
+    :return: Generator for the samples of the device as tuples ( id, time, value )
     """
-    N = len(devices)
-    iters = [ SampleIterator(data, device) for device in devices ]
+    ids = data[device]['id']
+    times = data[device]['time']
+    values = data[device]['value']
+    size = len(values)
+    for i in range(size):
+        yield ( ids[i], times[i], values[i] )
+
+
+def iterateTable(*iters):
+    """Iterate data for several devices by sample ID
+    
+    While iterating over the samples from basic per-channel iterators,
+    their values are aligned by sample ID.
+    Each iteration returns a 'row' in a table where all samples
+    on that row have either the same sample ID,
+    or a previous sample ID in case there was no new data available
+    and the previous value still applies.
+    
+    :param iters: Iterators for the samples of desired channels
+    
+    :return: Generator for rows of a table.
+             Each invocation of the generator return [ value[0], value[1], ...]
+             where value[0] is the value of the first device,
+             value[1] for second device and so on.     
+    """
+    N = len(iters)
     
     # 'Current' value for each iter or None when at end
     raw_data = list()
@@ -104,7 +101,6 @@ def createTable(data, *devices):
 
     # Values for current 'row'
     values = [ None for i in range(N) ]
-    result = [ list() for i in range(N) ]
     while True:
         # Locate smallest sample ID
         current_id = None
@@ -130,7 +126,23 @@ def createTable(data, *devices):
             # else: leave values[i] unchanged, repeating previous data
         
         # Add values for current_id to result
-        for i in range(N):
-            result[i].append(values[i])
-    return result
+        yield values
 
+
+def createTable(data, *devices):
+    """Create data table
+    
+    Aligns samples for given list of devices by sample ID.
+    
+    :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
+    :param devices: One or more devices
+    
+    :return: Table. result[0] has values for first device, result[1] for second device and so on.     
+    """
+    N = len(devices)
+    iters = [ iterateSamples(data, device) for device in devices ]
+    table = [ list() for i in range(N) ]
+    for row in iterateTable(*iters):
+        for i in range(N):
+            table[i].append(row[i])
+    return table

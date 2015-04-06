@@ -1,4 +1,4 @@
-from scan.client.logdata import SampleIterator, getDatetime, parseXMLData, createTable
+from scan.client.logdata import iterateSamples, getDatetime, parseXMLData, createTable
 
 # client = ScanClient()
 # id = client.submit(Loop('motor_x', 1, 5, 1, Loop('motor_y', 2, 4, 1, Log('motor_x', 'motor_y'))))
@@ -108,7 +108,7 @@ print "Times: ", [ str(getDatetime(time)) for time in  data['motor_x']['time'] ]
 print "Values: ", data['motor_x']['value']
 
 # Demo of sample iterator
-for s in SampleIterator(data, 'motor_x'):
+for s in iterateSamples(data, 'motor_x'):
     print "%s (%2d): %s" % (str(getDatetime(s[1])), s[0], str(s[2]))
 
 # Create table, i.e. align samples for different devices by sample ID:    

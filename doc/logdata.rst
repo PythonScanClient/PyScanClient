@@ -35,9 +35,11 @@ Example
 API
 ---
 
-.. autoclass:: scan.client.logdata.SampleIterator
-
 .. autofunction:: scan.client.logdata.getDatetime
+
+.. autofunction:: scan.client.logdata.iterateSamples
+
+.. autofunction:: scan.client.logdata.iterateTable
 
 .. autofunction:: scan.client.logdata.createTable
 
