@@ -1,0 +1,13 @@
+{"shutter": {"readback": true},
+ "pcharge": {"completion": true,
+             "comparison": "increase by"},
+ ".*daq.*": {"completion": true},
+ "setpoint": {"completion": true, 
+              "tolerance": 0.1, 
+              "readback": "readback"},
+ "neutrons": {"completion": true, 
+              "comparison": "increase by"},
+ "motor_.": {"completion": true, 
+             "readback": true},
+ "chopper:.*": {"completion": true}}
+
