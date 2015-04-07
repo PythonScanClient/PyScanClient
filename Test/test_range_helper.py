@@ -3,10 +3,24 @@ Unit test for RangeHelper
 
 @author: Kay Kasemir
 """
-from scan.table.range_helper import expandRanges
+from scan.table.range_helper import getIterable, expandRanges
 import unittest
 
 class TestRangeExpansion(unittest.TestCase):
+    def test_iterable(self):
+        points = getIterable("[ 2, 4 ]")
+        self.assertEqual(str(points), "[2, 4]")
+
+        points = getIterable("range(5)")
+        self.assertEqual(str(points), "[0, 1, 2, 3, 4]")
+        
+        points = getIterable("range(2, 5, 2)")
+        self.assertEqual(str(points), "[2.0, 4.0]")
+        
+        points = getIterable("range(0.5, 4, 0.5)")
+        self.assertEqual(str(points), "[0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5]")
+
+    
     def test_expand(self):
         rows = [
            # Full range(start, end, step)

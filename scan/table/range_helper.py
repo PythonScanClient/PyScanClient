@@ -6,17 +6,49 @@ or list "[ 1, 2 ]" or tuple "( 2, 4 )"
 """
 import re
 
+# Regular expression for a number,
+# captured as one group,
+# padded by space
+__re_dbl = " *([-+]?[0-9]+\.?[0-9]*(?:[eE][-+]?[0-9]+)?) *"
+
+# Regular expression for the range([start,] stop[, step]) command,
+# capturing the start, end and step arguments
+__re_range = "range\((?:" + __re_dbl + ",)?" + __re_dbl + "(?:," + __re_dbl +")?\)"
+range_matcher = re.compile(__re_range)
+
+
 def getIterable(cell):
     """If cell contains a range, list or tuple, return that iterable.
        Otherwise returns None
     """
     cell = str(cell).strip()
-    if (cell.startswith("range") or
-        cell.startswith("(") or
-        cell.startswith("[")):
-        cell_range = eval(cell)
-        if isinstance(cell_range, (list, tuple)):
-            return cell_range
+
+    # Check for "range(...)"    
+    m = range_matcher.match(cell)
+    if m:
+        # Evaluate yourself to support fractional steps
+        # (like numpy.arange, but without requiring numpy)
+        (start, end, step) = m.groups()
+        start = float(start) if start else 0
+        end = float(end)
+        step = float(step) if step else 1
+        if step == 0:
+            raise Exception("Illegal range(start, stop, step=0)")
+        value = start
+        if (step > 0 and end < start) or (step < 0 and end > start):
+            raise Exception("Ill-defined range(%f, %f, %f)" % (start, end, step))
+        result = []
+        while value < end if step > 0 else value > end:
+            result.append(value)
+            value += step
+        return result
+    else:
+        # Eval a list or tuple
+        if (cell.startswith("(") or
+            cell.startswith("[")):
+            cell_range = eval(cell)
+            if isinstance(cell_range, (list, tuple)):
+                return cell_range
     return None
 
 def expandRangeInRow(row):

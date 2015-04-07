@@ -187,6 +187,17 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 0.0), Set('Y', 1.0), Set('Y', 2.0), Set('Y', 3.0), Set('Y', 4.0), Set('X', 0.0), Set('Y', 0.0), Set('X', 0.0), Set('Y', 1.0), Set('X', 1.0), Set('Y', 0.0), Set('X', 1.0), Set('Y', 1.0)]")
 
 
+        print "\n=== Fractional Range Cells ==="
+        table_scan = TableScan(settings,
+          (   " X ", ),
+          [
+            [ "range(0.2, 5.4, 0.7)", ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 0.2), Set('X', 0.9), Set('X', 1.6), Set('X', 2.3), Set('X', 3.0), Set('X', 3.7), Set('X', 4.4), Set('X', 5.1)]")
+
+
 
 if __name__ == "__main__":
     unittest.main()
