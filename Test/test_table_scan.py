@@ -56,11 +56,12 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Comment('Setup'), Set('X', 1.0), Set('Y', 2.0), Set('Speed', 30.0), Comment('Count'), Set('Wavelength', 100.0), Comment('Wait'), Set('Wavelength', 200.0)]")
 
         print "\n=== Wait for time ==="
+        # Also using numbers instead of strings
         table_scan = TableScan(settings,
           (   "X",  "Y", "Wait For", "Value" ),
           [
-            [ "1",  "2", "seconds", "10" ],
-            [ "3",  "4", "seconds", "20" ],
+            [  1,   2,  "seconds",   10 ],
+            [  3,   4,  "seconds",   20 ],
           ]
         )
         cmds = handle(table_scan)
