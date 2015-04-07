@@ -339,7 +339,7 @@ class TableScan:
     
         :param filename: File path, must end in ".csv" or ".tab"
         """
-        table = self.headers + self.rows
+        table = [ self.headers ] + self.rows
         writeSpreadsheet(filename, table)
 
     def __makeList(self, cmd):

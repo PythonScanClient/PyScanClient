@@ -2,11 +2,11 @@ import unittest
 import os
 from scan.util.spreadsheet import readSpreadsheet, writeSpreadsheet
 from scan.util.scan_settings import ScanSettings
-from scan.table.table_scan import loadTableScan
+from scan.table.table_scan import TableScan, loadTableScan
 
 class SpreadsheetTest(unittest.TestCase):
     def testSpreadsheet(self):
-        table = [ [ 'X', 'Y' ], [ '1', '2' ], [ '3', '4' ] ]
+        table = [ [ 'XPos', 'YPos' ], [ '1', '2' ], [ '3', '4' ] ]
         
         filename = '/tmp/spreadsheet.csv'
         writeSpreadsheet(filename, table)
@@ -19,15 +19,15 @@ class SpreadsheetTest(unittest.TestCase):
 
 
     def testTableScan(self):
-        sheet = [ [ 'X', 'Y' ], [ '1', '2' ], [ '3', '4' ] ]
-        
+        scan_settings = ScanSettings()
+        table = TableScan(scan_settings, [ 'XPos', 'YPos' ], [ [ '1', '2' ], [ '3', '4' ] ] )
         filename = '/tmp/spreadsheet.csv'
-        writeSpreadsheet(filename, sheet)
+        table.save(filename)
         
-        table = loadTableScan(ScanSettings(), filename)
+        table2 = loadTableScan(scan_settings, filename)
         print table
-        self.assertEqual(table.headers, sheet[0])
-        self.assertEqual(table.rows, sheet[1:])
+        self.assertEqual(table.headers, table2.headers)
+        self.assertEqual(table.rows, table2.rows)
 
         os.remove(filename)
 
