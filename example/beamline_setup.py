@@ -181,7 +181,8 @@ class BeamlineScanClient(ScanClient):
                           stop=Stop())
         return CommandSequence(table.createScan())
 
-scan = BeamlineScanClient()
+
+scan_client = BeamlineScanClient()
 
 
 
