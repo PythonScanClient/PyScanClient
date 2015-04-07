@@ -6,7 +6,7 @@ Created on Mar 8 ,2015
 import xml.etree.ElementTree as ET
 
 from scan.commands.command import Command
-from scan.util.xml import indent
+from scan.util.xml_helper import indent
 
 class CommandSequence(object):
     """A sequence of scan commands
