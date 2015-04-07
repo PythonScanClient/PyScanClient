@@ -110,7 +110,12 @@ class ScanClient(object):
                      :class:`scan.commands.commandsequence.CommandSequence`
                      or text with raw XML format.
         
-        :return: Simulation result
+        :return: Simulation result as dictionary `{ 'simulation': "Printable text", 'seconds': 193.0 }`
+        
+        Example::
+
+        >>> result = client.simulate([ Set('x', 5), Delay(2) ])
+        >>> print result['simulation']
         """
         if isinstance(cmds, str):
             scan = cmds            
@@ -122,8 +127,13 @@ class ScanClient(object):
             
         url = self.__baseURL + self.__simulateResource
 
-        simulation = self.__do_request(url, 'POST', scan)
-        return simulation
+        result = self.__do_request(url, 'POST', scan)
+        xml = ET.fromstring(result)
+        if xml.tag != 'simulation':
+            raise Exception("Expected scan <simulation>, got <%s>" % xml.tag)
+        simulation = xml.find('log').text
+        seconds = float(xml.find('seconds').text)
+        return { 'simulation': simulation, 'seconds': seconds }
 
     def submit(self, cmds, name='UnNamed'):
         """Submit scan to scan server for execution
