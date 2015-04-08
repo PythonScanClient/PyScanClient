@@ -253,6 +253,61 @@ You can provide a list of commands for the following steps:
     After each 'Wait For' completes.
     Example: Stop data acquisition.
 
+
+Special Column handling
+-----------------------
+
+Going back to the most basic behavior of the table scan,
+given a column name and a cell value, each non-empty cell
+results in a command::
+
+   Set(column_name, cell_value)
+
+For example, a column named "RunControl" with cell values "start" and "stop":
+
++------------+
+| RunControl |
++------------+
+| start      |
++------------+
+| stop       |
++------------+
+
+would result in these commands::
+
+   Set("RunControl", "start")
+   Set("RunControl", "stop")
+
+Assuming that the process variable "RunControl" is an enumerated type with valid states "start" and "stop",
+maybe connected to an IOC sequence to start and stop a data acquisition run, this will work just fine.
+
+Extending the example, assume that you would rather use "Run Control" as a column name to distinguish it from
+an ordinary process variable, and the cell values should result in `Include` commands.
+
+To handle such special cases, the `TableScan` API allows you to provide a dictionary with special column handler functions.
+Each function is called with the value of the cell, and it must return a scan command.
+
+Example::
+
+   special_handlers = { 'Run Control': lambda cell : Include(cell + ".scn") }
+   table_scan = TableScan(settings, ( "Run Control" ),
+                                   [[ "start"       ],
+                                    [ "stop"        ]
+                                   ], special = special_handlers)
+
+When handling cells for the "Run Control" column, the special handler function
+will now be invoked with the cell values, i.e. "start" and "stop"::
+   
+   lambda cell : Include(cell + ".scn")
+
+resulting in these commands::
+
+   Include("start.scn")
+   Include("stop.scn")
+
+The special handler function can wrap multiple commands as a :class:`~scan.commands.sequence.Sequence` command.
+
+
 API
 ---
 """
@@ -288,6 +343,7 @@ class TableScan:
     :param post:         Command or list of commands executed at the end of the table.
     :param start:        Command or list of commands executed to start each 'Wait For'.
     :param stop:         Command or list of commands executed at the end of each 'Wait For'.
+    :param special:      Dictionary with special column handlers
     """
     
     # Predefined columns
@@ -298,13 +354,14 @@ class TableScan:
     COMPLETION = "completion"
     SECONDS = "seconds"
     
-    def __init__(self, settings, headers, rows, pre=None, post=None, start=None, stop=None):
+    def __init__(self, settings, headers, rows, pre=None, post=None, start=None, stop=None, special=dict()):
         self.settings = settings
         self.name = "Table Scan"
         self.pre = self.__makeList(pre)
         self.post = self.__makeList(post)
         self.start = self.__makeList(start)
         self.stop = self.__makeList(stop)
+        self.special = special
         # When called with table widget data,
         # values may be java.lang.String u'text'.
         # Convert to plain 'text'.
@@ -406,6 +463,11 @@ class TableScan:
                 what = self.headers[i]
                 if len(row[i]) <= 0:
                     pass # Empty column, nothing to do
+                elif what in self.special:
+                    special_handler = self.special[what]
+                    value = self.__getValue(row[i])
+                    command = special_handler(value)
+                    commands.append(command)
                 elif what == TableScan.COMMENT:
                     text = row[i]
                     commands.append(cmds.Comment(text))           

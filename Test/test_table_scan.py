@@ -6,6 +6,7 @@ import unittest
 from scan.commands import Set
 from scan.table import TableScan
 from scan.util import ScanSettings
+from scan.commands.include import Include
 
 class MyScanSettings(ScanSettings):
     def __init__(self):
@@ -197,6 +198,28 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Set('X', 0.2), Set('X', 0.9), Set('X', 1.6), Set('X', 2.3), Set('X', 3.0), Set('X', 3.7), Set('X', 4.4), Set('X', 5.1)]")
 
+    def testSpecialColumns(self):
+        print "\n=== 'Load Frame' columns ==="
+        
+        # Special handling of "Load Frame" column:
+        # Commands Start/Next/End turn into Include("lf_start.scn"), Include("lf_next.scn") resp. Include("lf_end.scn") 
+        special = { 'Load Frame': lambda cell : Include("lf_" + cell.lower() + ".scn") }
+        table_scan = TableScan(settings,
+          (   "Load Frame", "X",  "Wait For", "Value", ),
+          [
+            [ "Start",     "10",  "Neutrons",   "10" ],
+            [      "",     "20",  "Neutrons",   "10" ],
+            [      "",     "30",  "Neutrons",   "10" ],
+            [  "Next",     "10",  "Neutrons",   "10" ],
+            [      "",     "20",  "Neutrons",   "10" ],
+            [      "",     "30",  "Neutrons",   "10" ],
+            [   "End",       "",          "",     "" ],
+          ],
+          special = special
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds),
+                         "[Include('lf_start.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Include('lf_next.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Include('lf_end.scn')]")        
 
 
 if __name__ == "__main__":
