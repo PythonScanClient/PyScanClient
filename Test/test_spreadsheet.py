@@ -19,12 +19,11 @@ class SpreadsheetTest(unittest.TestCase):
 
 
     def testTableScan(self):
-        scan_settings = ScanSettings()
-        table = TableScan(scan_settings, [ 'XPos', 'YPos' ], [ [ '1', '2' ], [ '3', '4' ] ] )
+        table = TableScan([ 'XPos', 'YPos' ], [ [ '1', '2' ], [ '3', '4' ] ] )
         filename = '/tmp/spreadsheet.csv'
         table.save(filename)
         
-        table2 = loadTableScan(scan_settings, filename)
+        table2 = loadTableScan(filename)
         print table
         self.assertEqual(table.headers, table2.headers)
         self.assertEqual(table.rows, table2.rows)

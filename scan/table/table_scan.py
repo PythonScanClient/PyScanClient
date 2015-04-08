@@ -319,10 +319,9 @@ from scan.util.seconds import parseSeconds
 from range_helper import expandRanges
 from scan.util.spreadsheet import readSpreadsheet, writeSpreadsheet
 
-def loadTableScan(settings, filename, pre=None, post=None, start=None, stop=None):
+def loadTableScan(filename, pre=None, post=None, start=None, stop=None):
     """Load table from spreadsheet file
        
-    :param settings:     ScanSettings
     :param filename:     File name, either '*.cvs', '*.tab', '*.xls' or '*.gnumeric'
     :param pre:          Command or list of commands executed at the start of the table.
     :param post:         Command or list of commands executed at the end of the table.
@@ -332,7 +331,7 @@ def loadTableScan(settings, filename, pre=None, post=None, start=None, stop=None
     table = readSpreadsheet(filename)
     headers = table[0]
     rows = table[1:]
-    return TableScan(settings, headers, rows, pre, post, start, stop)
+    return TableScan(headers, rows, pre, post, start, stop)
 
 class TableScan:
     """Create Table scan
