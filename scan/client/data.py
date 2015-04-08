@@ -1,11 +1,11 @@
 '''
 Created on Mar 27,2015
 
-@author: qiuyX
+@author: qiuyx
 '''
 import xml.etree.ElementTree as ET
 from datetime import  datetime
-import copy
+from scan.client import logdata
 
 def getTimeSeries(data, name, convert='plain'):
     '''Get values aligned by different types of time.
@@ -49,7 +49,7 @@ def alignSerial(data, channel):
         yield (data[channel]['serial'][i], data[channel]['value'][i], data[channel]['time'][i])
 
 ##TODO: step
-def alignTime(data, channel, step = 0):
+def alignTime(data, channel, intv = 0):
     
     '''
     Iterate data by time.
@@ -78,44 +78,38 @@ def getTable(data, *devices):
     
     Aligns samples for given list of devices by sample ID.
     Assuming that serialID in data is Ascending.
-    Ignoring the serialID gap which all device come to.
-    
-    :param alignBy: serial -> align value by sample id.
-                          time -> align value by timestamp
-                          
-    :param interpo:   step -> 
-                    linear -> 
+    Ignoring the serialID 'gap'.
                           
     :param devices: One or more devices
     
     :return: Table. result[0] has values for first device, result[1] for second device and so on.
     '''
     
-    devsIters = [ alignSerial(data, dev) for dev in devices]
-    cur_samps = [devIt.next() for devIt in devsIters]
-    result = [[] for dev in devices]
-    cur_id = -1
+    devsIters = [ alignSerial(data, dev) for dev in devices]  # prepare devices iterators 
+    cur_samps = [devIt.next() for devIt in devsIters]  # initial devices iterators  
+    result = [[] for dev in devices]  
+    cur_id = -1  # current sample id
     index = 0
     
     while True:
         
         try :
-            cur_id = min((samp[0] for samp in cur_samps if samp is not None))  # find smallest sample ID
+            cur_id = min((samp[0] for samp in cur_samps if samp is not None))  # find smallest sample ID as current id
         except ValueError:  # finished
             break     
         
         for i in range(len(devsIters)):  # for each device
-            if cur_samps[i] is None:  #if device has been exhausted.
-                result[i].append(result[i][index-1])
-            elif cur_samps[i][0] == cur_id:  # if serial_id is 'current'
+            if cur_samps[i] is None:  # 1. if device has been exhausted.
+                result[i].append(result[i][index-1])  # continue with previous value
+            elif cur_samps[i][0] == cur_id:  # 2. if serial_id is the current id ( means this device was logged at this serial_id)
                 
                 try:
                     result[i].append(cur_samps[i][1]) # fetch value
-                    cur_samps[i] = devsIters[i].next() # step iter of current device  and its value
-                except StopIteration:  #if current device exhausted
+                    cur_samps[i] = devsIters[i].next() # step iter of current device and its value
+                except StopIteration:  #if current device is just exhausted
                     cur_samps[i] = None  
                     
-            elif cur_samps[i][0] > cur_id:  # if serial_id is in the future
+            elif cur_samps[i][0] > cur_id:  #3. if serial_id is in the future ( means this device was not logged at this serial_id)
                 if index == 0:  # 1st loop
                     result[i].append(None)
                 else:
@@ -176,50 +170,39 @@ class Data(object):
         }
         
         '''
-        
         channels = ET.fromstring(Xml).iter('device')
         
         logdata = {}
         for channel in channels:
     
-            samples = iter(channel.findall('.//sample'))
-            serial_list, time_list, value_list=[],[],[]
-            for sample in samples:
-                serial_list .append( int(sample.attrib['id']) )
-                time_list.append( int(sample.find('time').text) ) 
-                value_list.append(self.__types((sample.find('value').text))) 
+            samples = channel.findall('.//sample')
+            
             logdata[channel.find('name').text] = {
-                            'serial' : serial_list,
-                            'time' : time_list,
-                            'value' : value_list
-                            }
-            '''
-            logdata[channel.find('name').text] = {
-                            'serial' : [int(sample.attrib['id'] for sample in samples],
+                            'serial' : [int(sample.attrib['id']) for sample in samples],
                             'time' : [int(sample.find('time').text) for sample in samples],
-                            'value' : [self.__types((sample.find('value').text)) for sample in samples]
+                            'value' : [self.__types((sample.find('value').text)) for sample in samples]                
                             }
-            '''
+
         return logdata
 
-    def __types(self,s):
+    def __types(self,sc):
         
-        if type(eval(s)) == type(1):
-            return int(s)
-        elif type(eval(s)) == type(1.0):
-            return float(s)
+        if type(eval(sc)) == type(1):
+            return int(sc)
+        elif type(eval(sc)) == type(1.0):
+            return float(sc)
         else:
-            return s
+            return sc
     
     def __getitem__(self, key):
-        return copy.deepcopy(self.__logData[key])
+        return self.__logData[key]
         
     
     def PVlist(self):
         '''
         Get the list of all PV names.
         '''
-        return list(self.__logData)
+        return list(self.__logData.keys())
         #return list(self.sparseLog)
         
     def PV(self, PVname):
