@@ -28,6 +28,7 @@ API
 """
 #@author: Kay Kasemir
 import re
+import json
 
 from scan.commands.set import Set
 from scan.commands.loop import Loop
@@ -106,6 +107,34 @@ class ScanSettings(object):
         
         # In derived class, may register special behavior for certain devices
         # self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
+        
+    def loadDeviceClasses(self, json_filename):
+        """Load device classes from JSON file
+        
+        :param json_filename: Name of JSON file
+        
+        Example file content::
+            
+            {
+               ".*daq.*": { "completion": true },
+               "pcharge": { comparison": "increase by" },
+               "setpoint": { "completion": true, 
+                             "tolerance": 0.1, 
+                             "readback": "readback"}
+            }
+        """
+        with open(json_filename) as config_file:
+            device_config = json.load(config_file)
+         
+        for dev, attr in device_config.iteritems():
+            f = lambda x: x.encode('ascii') if isinstance(x, (unicode, str) ) else x
+            self.defineDeviceClass(dev.encode('ascii'), 
+                                   completion=attr.get('completion', False),
+                                   readback=f(attr.get('readback', False)),
+                                   timeout=attr.get('timeout', 0.0),
+                                   tolerance=attr.get('tolerance', 0.0),
+                                   comparison=attr.get('comparison', ">=")
+                                   )
 
     def getReadbackName(self, device_name):
         """Override this method to provide custom readback names.
