@@ -38,9 +38,11 @@ class ScanClient(object):
         self.__port = int(port) #no matter what type of 'port' input, self._port keeps to be int.
         #May implement a one to one host+port with instance in the future.
         self.__baseURL = "http://"+self.__host+':'+str(self.__port)
+
     
     def __repr__(self):
         return "ScanClient('%s', %d)" % (self.__host, self.__port)
+
     
     def __do_request(self, url, method='GET', data=None):
         """Perform HTTP request with scan server
@@ -86,6 +88,7 @@ class ScanClient(object):
         finally:
             if response:
                 response.close()
+
         
     def serverInfo(self):
         """Get scan server information
@@ -102,6 +105,7 @@ class ScanClient(object):
         >>> print client.serverInfo()
         """
         return self.__do_request(self.__baseURL + self.__serverResource + self.__serverInfoResource)
+
                 
     def simulate(self, cmds):
         """Submit scan to scan server for simulation
@@ -110,12 +114,7 @@ class ScanClient(object):
                      :class:`scan.commands.commandsequence.CommandSequence`
                      or text with raw XML format.
         
-        :return: Simulation result as dictionary `{ 'simulation': "Printable text", 'seconds': 193.0 }`
-        
-        Example::
-
-        >>> result = client.simulate([ Set('x', 5), Delay(2) ])
-        >>> print result['simulation']
+        :return: Simulation result
         """
         if isinstance(cmds, str):
             scan = cmds            
@@ -127,13 +126,9 @@ class ScanClient(object):
             
         url = self.__baseURL + self.__simulateResource
 
-        result = self.__do_request(url, 'POST', scan)
-        xml = ET.fromstring(result)
-        if xml.tag != 'simulation':
-            raise Exception("Expected scan <simulation>, got <%s>" % xml.tag)
-        simulation = xml.find('log').text
-        seconds = float(xml.find('seconds').text)
-        return { 'simulation': simulation, 'seconds': seconds }
+        simulation = self.__do_request(url, 'POST', scan)
+        return simulation
+
 
     def submit(self, cmds, name='UnNamed'):
         """Submit scan to scan server for execution
@@ -156,9 +151,11 @@ class ScanClient(object):
         """
         quoted_name = urllib.quote(name, '')
         if isinstance(cmds, str):
-            result = self.__submitScanXML(cmds, quoted_name)            
+            result = self.__submitScanXML(cmds, quoted_name)
+                 
         elif isinstance(cmds, CommandSequence):
             result = self.__submitScanSequence(cmds, quoted_name)
+            
         else:
             # Warp list, tuple, other iterable
             result = self.__submitScanSequence(CommandSequence(cmds), quoted_name)
@@ -167,7 +164,8 @@ class ScanClient(object):
         if xml.tag != 'id':
             raise Exception("Expected scan <id>, got <%s>" % xml.tag)
         return int(xml.text)
-        
+
+
     def __submitScanXML(self, scanXML, scanName):
         """Submit scan in raw XML-form.
         
@@ -188,7 +186,8 @@ class ScanClient(object):
         url = self.__baseURL + self.__scanResource + '/' + scanName
         r = self.__do_request(url, 'POST', scanXML)
         return r
-        
+    
+            
     def __submitScanSequence(self, cmdSeq, scanName):
         """Submit a CommandSequence
         
@@ -198,6 +197,7 @@ class ScanClient(object):
         :return: Raw XML for scan ID
         """
         return self.__submitScanXML(cmdSeq.genSCN(),scanName)
+      
            
     def scanInfos(self):
         """Get information of all scans 
@@ -218,6 +218,7 @@ class ScanClient(object):
             result.append(ScanInfo(scan))
         return result
 
+
     def scanInfo(self, scanID):
         """Get information for a scan
         
@@ -233,7 +234,8 @@ class ScanClient(object):
         """
         xml = self.__do_request(self.__baseURL + self.__scanResource + '/' + str(scanID))
         return ScanInfo(ET.fromstring(xml))
-    
+
+
     def scanCmds(self, scanID):
         """Get the commands of scan.
         
@@ -256,7 +258,8 @@ class ScanClient(object):
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/commands'
         xml = self.__do_request(url)
         return xml
-    
+
+
     def lastSerial(self, scanID):
         """Get the last log data serial.
         
@@ -283,7 +286,8 @@ class ScanClient(object):
         xml = self.__do_request(url)
         ET.fromstring(xml)
         return int(ET.fromstring(xml).text)
-    
+
+
     def scanDevices(self, scanID=-1):
         """Get list of devices used by scan.
         
@@ -301,7 +305,8 @@ class ScanClient(object):
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/devices'
         xml = self.__do_request(url)
         return xml
-    
+
+
     def waitUntilDone(self, scanID):
         """Wait until scan finishes
         
@@ -314,6 +319,7 @@ class ScanClient(object):
             time.sleep(1)
             info = self.scanInfo(scanID)
         return info
+
 
     def pause(self, scanID=-1):
         """Pause a running scan
@@ -330,6 +336,7 @@ class ScanClient(object):
         url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/pause'
         self.__do_request(url, 'PUT')
 
+
     def resume(self, scanID=-1):
         """Resume a paused scan
         
@@ -345,7 +352,8 @@ class ScanClient(object):
         """
         url=self.__baseURL + self.__scanResource + '/' + str(scanID) + '/resume'
         self.__do_request(url, 'PUT')
-        
+
+
     def abort(self, scanID=-1):
         """Abort a running or paused scan
         
@@ -360,7 +368,8 @@ class ScanClient(object):
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/abort'
         self.__do_request(url, 'PUT')
-        
+
+
     def delete(self, scanID):
         """Remove a completed scan.
         
@@ -375,7 +384,8 @@ class ScanClient(object):
         >>> client.delete(id)
         """
         self.__do_request(self.__baseURL + self.__scanResource + '/' + str(scanID), 'DELETE')
-        
+
+
     def clear(self):
         """Remove all completed scans.
         
@@ -386,7 +396,8 @@ class ScanClient(object):
         >>> client.clear()
         """
         self.__do_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
-            
+
+ 
     def patch(self, id, address, property, value):
         """Update scan on server.
         
@@ -414,6 +425,7 @@ class ScanClient(object):
         """
         xml = "<patch><address>%d</address><property>%s</property><value>%s</value></patch>" % (address, property, str(value))
         self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id) + '/patch', 'PUT', xml)
+
 
     def getData(self, scanID):
         """Fetch logged data of a scan
@@ -451,3 +463,4 @@ class ScanClient(object):
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/data'
         xml = self.__do_request(url)
         return parseXMLData(xml)
+
