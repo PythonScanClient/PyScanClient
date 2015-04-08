@@ -3,16 +3,16 @@
 """
 # @author Kay Kasemir
 
+from scan.util import SettingsBasedLoop
 from scan.commands.command import Command
 from scan.commands.log import Log
 
-def createNDimScan(settings, *parameters):
+def createNDimScan(*parameters):
     """N-dimensional scan
     
     Creates nested `Loop` commands for N-dimensional scan.
     Logs arbitrary number of reading.
     
-    :param settings: :class:`~scan.util.scan_settings.ScanSettings`
     :param parameters: One or more parameters
     
     Parameters include:
@@ -28,28 +28,26 @@ def createNDimScan(settings, *parameters):
     
     Example for scanning 'xpos' from 1 to 10, stepping 1. 'xpos' will be logged::
     
-    >>> settings = ScanSettings()
-    >>> cmds = createNDimScan(settings, ('xpos', 1, 10) )
+    >>> cmds = createNDimScan( ('xpos', 1, 10) )
     
     Log the 'readback' together with 'xpos' from the loop::
     
-    >>> cmds =  createNDimScan(settings, ('xpos', 1, 10), 'readback')
+    >>> cmds =  createNDimScan( ('xpos', 1, 10), 'readback')
     
     Scan 'xpos', with an inside loop for 'ypos',
     logging 'readback' in addition to 'xpos' and 'ypos'::
     
-    >>> cmds =  createNDimScan(settings, ('xpos', 1, 10), ('ypos', 1, 5, 0.2), 'readback')
+    >>> cmds =  createNDimScan( ('xpos', 1, 10), ('ypos', 1, 5, 0.2), 'readback')
 
     Scan 'xpos' and 'ypos', toggling something to 1 and then 0 in the inner loop::
     
-    >>> cmds = createNDimScan(settings,
-    >>>                      ('xpos', 1, 10), ('ypos', 1, 5, 0.2), Set('xyz', 1), Set('xyz', 0))
+    >>> cmds = createNDimScan(('xpos', 1, 10), ('ypos', 1, 5, 0.2), Set('xyz', 1), Set('xyz', 0))
     """
     # Turn args into modifiable list
     args = list(parameters)
 
     # Assemble the commands
-    return __decodeScan(settings, set(), args)
+    return __decodeScan(set(), args)
  
 def __decodeLoop(parms):
     """Decode loop parameters
@@ -64,10 +62,9 @@ def __decodeLoop(parms):
     else:
         raise Exception('Scan parameters should be (''device'', start, end, step), not %s' % str(parms))
     
-def __decodeScan(settings, to_log, args):
+def __decodeScan(to_log, args):
     """
     Recursively build commands from scan arguments
-    :param settings: ScanSettings
     :param to_log: Devices to log
     :param args: Remaining scan arguments 
     :return: List of commands
@@ -84,27 +81,27 @@ def __decodeScan(settings, to_log, args):
     if isinstance(arg, str):
         # Remember device to log
         to_log.add(arg)
-        return __decodeScan(settings, to_log, args)
+        return __decodeScan(to_log, args)
     elif isinstance(arg, tuple):
         # Loop specification
         scan = __decodeLoop(arg)
         # Remember loop variable for log
         to_log.add(scan[0])
         # Create loop with remaining arguments as body
-        return [ settings.Loop(scan[0], scan[1], scan[2], scan[3],
-                               __decodeScan(settings, to_log, args))
+        return [ SettingsBasedLoop(scan[0], scan[1], scan[2], scan[3],
+                                   __decodeScan(to_log, args))
                ]
     elif isinstance(arg, list):
         for cmd in arg:
             if not isinstance(cmd, Command):
                 raise Exception("Expected list of commands, got %s" % str(arg))
         cmds = arg
-        cmds.extend(__decodeScan(settings, to_log, args))
+        cmds.extend(__decodeScan(to_log, args))
         return cmds
     elif isinstance(arg, Command):
         # Create list of commands
         cmds = [ arg ]
-        cmds.extend(__decodeScan(settings, to_log, args))
+        cmds.extend(__decodeScan(to_log, args))
         return cmds
     else:
         raise Exception('Cannot handle scan parameter of type %s' % arg.__class__.__name__)

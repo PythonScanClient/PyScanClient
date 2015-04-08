@@ -44,14 +44,16 @@ class DeviceSettings(object):
     :param timeout:    Time out for callback and readback in seconds. 0 to wait forever.
     :param tolerance:  Tolerance for numeric readback comparison.
     :param comparison: Comparison to use in Wait commands
+    :param parallel:   Perform in parallel?
     """
-    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>='):
+    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>=', parallel=False):
         self._name = name
         self._completion = completion
         self._readback = readback
         self._timeout = timeout
         self._tolerance = tolerance
         self._comparison = comparison
+        self._parallel = parallel
     
     def getName(self):
         """:returns: Device name."""
@@ -78,51 +80,17 @@ class DeviceSettings(object):
     def getComparison(self):
         """:returns: Comparison for Wait command."""
         return self._comparison
-    
-    def Set(self, value):
-        """Create `Set` command.
-        
-        Creates a `Set` command that sets a device to
-        the desired value, using completion, readback etc.
-        as per these device settings.
-        
-        :param value: Desired value
-        :return: :class:`~scan.commands.set.Set` command.
-        """
-        return Set(self.getName(), value,
-                   completion=self.getCompletion(),
-                   readback=self.getReadback(),
-                   timeout=self.getTimeout(),
-                   tolerance=self.getTolerance())
 
-    def Wait(self, value, timeout=None, errhandler=None):
-        """Create `Wait` command.
-        
-        Creates a `Wait` command for this device,
-        using comparison and timeout
-        as per these device settings.
-        
-        :param value: Desired value
-        :param timeout: Optional timeout in seconds to override `DeviceSettings`.
-        :param errhandler: Optional error handler
-          
-        :return: :class:`~scan.commands.wait.Wait` command.
-        """
-        if timeout is None:
-            timeout = self._timeout
-        return Wait(self.getName(), value,
-                    comparison=self.getComparison(),
-                    tolerance=self.getTolerance(),
-                    timeout=timeout,
-                    errhandler=errhandler)
-
+    def getParallel(self):
+        """:returns: To be performed in parallel."""
+        return self._parallel
     
     def __repr__(self):
         rb = self.getReadback()
         if rb:
             rb = "'" + rb + "'"
-        return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%g, comparison='%s')" % (
-                self._name, str(self._completion), rb,  self._timeout, self._tolerance, self._comparison)
+        return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%g, comparison='%s', parallel=%s)" % (
+                self._name, str(self._completion), rb,  self._timeout, self._tolerance, self._comparison, str(self._parallel))
 
 
 
@@ -213,7 +181,7 @@ class ScanSettings(object):
         * +p: Access in parallel
 
         :param prefixed_device: Name of device with optional prefixes
-        :return: ( DeviceSettings, parallel )
+        :return: DeviceSettings
         """
         mod_device = prefixed_device.strip()
         readback = None
@@ -251,55 +219,107 @@ class ScanSettings(object):
         if readback == True:
             readback = device
         
-        return ( DeviceSettings(device, completion, readback, default.getTimeout(), default.getTolerance()), parallel )
+        return DeviceSettings(device, completion=completion, readback=readback, timeout=default.getTimeout(), tolerance=default.getTolerance(),
+                              comparison=default.getComparison(), parallel=parallel)
 
-    def Set(self, prefixed_device, value):
-        """Create `Set` command.
-        
-        Creates a `Set` command that sets a device to
-        the desired value, using completion, readback etc.
-        as per these settings.
-        
-        :param prefixed_device: Device name with optional prefixes
-        :param value: Desired value
-        :return: :class:`~scan.commands.set.Set` command.
-        """
-        (device, ignored) = self.parseDeviceSettings(prefixed_device)
-        return device.Set(value)
+    def __str__(self):
+        return str(self.device_settings)
 
-    def Loop(self, prefixed_device, start, end, step, body=None):
-        """Create `Loop` command.
-        
-        Creates a `Loop` command that sets a device to
-        the desired values, using completion, readback etc.
-        as per these settings.
-        
-        :param prefixed_device: Device name with optional prefixes
-        :param value: Desired value
-        :return: :class:`~scan.commands.loop.Loop` command.
-        """
-        (device, ignored) = self.parseDeviceSettings(prefixed_device)
-        return Loop(device.getName(), start, end, step, body,
-                    completion=device.getCompletion(),
-                    readback=device.getReadback(),
-                    tolerance=device.getTolerance(),
-                    timeout=device.getTimeout())
-                    
+__scan_settings = ScanSettings()
 
-    def Wait(self, device, value, timeout=None, errhandler=None):
-        """Create `Wait` command.
-        
-        Creates a `Wait` command for this device,
-        using comparison and timeout
-        as per these settings.
-        
-        :param device: Device name
-        :param value: Desired value
-        :param timeout: Optional timeout in seconds to override `ScanSettings`.
-        :param errhandler: Optional error handler
-          
-        :return: :class:`~scan.commands.wait.Wait` command.
-        """
-        settings = self.getDefaultSettings(device)
-        return settings.Wait(value, timeout, errhandler)
+def getScanSettings():
+    """:return: Global scan settings"""
+    return __scan_settings
 
+def setScanSettings(settings):
+    """Set global scan settings
+    :param settings: Desired global scan settings
+    """
+    global __scan_settings
+    __scan_settings = settings
+
+
+def SettingsBasedSet(prefixed_device, value, **kwargs):
+    """Set a device to a value.
+    
+    :param device:     Device name
+    :param value:      Value
+
+    Defaults to :class:`~scan.util.scan_settings.ScanSettings`,
+    but allows overrides for the following parameters:
+    
+    :param completion: Await callback completion?
+    :param readback:   `False` to not check any readback,
+                       `True` to wait for readback from the `device`,
+                       or name of specific device to check for readback.
+    :param tolerance:  Tolerance when checking numeric `readback`.
+    :param timeout:    Timeout in seconds, used for `completion` and `readback`.
+    :param errhandler: Error handler
+    """
+    settings = __scan_settings.parseDeviceSettings(prefixed_device)
+    completion = kwargs['completion'] if 'completion' in kwargs else settings.getCompletion()
+    readback   = kwargs['readback'] if 'readback' in kwargs else settings.getReadback()
+    tolerance  = kwargs['tolerance'] if 'tolerance' in kwargs else settings.getTolerance()
+    timeout    = kwargs['timeout'] if 'timeout' in kwargs else settings.getTimeout()
+    errhandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
+
+    return Set(settings.getName(), value,
+               completion=completion, readback=readback, tolerance=tolerance, timeout=timeout, errhandler=errhandler)
+
+def SettingsBasedLoop(prefixed_device, start, end, step, body=None, *args, **kwargs):
+    """Set a device to various values in a loop.
+    
+    Optional check of completion and readback verification.
+    
+    :param device:     Device name
+    :param start:      Initial value
+    :param end:        Final value
+    :param step:       Step size
+    :param body:       One or more commands
+
+    Defaults to :class:`~scan.util.scan_settings.ScanSettings`,
+    but allows overrides for the following parameters:
+
+    :param completion: Await callback completion?
+    :param readback:   `False` to not check any readback,
+                       `True` to wait for readback from the 'device',
+                       or name of specific device to check for readback.
+    :param tolerance:  Tolerance when checking numeric `readback`.
+                       Defaults to 0.
+    :param timeout:    Timeout in seconds, used for `completion` and `readback` check.
+    :param errhandler: Error handler
+    """
+    settings = __scan_settings.parseDeviceSettings(prefixed_device)
+    completion = kwargs['completion'] if 'completion' in kwargs else settings.getCompletion()
+    readback   = kwargs['readback'] if 'readback' in kwargs else settings.getReadback()
+    tolerance  = kwargs['tolerance'] if 'tolerance' in kwargs else settings.getTolerance()
+    timeout    = kwargs['timeout'] if 'timeout' in kwargs else settings.getTimeout()
+    errhandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
+    
+    return Loop(settings.getName(), start, end, step, body, *args,
+                completion=completion, readback=readback, tolerance=tolerance, timeout=timeout, errhandler=errhandler)
+                
+
+def SettingsBasedWait(prefixed_device, value, **kwargs):
+    """Wait until a condition is met, i.e. a device reaches a value.
+    
+    :param  device:      Name of PV or device.
+    :param  value:       Desired value.
+
+    Defaults to :class:`~scan.util.scan_settings.ScanSettings`,
+    but allows overrides for the following parameters:
+
+    :param  comparison:  How current value is compared to the desired value.
+                         Options: '=', '>', '>=', '<' , '<=', 'increase by','decrease by'
+    :param  tolerance:  Tolerance used for numeric comparison. Defaults to 0, not used for string values.
+    :param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
+    :param  errhandler: Default None.
+    """
+    settings = __scan_settings.parseDeviceSettings(prefixed_device)
+    comparison = kwargs['comparison'] if 'comparison' in kwargs else settings.getComparison()
+    tolerance  = kwargs['tolerance'] if 'tolerance' in kwargs else settings.getTolerance()
+    timeout    = kwargs['timeout'] if 'timeout' in kwargs else settings.getTimeout()
+    errhandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
+    
+    return Wait(settings.getName(), value,
+                comparison=comparison, tolerance=tolerance, timeout=timeout, errhandler=errhandler)

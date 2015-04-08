@@ -1,15 +1,15 @@
-from scan_settings1 import MyScanSettings
+from scan_settings1 import MyScanSettings, setScanSettings
 from scan.table import TableScan
 
 # Custom settings configure the TableScan to
 # check 'temperature' for completion,
 # and to treat 'position' as a motor with readback check via *.RBV 
-settings = MyScanSettings()
+setScanSettings(MyScanSettings())
 
 # Table scan with these settings,
 # definition of column headers,
 # and rows
-table = TableScan(settings,
+table = TableScan(
       ['temperature', 'position'],
     [ [      50,           1],
       [      '',           2],

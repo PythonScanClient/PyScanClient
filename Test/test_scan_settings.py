@@ -4,7 +4,8 @@ Unit test of ScanSettings
 @author: Kay Kasemir
 """
 import unittest
-from scan.util.scan_settings import DeviceSettings, ScanSettings
+from scan.commands.delay import Delay
+from scan.util.scan_settings import DeviceSettings, ScanSettings, setScanSettings, SettingsBasedSet, SettingsBasedLoop, SettingsBasedWait
 
 class MyScanSettings(ScanSettings):
     def __init__(self):
@@ -19,7 +20,7 @@ class MyScanSettings(ScanSettings):
         # Motor uses completion and readback (with special readback name, see below)
         self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
         # Counter comared by increment, not absolute value
-        self.defineDeviceClass("PerpetualCounter", comparison='to increase by')
+        self.defineDeviceClass("PerpetualCounter", comparison='increase by')
         
     def getReadbackName(self, device_name):
         # Motors use their *.RBV field for readback
@@ -89,54 +90,100 @@ class DeviceSettingsTest(unittest.TestCase):
 
         s = settings.getDefaultSettings("PerpetualCounter")
         print s
-        self.assertEquals(s.getComparison(), 'to increase by')
+        self.assertEquals(s.getComparison(), 'increase by')
 
 
     def testDeviceModifiers(self):
         settings = MyScanSettings()
         
         spec = "My:Lakeshore1"
-        (s, p) = settings.parseDeviceSettings(spec)
+        s = settings.parseDeviceSettings(spec)
         print "%s -> %s" % (spec, s)
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), True)
         self.assertEquals(s.getReadback(), None)
         self.assertEquals(s.getTimeout(), 300)
-        self.assertEquals(p, False)
+        self.assertEquals(s.getParallel(), False)
 
         spec = "+p My:Lakeshore1"
-        (s, p) = settings.parseDeviceSettings(spec)
-        self.assertEquals(p, True)
+        s = settings.parseDeviceSettings(spec)
+        self.assertEquals(s.getParallel(), True)
 
         spec = "-c My:Lakeshore1"
-        (s, p) = settings.parseDeviceSettings(spec)
+        s = settings.parseDeviceSettings(spec)
         print "%s -> %s" % (spec, s)
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), None)
 
         spec = "+p-c+r My:Lakeshore1"
-        (s, p) = settings.parseDeviceSettings(spec)
+        s = settings.parseDeviceSettings(spec)
         print "%s -> %s" % (spec, s)
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), "My:Lakeshore1")
-        self.assertEquals(p, True)
+        self.assertEquals(s.getParallel(), True)
 
         spec = "+pr My:Lakeshore1"
-        (s, p) = settings.parseDeviceSettings(spec)
+        s = settings.parseDeviceSettings(spec)
         print "%s -> %s" % (spec, s)
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getReadback(), "My:Lakeshore1")
-        self.assertEquals(p, True)
+        self.assertEquals(s.getParallel(), True)
 
         spec = "+p-cr My:Motor:47"
-        (s, p) = settings.parseDeviceSettings(spec)
+        s = settings.parseDeviceSettings(spec)
         print "%s -> %s" % (spec, s)
         self.assertEquals(s.getName(), "My:Motor:47")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), None)
-        self.assertEquals(p, True)
+        self.assertEquals(s.getParallel(), True)
+
+
+    def testSettingsBasedSet(self):
+        setScanSettings(MyScanSettings())
+
+        cmd = SettingsBasedSet('My:Motor1', 42)
+        self.assertEquals(str(cmd), "Set('My:Motor1', 42, completion=True, readback='My:Motor1.RBV', timeout=100)")
+
+        cmd = SettingsBasedSet('Unknown:Motor1', 42)
+        self.assertEquals(str(cmd), "Set('Unknown:Motor1', 42, readback='Unknown:Motor1.RBV')")
+
+        cmd = SettingsBasedSet('Unknown:Motor1', 42, readback=False)
+        self.assertEquals(str(cmd), "Set('Unknown:Motor1', 42)")
+
+
+    def testSettingsBasedLoop(self):
+        setScanSettings(MyScanSettings())
+
+        cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, Delay(1)); 
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1) ], completion=True, readback='My:Motor1.RBV', timeout=100)")
+
+        cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, Delay(1), Delay(2)); 
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=True, readback='My:Motor1.RBV', timeout=100)")
+
+        cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ]); 
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=True, readback='My:Motor1.RBV', timeout=100)")
+
+        cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=False); 
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], readback='My:Motor1.RBV', timeout=100)")
+
+        cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=False, timeout=0); 
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], readback='My:Motor1.RBV')")
+
+        cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=False, readback=False); 
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ])")
+
+
+    def testSettingsBasedWait(self):
+        setScanSettings(MyScanSettings())
+
+        cmd = SettingsBasedWait('SomePV', 42)
+        self.assertEquals(str(cmd), "Wait('SomePV', 42, comparison='>=')")
+
+        cmd = SettingsBasedWait('PerpetualCounter', 42)
+        self.assertEquals(str(cmd), "Wait('PerpetualCounter', 42, comparison='increase by')")
+
 
 
 if __name__ == "__main__":

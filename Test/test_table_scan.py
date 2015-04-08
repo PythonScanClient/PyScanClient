@@ -5,7 +5,7 @@
 import unittest
 from scan.commands import Set
 from scan.table import TableScan
-from scan.util import ScanSettings
+from scan.util import ScanSettings, setScanSettings
 from scan.commands.include import Include
 
 class MyScanSettings(ScanSettings):
@@ -21,7 +21,8 @@ class MyScanSettings(ScanSettings):
             return device_name + ".RBV"
         return device_name
 
-# TODO Check the generated scan once the string representation of commands is fixed
+setScanSettings(MyScanSettings())
+
 # TODO 'Comment' column can be comment command or Set('SomeCommentPV')
 # TODO Fix Log command
 # TODO Devices to always log
@@ -30,8 +31,6 @@ class MyScanSettings(ScanSettings):
 #             idle = self.settings.getMotorIdlePV(motor)
 #             if idle:
 #                 commands.insert(0, WaitCommand(idle, Comparison.EQUALS, 1, 0.1, 5.0))
-
-settings = MyScanSettings()
 
 def handle(table):
     print table
@@ -45,7 +44,7 @@ def handle(table):
 class TableScanTest(unittest.TestCase):
     def testBasics(self):
         print "\n=== Basic Table ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "Comment", "X ",  "Y", "Speed", "Wavelength" ),
           [
             [ "Setup",  "  1",  "2",    "30",           "" ],
@@ -58,7 +57,7 @@ class TableScanTest(unittest.TestCase):
 
         print "\n=== Wait for time ==="
         # Also using numbers instead of strings
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value" ),
           [
             [  1,   2,  "seconds",   10 ],
@@ -70,7 +69,7 @@ class TableScanTest(unittest.TestCase):
 
 
         print "\n=== Wait for PV ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value" ),
           [
             [ "1",  "2", "Counter1", "10" ],
@@ -82,7 +81,7 @@ class TableScanTest(unittest.TestCase):
 
 
         print "\n=== Wait for PV using 'increment' ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X",  "Y", "Wait For",        "Value" ),
           [
             [ "1",  "2", "Counter1",        "10" ],
@@ -94,7 +93,7 @@ class TableScanTest(unittest.TestCase):
 
 
         print "\n=== Wait for PV or Max Time ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value", "Or Time" ),
           [
             [ "1",  "2", "Counter1", "10",    "60" ],
@@ -107,7 +106,7 @@ class TableScanTest(unittest.TestCase):
 
     def testStartStop(self):
         print "\n=== Start/stop at each step ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value" ),
           [
             [ "1",  "2", "counter", "10" ],
@@ -129,7 +128,7 @@ class TableScanTest(unittest.TestCase):
 
     def testScanSettings(self):
         print "\n=== ScanSettings configure Motor for completion and RBV ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X ",  "Motor1" ),
           [
             [ "  1",  "2" ],
@@ -140,7 +139,7 @@ class TableScanTest(unittest.TestCase):
 
 
         print "\n=== Override ScanSettings for Motor ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "Motor1",  "-cr Motor2" ),
           [
             [ "  1",  "2" ],
@@ -152,7 +151,7 @@ class TableScanTest(unittest.TestCase):
 
     def testParallel(self):
         print "\n=== Parallel without Wait ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X", "+p Y", "+p Z" ),
           [
             [ "1", "2",    "3" ],
@@ -162,7 +161,7 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('X', 1.0), Parallel(Set('Y', 2.0), Set('Z', 3.0))]")
 
         print "\n=== Parallel with Wait ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "X", "+p Y", "+p Z", "Wait For", "Value" ),
           [
             [ "1", "2",    "3",    "Seconds",  "10"    ],
@@ -176,7 +175,7 @@ class TableScanTest(unittest.TestCase):
 
     def testRange(self):
         print "\n=== Range Cells ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   " X ",  "Y", ),
           [
             [ "  1",  "", ],
@@ -189,7 +188,7 @@ class TableScanTest(unittest.TestCase):
 
 
         print "\n=== Fractional Range Cells ==="
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   " X ", ),
           [
             [ "range(0.2, 5.4, 0.7)", ]
@@ -204,7 +203,7 @@ class TableScanTest(unittest.TestCase):
         # Special handling of "Load Frame" column:
         # Commands Start/Next/End turn into Include("lf_start.scn"), Include("lf_next.scn") resp. Include("lf_end.scn") 
         special = { 'Load Frame': lambda cell : Include("lf_" + cell.lower() + ".scn") }
-        table_scan = TableScan(settings,
+        table_scan = TableScan(
           (   "Load Frame", "X",  "Wait For", "Value", ),
           [
             [ "Start",     "10",  "Neutrons",   "10" ],

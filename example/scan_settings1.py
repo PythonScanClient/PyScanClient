@@ -1,12 +1,11 @@
-from scan.util.scan_settings import ScanSettings
+from scan.util.scan_settings import ScanSettings, setScanSettings
+
+# Note how we replace the original Set() and Wait() commands with those that utilize ScanSettings
+from scan.util.scan_settings import SettingsBasedSet as Set
+from scan.util.scan_settings import SettingsBasedWait as Wait
 
 class MyScanSettings(ScanSettings):
-    """Example for site-specific scan settings.
-       
-       When installing the python scan client at a site,
-       you need to make such a site-specific version
-       avaialble to all users who write python scripts.
-       """
+    """Example for site-specific scan settings."""
     def __init__(self):
         super(MyScanSettings, self).__init__()
 
@@ -33,29 +32,27 @@ class MyScanSettings(ScanSettings):
             return device_name + ".RBV"
         return device_name
 
-
-# When now creating a scan,
-# use an instance of `MyScanSettings`
 if __name__ == "__main__":
-    settings = MyScanSettings()
-    
-    from scan.commands import *
+    print "Without scan settings:"
     cmds = [
-            Comment('Without settings'),
             Set('temperature', 10),
             Wait('PerpetualCounter', 10),
-            
-            Comment('With settings'),
-            settings.Set('temperature', 10),
-            settings.Wait('PerpetualCounter', 10),
            ]
     for cmd in cmds:
         print cmd
-    
-    # Result:    
-    # Comment('Without settings')
+    # Result:
     # Set('temperature', 10)
-    # Wait('PerpetualCounter', 10)
-    # Comment('With settings')
+    # Wait('PerpetualCounter', 10, comparison='>=')
+      
+    setScanSettings(MyScanSettings())
+    
+    print "With scan settings:"
+    cmds = [
+            Set('temperature', 10),
+            Wait('PerpetualCounter', 10),
+           ]
+    for cmd in cmds:
+        print cmd
+    # Result:    
     # Set('temperature', 10, completion=True, timeOut=300)
     # Wait('PerpetualCounter', 10, comparison='increase by')

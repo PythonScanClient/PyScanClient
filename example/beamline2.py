@@ -1,7 +1,7 @@
 from beamline_setup import *
 
 # Table
-cmds = scan_client.table(
+cmds = table_scan(
   [ 'xpos',    'ypos', 'Wait For', 'Value'],
 [
   [     1, [ 2, 4, 6],  'pcharge',  3*1e9 ],

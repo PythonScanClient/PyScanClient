@@ -128,8 +128,8 @@ The table above will create the following scan::
     Wait('counter', 10000.0, comparison='>=')
     Log('position', 'counter')
 
-The :class:`scan.util.scan_settings.ScanSettings` passed to the
-`TableScan` determines the detailed options of the `Set` and `Wait` commands.
+The :class:`~scan.util.scan_settings.ScanSettings` 
+determine the detailed options of the `Set` and `Wait` commands.
 By default, the generated `Wait` command will wait forever,
 unless the `ScanSettings` provide a timeout.
 In the example above, we assume that the `ScanSetting` cause every access
@@ -149,7 +149,7 @@ Resulting scan without completion for the 'position'::
     Wait('counter', 10000.0, comparison='>=')
     Log('position', 'counter')
 
-For more prefix options see :class:`scan.util.scan_settings.ScanSettings`.
+For more prefix options see :class:`~scan.util.scan_settings.ScanSettings`.
 
 
 Waiting for `seconds` results in a simple `Delay`.
@@ -290,10 +290,10 @@ Each function is called with the value of the cell, and it must return a scan co
 Example::
 
    special_handlers = { 'Run Control': lambda cell : Include(cell + ".scn") }
-   table_scan = TableScan(settings, ( "Run Control" ),
-                                   [[ "start"       ],
-                                    [ "stop"        ]
-                                   ], special = special_handlers)
+   table_scan = TableScan(( "Run Control" ),
+                         [[ "start"       ],
+                          [ "stop"        ]
+                         ], special = special_handlers)
 
 When handling cells for the "Run Control" column, the special handler function
 will now be invoked with the cell values, i.e. "start" and "stop"::
@@ -313,7 +313,8 @@ API
 """
 # @author: Kay Kasemir
 
-import scan.commands as cmds
+from scan.commands import Command, Comment, Delay, Log, Parallel
+from scan.util.scan_settings import getScanSettings, SettingsBasedSet, SettingsBasedWait
 from scan.util.seconds import parseSeconds
 from range_helper import expandRanges
 from scan.util.spreadsheet import readSpreadsheet, writeSpreadsheet
@@ -336,7 +337,6 @@ def loadTableScan(settings, filename, pre=None, post=None, start=None, stop=None
 class TableScan:
     """Create Table scan
     
-    :param settings:     ScanSettings
     :param headers[]:    Column headers of the table
     :param rows[][]:     Rows of the scan. Each row must have len(headers) columns.
     :param pre:          Command or list of commands executed at the start of the table.
@@ -354,8 +354,7 @@ class TableScan:
     COMPLETION = "completion"
     SECONDS = "seconds"
     
-    def __init__(self, settings, headers, rows, pre=None, post=None, start=None, stop=None, special=dict()):
-        self.settings = settings
+    def __init__(self, headers, rows, pre=None, post=None, start=None, stop=None, special=dict()):
         self.name = "Table Scan"
         self.pre = self.__makeList(pre)
         self.post = self.__makeList(post)
@@ -400,7 +399,7 @@ class TableScan:
         writeSpreadsheet(filename, table)
 
     def __makeList(self, cmd):
-        if isinstance(cmd, cmds.Command):
+        if isinstance(cmd, Command):
             return [ cmd ]
         if cmd:
             return list(cmd)
@@ -422,8 +421,8 @@ class TableScan:
         :return: List of commands.
         """
         # Parse column headers.
+        settings = getScanSettings()
         col_device = [ None for i in range(self.cols) ]
-        col_parallel = [ None for i in range(self.cols) ]
         i = 0
         while i < self.cols:
             if self.headers[i] == TableScan.WAITFOR:
@@ -440,7 +439,7 @@ class TableScan:
                 pass
             else:
                 # Parse device info
-                (col_device[i], col_parallel[i])  = self.settings.parseDeviceSettings(self.headers[i])
+                col_device[i] = settings.parseDeviceSettings(self.headers[i])
             i += 1
         
         # Expand any range(start, end, step) cells
@@ -448,7 +447,7 @@ class TableScan:
         
         # Assemble commands for each row in the table
         commands = list()
-#         log_devices = list(self.settings.log_always)
+        # TODO   log_devices = list(self.settings.log_always)
         log_devices = list()
         if self.pre:
             commands += self.pre
@@ -470,16 +469,16 @@ class TableScan:
                     commands.append(command)
                 elif what == TableScan.COMMENT:
                     text = row[i]
-                    commands.append(cmds.Comment(text))           
-#                     if self.settings.comment:
-#                         commands.append(SetCommand(self.settings.comment, text))
+                    commands.append(Comment(text))           
+                    # TODO if self.settings.comment:
+                    #       commands.append(SetCommand(self.settings.comment, text))
                 elif what == TableScan.WAITFOR:
                     waitfor = row[i]
                     value = self.__getValue(row[i+1])
 
                     if waitfor.lower() != TableScan.COMPLETION  and  parallel_commands:
                         # Complete accumulated parallel_commands before starting the run
-                        commands.append(cmds.Parallel(parallel_commands))
+                        commands.append(Parallel(parallel_commands))
                         parallel_commands = list()
 
                     # Optional commands to mark start of a "Wait For"
@@ -491,11 +490,11 @@ class TableScan:
                         # because otherwise the 'WaitFor - Completion' was likely an error
                         if not parallel_commands:
                             raise Exception("Line %d has no parallel commands to complete" % line)
-                        commands.append(cmds.Parallel(parallel_commands))
+                        commands.append(Parallel(parallel_commands))
                         parallel_commands = list()
                     elif waitfor.lower() == TableScan.SECONDS:
                         if value:
-                            commands.append(cmds.Delay(parseSeconds(value)))
+                            commands.append(Delay(parseSeconds(value)))
                     else:
                         timeout = None
                         errhandler = None
@@ -504,13 +503,13 @@ class TableScan:
                             if len(or_time) > 0:
                                 timeout = parseSeconds(or_time)
                                 errhandler = "OnErrorContinue"
-                        cmd = self.settings.Wait(waitfor, value, timeout=timeout, errhandler=errhandler)
+                        cmd = SettingsBasedWait(waitfor, value, timeout=timeout, errhandler=errhandler)
                         commands.append(cmd)
                         if not waitfor in log_devices:
                             log_devices.append(waitfor)
                     
                     if len(log_devices) > 0:
-                        commands.append(cmds.Log(log_devices))
+                        commands.append(Log(log_devices))
 
                     # Optional commands to mark end of a "Wait For"
                     if self.stop:
@@ -530,9 +529,9 @@ class TableScan:
                     # 'Normal' column that sets a device
                     device = col_device[i]
                     value = self.__getValue(row[i])
-                    command = device.Set(value)
+                    command = SettingsBasedSet(what, value)
                         
-                    if col_parallel[i]:
+                    if device.getParallel():
                         parallel_commands.append(command)
                     else:
                         commands.append(command)
@@ -543,7 +542,7 @@ class TableScan:
             # End of columns in row
             # Complete accumulated parallel commands
             if parallel_commands:
-                commands.append(cmds.Parallel(parallel_commands))
+                commands.append(Parallel(parallel_commands))
                 parallel_commands = list()
         
         if self.post:

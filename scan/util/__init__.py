@@ -1,1 +1,1 @@
-from scan_settings import DeviceSettings, ScanSettings
+from scan_settings import ScanSettings, setScanSettings, SettingsBasedLoop, SettingsBasedSet, SettingsBasedWait
