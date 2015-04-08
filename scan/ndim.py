@@ -12,7 +12,7 @@ def createNDimScan(settings, *parameters):
     Creates nested `Loop` commands for N-dimensional scan.
     Logs arbitrary number of reading.
     
-    :param settings: :class:`scan.util.scan_settings.ScanSettings`
+    :param settings: :class:`~scan.util.scan_settings.ScanSettings`
     :param parameters: One or more parameters
     
     Parameters include:

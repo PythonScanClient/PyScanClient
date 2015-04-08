@@ -107,7 +107,7 @@ class ScanClient(object):
         """Submit scan to scan server for simulation
         
         :param cmds: List of commands,
-                     :class:`scan.commands.commandsequence.CommandSequence`
+                     :class:`~scan.commands.commandsequence.CommandSequence`
                      or text with raw XML format.
         
         :return: Simulation result as dictionary `{ 'simulation': "Printable text", 'seconds': 193.0 }`
@@ -139,7 +139,7 @@ class ScanClient(object):
         """Submit scan to scan server for execution
         
         :param cmds: List of commands,
-                     :class:`scan.commands.commandsequence.CommandSequence`
+                     :class:`~scan.commands.commandsequence.CommandSequence`
                      or text with raw XML format.
         :param name: Name of scan
         
@@ -204,7 +204,7 @@ class ScanClient(object):
         
         Using `GET {BaseURL}/scans`
         
-        :return: List of :class:`scan.client.scaninfo.ScanInfo`
+        :return: List of :class:`~scan.client.scaninfo.ScanInfo`
         
         Example::
 
@@ -224,7 +224,7 @@ class ScanClient(object):
         Using `GET {BaseURL}/scan/{id}`
               
         :param scanID: The ID of scan for which to fetch information.
-        :return: :class:`scan.client.scaninfo.ScanInfo`
+        :return: :class:`~scan.client.scaninfo.ScanInfo`
         
         Example::
         

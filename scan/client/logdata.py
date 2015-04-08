@@ -59,7 +59,7 @@ def iterateSamples(data, device):
     2) Time stamp in Posix milliseconds
     3) Value, which is a number or a string
     
-    :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
+    :param data: Data as returned by :func:`~scan.client.scanclient.ScanClient.getData`
     :param device: Device for which to iterate over samples
     
     :return: Generator for the samples of the device as tuples ( id, time, value )
@@ -134,7 +134,7 @@ def createTable(data, *devices):
     
     Aligns samples for given list of devices by sample ID.
     
-    :param data: Data as returned by :func:`scan.client.scanclient.ScanClient.getData`
+    :param data: Data as returned by :func:`~scan.client.scanclient.ScanClient.getData`
     :param devices: One or more devices
     
     :return: Table. result[0] has values for first device, result[1] for second device and so on.     

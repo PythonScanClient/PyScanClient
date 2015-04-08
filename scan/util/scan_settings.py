@@ -87,7 +87,7 @@ class DeviceSettings(object):
         as per these device settings.
         
         :param value: Desired value
-        :return: :class:`scan.commands.set.Set` command.
+        :return: :class:`~scan.commands.set.Set` command.
         """
         return Set(self.getName(), value,
                    completion=self.getCompletion(),
@@ -106,7 +106,7 @@ class DeviceSettings(object):
         :param timeout: Optional timeout in seconds to override `DeviceSettings`.
         :param errhandler: Optional error handler
           
-        :return: :class:`scan.commands.wait.Wait` command.
+        :return: :class:`~scan.commands.wait.Wait` command.
         """
         if timeout is None:
             timeout = self._timeout
@@ -262,7 +262,7 @@ class ScanSettings(object):
         
         :param prefixed_device: Device name with optional prefixes
         :param value: Desired value
-        :return: :class:`scan.commands.set.Set` command.
+        :return: :class:`~scan.commands.set.Set` command.
         """
         (device, ignored) = self.parseDeviceSettings(prefixed_device)
         return device.Set(value)
@@ -276,7 +276,7 @@ class ScanSettings(object):
         
         :param prefixed_device: Device name with optional prefixes
         :param value: Desired value
-        :return: :class:`scan.commands.loop.Loop` command.
+        :return: :class:`~scan.commands.loop.Loop` command.
         """
         (device, ignored) = self.parseDeviceSettings(prefixed_device)
         return Loop(device.getName(), start, end, step, body,
@@ -298,7 +298,7 @@ class ScanSettings(object):
         :param timeout: Optional timeout in seconds to override `ScanSettings`.
         :param errhandler: Optional error handler
           
-        :return: :class:`scan.commands.wait.Wait` command.
+        :return: :class:`~scan.commands.wait.Wait` command.
         """
         settings = self.getDefaultSettings(device)
         return settings.Wait(value, timeout, errhandler)
