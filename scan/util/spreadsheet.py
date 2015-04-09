@@ -52,7 +52,7 @@ if __name__ == "__main__":
         for filename in sys.argv[1:]:
             print ("========= %s ===========" % file)
             # logging.basicConfig(level=logging.NOTSET)
-            table = readCsv(filename)
+            table = readSpreadsheet(filename)
             header = table[0]
             rows = table[1:]
             print "Header: ", header

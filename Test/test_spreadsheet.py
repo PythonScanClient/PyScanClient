@@ -1,7 +1,6 @@
 import unittest
 import os
 from scan.util.spreadsheet import readSpreadsheet, writeSpreadsheet
-from scan.util.scan_settings import ScanSettings
 from scan.table.table_scan import TableScan, loadTableScan
 
 class SpreadsheetTest(unittest.TestCase):
