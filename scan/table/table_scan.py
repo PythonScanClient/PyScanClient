@@ -521,9 +521,11 @@ class TableScan:
                     else:
                         i = i + 1
                 elif what == TableScan.VALUE:
-                    raise Exception("Line %d: Found value in '%s' after empty '%s'" % (line, TableScan.VALUE, TableScan.WAITFOR))
+                    raise Exception("Line %d: Found value '%s' in '%s' column after empty '%s' column.\nRow: %s" %
+                                    (line, row[i], TableScan.VALUE, TableScan.WAITFOR, str(row)))
                 elif what == TableScan.OR_TIME:
-                    raise Exception("Line %d: Found value in '%s' after empty '%s'" % (line, TableScan.OR_TIME, TableScan.WAITFOR))
+                    raise Exception("Line %d: Found value '%s' in '%s' column after empty '%s' column.\nRow: %s" %
+                                    (line, row[i], TableScan.OR_TIME, TableScan.WAITFOR, str(row)))
                 else:
                     # 'Normal' column that sets a device
                     device = col_device[i]
