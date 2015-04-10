@@ -52,6 +52,10 @@ client.pause(id)
 client.patch(id, 1, 'value', 5)
 client.resume(id)
 client.abort(id)
+try:
+    client.waitUntilDone(id)
+except Exception, e:
+    print "Waiting for an aborted scan will result in an exception: ", e
 
 # Log data during scan
 cmds = [ Loop('motor_x', 1, 10, 1,

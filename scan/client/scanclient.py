@@ -316,16 +316,26 @@ class ScanClient(object):
 
 
     def waitUntilDone(self, scanID):
-        """Wait until scan finishes
+        """Wait until scan finishes.
+        
+        On return, the scan has finished successfully.
+        Can also be used for an older scan that has logged data,
+        whereupon this call will return immediately.
+        
+        In case the scan failed or was aborted,
+        an exception is raised.
         
         :param scanID: ID of scan on which to wait
         
         :return: Scan info
+        :raise Exception: If scan was aborted or failed. 
         """
         info = self.scanInfo(scanID)
         while not info.isDone():
             time.sleep(1)
             info = self.scanInfo(scanID)
+        if info.state in ( 'Aborted', 'Failed' ):
+            raise Exception(str(info))
         return info
 
 
