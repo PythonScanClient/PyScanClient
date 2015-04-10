@@ -5,7 +5,7 @@ client = ScanClient('localhost')
 print client
 
 print client.serverInfo()
- 
+
 # Assemble commands for a scan
 # Much more on that later...
 cmds = [ Comment('Hello'), Set('motor_x', 10) ]
@@ -52,10 +52,18 @@ client.pause(id)
 client.patch(id, 1, 'value', 5)
 client.resume(id)
 client.abort(id)
+
 try:
     client.waitUntilDone(id)
 except Exception, e:
     print "Waiting for an aborted scan will result in an exception: ", e
+
+try:
+    # This scan will time out
+    id = client.submit( [ Wait("motor_x", 60, timeout=1)], "Timeout Test")
+    client.waitUntilDone(id)
+except Exception, e:
+    print "Waiting for a failed scan will result in an exception: ", e
 
 # Log data during scan
 cmds = [ Loop('motor_x', 1, 10, 1,
