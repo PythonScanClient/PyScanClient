@@ -353,13 +353,14 @@ class TableScan:
     COMPLETION = "completion"
     SECONDS = "seconds"
     
-    def __init__(self, headers, rows, pre=None, post=None, start=None, stop=None, special=dict()):
+    def __init__(self, headers, rows, pre=None, post=None, start=None, stop=None, log_always=None, special=dict()):
         self.name = "Table Scan"
         self.pre = self.__makeList(pre)
         self.post = self.__makeList(post)
         self.start = self.__makeList(start)
         self.stop = self.__makeList(stop)
         self.special = special
+        self.log_always=log_always
         # When called with table widget data,
         # values may be java.lang.String u'text'.
         # Convert to plain 'text'.
@@ -446,8 +447,9 @@ class TableScan:
         
         # Assemble commands for each row in the table
         commands = list()
-        # TODO   log_devices = list(self.settings.log_always)
         log_devices = list()
+        if self.log_always is not None:
+            log_devices = list(self.log_always)
         if self.pre:
             commands += self.pre
         line = 0
