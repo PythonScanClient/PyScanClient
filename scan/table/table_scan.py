@@ -221,6 +221,25 @@ Result::
     Log('x', 'y', 'counter')
 
 
+Log Additional Devices
+----------------------
+
+The example just shown ends in::
+   
+    Log('x', 'y', 'counter')
+
+because all devices used in a row are logged upon completing the 'Wait For' condition.
+These devices could have been affected by a column that set them to a value,
+or the 'Wait For' condition depended on the device.
+
+To log additional devices, even though they are otherwise not mentioned in the table,
+pass the `log_always` parameter to the table::
+
+    table = TableScan(headers, rows, log_always=[ 'neutrons' ])
+    
+will include the device `neutrons` whenever it logs values at the end of a row.
+
+
 Pre, Post, Start and Stop Commands
 ----------------------------------
 
@@ -342,6 +361,9 @@ class TableScan:
     :param post:         Command or list of commands executed at the end of the table.
     :param start:        Command or list of commands executed to start each 'Wait For'.
     :param stop:         Command or list of commands executed at the end of each 'Wait For'.
+    :param log_always:   Optional list of device names that should be logged in addition
+                         to those that are affected by columns that set them
+                         or 'Wait For' conditions.
     :param special:      Dictionary with special column handlers
     """
     
