@@ -28,19 +28,12 @@ Created on Apr 17, 2015
 from scan.client.scanclient import ScanClient
 from scan.table import TableScan
 
-# from scan.commands import Comment
-# from scan.commands import Set
-# from scan.commands import Loop
-# from scan.commands import Delay
-from scan.commands import Log
 
 from scan.client.logdata import createTable
 
 from scan.util.scan_settings import ScanSettings, setScanSettings
 # Note how we replace the original Set() and Wait() commands with those that utilize ScanSettings
 from scan.util.scan_settings import SettingsBasedSet as Set
-# from scan.util.scan_settings import SettingsBasedWait as Wait
-# from scan.util.scan_settings import SettingsBasedLoop as Loop
 
 class LocalScanSettings(ScanSettings):
     """Example for site-specific scan settings."""
