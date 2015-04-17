@@ -197,6 +197,30 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Set('X', 0.2), Set('X', 0.9), Set('X', 1.6), Set('X', 2.3), Set('X', 3.0), Set('X', 3.7), Set('X', 4.4), Set('X', 5.1)]")
 
+    def testLogAlways(self):
+        print "\n=== log_always ==="
+        
+        table_scan = TableScan(
+          (   "X",  "Wait For", "Value", ),
+          [
+            [ "10",  "seconds",   "10" ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 10.0), Delay(10), Log('X')]")
+
+        table_scan = TableScan(
+          (   "X",  "Wait For", "Value", ),
+          [
+            [ "10",  "seconds",   "10" ]
+          ],
+          log_always=[ 'neutrons']
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 10.0), Delay(10), Log('neutrons', 'X')]")
+
+        
+
     def testSpecialColumns(self):
         print "\n=== 'Load Frame' columns ==="
         
