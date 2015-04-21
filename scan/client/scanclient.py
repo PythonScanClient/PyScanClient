@@ -11,7 +11,6 @@ import xml.etree.ElementTree as ET
 import urllib
 import urllib2
 from scan.client.logdata import parseXMLData
-from scan.client.data import Data
 from scan.commands.commandsequence import CommandSequence
 from scaninfo import ScanInfo
 
@@ -415,8 +414,7 @@ class ScanClient(object):
         """
         self.__do_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
 
- 
-    def patch(self, id, address, property, value):
+    def patch(self, scanID, address, property, value):  # @ReservedAssignment
         """Update scan on server.
         
         This can be used to update parameters of an existing
@@ -427,7 +425,7 @@ class ScanClient(object):
         
         Using `PUT {BaseURL}/scan/{id}/patch`
 
-        :param id: The id of scan you want to update.
+        :param scanID: The id of scan you want to update.
         :param address: Address of the command to update.
                         Counted within the scan starting at 0.
         :param property: The property of the command to update.
