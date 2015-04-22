@@ -560,8 +560,8 @@ class TableScan:
                         parallel_commands.append(command)
                     else:
                         commands.append(command)
-                    # not log local pv 
-                    if not device.getName() in log_devices and not device.getName().lower().startswith("loc://"):
+                    
+                    if not device.getName() in log_devices:
                         log_devices.append(device.getName())
                 i = i + 1
             # End of columns in row

@@ -86,9 +86,7 @@ def __decodeScan(to_log, args):
         # Loop specification
         scan = __decodeLoop(arg)
         # Remember loop variable for log
-        # not log local variable
-        if not scan[0].lower().startswith('loc://'):
-            to_log.add(scan[0])
+        to_log.add(scan[0])
         # Create loop with remaining arguments as body
         return [ SettingsBasedLoop(scan[0], scan[1], scan[2], scan[3],
                                    __decodeScan(to_log, args))
