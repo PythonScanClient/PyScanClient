@@ -24,6 +24,9 @@ class BeamlineScanSettings(ScanSettings):
         self.defineDeviceClass("setpoint", completion=True, readback="readback", tolerance=0.1)
         self.defineDeviceClass("pcharge", comparison="increase by")
         self.defineDeviceClass("neutrons", comparison="increase by")
+        
+        # Used by UI to suggest devices on which one can 'wait'
+        self.waitable = [ "seconds", "pcharge" ]
 
     def getReadbackName(self, device_name):
         # Prime example would be a motor:
@@ -31,8 +34,9 @@ class BeamlineScanSettings(ScanSettings):
         #    return device_name + ".RBV"
         return device_name
 
+scan_settings = BeamlineScanSettings()
 # Install beam line specific scan settings
-setScanSettings(BeamlineScanSettings())
+setScanSettings(scan_settings)
 
 
 # 'Meta Commands'

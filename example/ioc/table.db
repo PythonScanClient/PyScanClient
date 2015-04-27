@@ -1,0 +1,7 @@
+# Table Scan UI
+
+record(waveform, "$(S):CS:Scan:TableFile")
+{
+    field(FTVL, "CHAR")
+    field(NELM, "200")
+}
