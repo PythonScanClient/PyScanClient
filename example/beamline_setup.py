@@ -26,7 +26,9 @@ class BeamlineScanSettings(ScanSettings):
         self.defineDeviceClass("neutrons", comparison="increase by")
         
         # Used by UI to suggest devices on which one can 'wait'
+        self.settable = [ "motor_x", "motor_y" ]
         self.waitable = [ "seconds", "pcharge" ]
+        self.loggable = [ "signal" ]
 
     def getReadbackName(self, device_name):
         # Prime example would be a motor:

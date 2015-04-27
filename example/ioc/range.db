@@ -1,0 +1,77 @@
+# Range scan PVs
+#
+# softIoc -m S=BL9 -d range.db
+
+record(waveform, "$(S):CS:Scan:Device1")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Range scan device")
+    field(PINI, "YES")
+    field(FTVL, "CHAR")
+    field(NELM, "60")
+}
+
+record(ao, "$(S):CS:Scan:Start1")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Range scan start")
+    field(PINI, "YES")
+    field(DOL,  "0")
+    field(PREC, "2")
+}
+
+record(ao, "$(S):CS:Scan:End1")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Range scan end")
+    field(PINI, "YES")
+    field(DOL,  "10")
+    field(PREC, "2")
+}
+
+record(ao, "$(S):CS:Scan:Step1")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Range scan step")
+    field(PINI, "YES")
+    field(DOL,  "1")
+    field(PREC, "4")
+}
+
+record(bi, "$(S):CS:Scan:RunPerStep")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "One run per step")
+    field(PINI, "YES")
+    field(INP,  "1")
+    field(ZNAM, "No")
+    field(ONAM, "Yes")
+}
+
+record(waveform, "$(S):CS:Scan:Cond:Device")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Scan condition device")
+    field(PINI, "YES")
+    field(FTVL, "CHAR")
+    field(NELM, "60")
+}
+
+record(ao, "$(S):CS:Scan:Cond:Val")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Scan condition value")
+    field(PINI, "YES")
+    field(DOL,  "1000")
+    field(PREC, "1")
+}
+
+record(waveform, "$(S):CS:Scan:Log:Device")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Scan condition device(s)")
+    field(PINI, "YES")
+    field(FTVL, "CHAR")
+    field(NELM, "200")
+}
+

@@ -1,0 +1,64 @@
+# Fit-scan PVs
+#
+# softIoc -m S=BL7 -d fit.db
+
+record(mbbi, "$(S):CS:Scan:Fit:Method")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Fit method")
+    field(PINI, "YES")
+    field(INP,  "1")
+    field(ZRST, "None")
+    field(ONST, "Gauss")
+    field(ZRVL, "0")
+    field(ONVL, "1")
+}
+
+record(bi, "$(S):CS:Scan:Fit:Normalize")
+{
+    info(autosaveFields, "VAL")
+    field(DESC, "Fit method")
+    field(PINI, "YES")
+    field(INP,  "1")
+    field(ZNAM, "No")
+    field(ONAM, "Yes")
+}
+
+record(waveform, "$(S):CS:Scan:Fit:Data:X")
+{
+    field(DESC, "FitScan X data")
+    field(PINI, "YES")
+    field(FTVL, "FLOAT")
+    field(NELM, "300")
+}
+record(waveform, "$(S):CS:Scan:Fit:Data:Y")
+{
+    field(DESC, "FitScan Y data")
+    field(PINI, "YES")
+    field(FTVL, "FLOAT")
+    field(NELM, "300")
+}
+
+record(ai, "$(S):CS:Scan:Fit:Pos")
+{
+    field(DESC, "Fit position")
+    field(PINI, "YES")
+    field(INP,  "0")
+    field(PREC, "3")
+}
+
+record(ai, "$(S):CS:Scan:Fit:Height")
+{
+    field(DESC, "Fit Height")
+    field(PINI, "YES")
+    field(INP,  "0")
+    field(PREC, "3")
+}
+
+record(ai, "$(S):CS:Scan:Fit:Width")
+{
+    field(DESC, "Fit Width")
+    field(PINI, "YES")
+    field(INP,  "0")
+    field(PREC, "3")
+}
