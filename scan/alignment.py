@@ -46,6 +46,7 @@ class AlignmentScan(object):
                  condition_device, condition_value,
                  log,
                  find_command=None,
+                 normalize=False,
                  prefix = 'Demo:CS:Scan:Fit',
                  pre=None, post=None, start=None, stop=None,
                  log_always=[]):
@@ -57,6 +58,7 @@ class AlignmentScan(object):
         self.condition_value = condition_value
         self.log = log
         self.find_command = find_command
+        self.normalize = normalize
         self.prefix = prefix
         self.pre = self.__makeList(pre)
         self.post = self.__makeList(post)
@@ -84,6 +86,7 @@ class AlignmentScan(object):
         # Older scan ScriptCommand didn't allow empty arguments, so use "-"
         norm_device = "-"
         norm_value = "1"
+        # TODO normalize
         
         devices = set(self.log_always)
         devices.add(self.device)
@@ -117,12 +120,12 @@ class AlignmentScan(object):
             commands += self.post
     
         if self.find_command:
-            commands.insert(0, Set('%s:CS:Scan:Fit:Height' % scan_settings.S, 0))
-            commands.append(Script(find_command,
+            commands.insert(0, SettingsBasedSet('%s:Height' % self.prefix, 0))
+            commands.append(Script(self.find_command,
                                    [ self.device, self.log, 
-                                     '%s:CS:Scan:Fit:Pos'    % scan_settings.S,
-                                     '%s:CS:Scan:Fit:Height' % scan_settings.S,
-                                     '%s:CS:Scan:Fit:Width'  % scan_settings.S
+                                     '%s:Pos'    % self.prefix,
+                                     '%s:Height' % self.prefix,
+                                     '%s:Width'  % self.prefix
                                    ]))
         
         return commands
