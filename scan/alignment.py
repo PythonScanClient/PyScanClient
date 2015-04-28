@@ -12,36 +12,21 @@ class AlignmentScan(object):
     """Assemble commands for 'alignment' scan.
     
     :param device: Device to move 
-    :param start: Initial position 
-    :param end: Final position, inclusive
-    :param step: Step size 
-    :param run_per_step: Create one run per step? Otherwise one big run with SMS step markers
+    :param value_start: Initial position 
+    :param value_end: Final position, inclusive
+    :param value_step: Step size 
     :param condition_device: What to wait for: "seconds", pcharge device, beam monitor device
     :param condition_value: Value that condition_device should reach
     :param log: device to log, usually some neutron counts
-    :param method: "None", "Edge", "Gauss+const", "Gauss+slope"
-    
-    :return: ( commands, name )
-    
-    This example will move the '..Angle' from 0 to 90 degrees in steps of 2 within one 'run'.
-    At each step it will wait for 1e12 PCharge, then log the neutron counts.
-    Finally, the neutron counts at each step will be normalized by (actual_pcharge_at_step / 1e12),
-    and a gauss with constant baseline will be fit.
-
-    Example::
-        ( commands, name ) = createAlignmentScan(
-                        'BL99:Mot:Angle', 0, 90, 2, run_per_step=False,
-                        'BL99:PCharge', 1e12,
-                        'BL99:Det:Neutrons')
-        id = scan_client.submit(commands, name)
-        
-        scan_client.waitUntilDone(id)
-        data = scan_client.getData(id)
-        table = createTable(data, 'BL99:Mot:Angle', 'BL99:Det:Neutrons')
-        x = np.array(table[0])
-        y = np.array(table[1])
+    :param find_command: Script command to call to locate peak
+    :param normalize: Normalize logged values by condition?
+    :param prefix: Prefix of PVs used for results
+    :param pre:          Command or list of commands executed at the start of scan.
+    :param post:         Command or list of commands executed at the end of the scan.
+    :param start:        Command or list of commands executed to start each step.
+    :param stop:         Command or list of commands executed at the end of each step.
+    :param log_always:   Optional list of device names that should be logged.    
     """
-
     def __init__(self, device, value_start, value_end, value_step,
                  condition_device, condition_value,
                  log,
@@ -86,12 +71,10 @@ class AlignmentScan(object):
         # Older scan ScriptCommand didn't allow empty arguments, so use "-"
         norm_device = "-"
         norm_value = "1"
-        # TODO normalize
         
         devices = set(self.log_always)
         devices.add(self.device)
         devices.add(self.log)
-        
           
         # Assemble commands for loop body
         loop_body = []
@@ -103,6 +86,9 @@ class AlignmentScan(object):
         else:
             loop_body.append(SettingsBasedWait(self.condition_device, self.condition_value))
             devices.add(self.condition_device)
+            if self.normalize:
+                norm_device = self.condition_device
+                norm_value = str(self.condition_value)
             
         if self.stop:
             loop_body += self.stop
@@ -111,8 +97,8 @@ class AlignmentScan(object):
         loop_body.append(Script('WriteDataToPV', [ self.device, '%s:Data:X' % self.prefix ]))
         loop_body.append(Script('WriteDataToPV', [ self.log,    '%s:Data:Y' % self.prefix, norm_device, norm_value ]))
 
-
         commands = []
+        commands.append(SettingsBasedSet('%s:Height' % self.prefix, 0))
         if self.pre:
             commands += self.pre
         commands.append(SettingsBasedLoop(self.device, self.value_start, self.value_end, self.value_step, loop_body))
@@ -120,15 +106,11 @@ class AlignmentScan(object):
             commands += self.post
     
         if self.find_command:
-            commands.insert(0, SettingsBasedSet('%s:Height' % self.prefix, 0))
             commands.append(Script(self.find_command,
-                                   [ self.device, self.log, 
+                                   [ self.device, self.log, norm_device, norm_value,
                                      '%s:Pos'    % self.prefix,
                                      '%s:Height' % self.prefix,
                                      '%s:Width'  % self.prefix
                                    ]))
         
         return commands
-    
-    
-

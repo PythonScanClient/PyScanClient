@@ -38,16 +38,6 @@ record(ao, "$(S):CS:Scan:Step1")
     field(PREC, "4")
 }
 
-record(bi, "$(S):CS:Scan:RunPerStep")
-{
-    info(autosaveFields, "VAL")
-    field(DESC, "One run per step")
-    field(PINI, "YES")
-    field(INP,  "1")
-    field(ZNAM, "No")
-    field(ONAM, "Yes")
-}
-
 record(waveform, "$(S):CS:Scan:Cond:Device")
 {
     info(autosaveFields, "VAL")
@@ -63,7 +53,7 @@ record(ao, "$(S):CS:Scan:Cond:Val")
     field(DESC, "Scan condition value")
     field(PINI, "YES")
     field(DOL,  "1000")
-    field(PREC, "1")
+    field(PREC, "2")
 }
 
 record(waveform, "$(S):CS:Scan:Log:Device")
