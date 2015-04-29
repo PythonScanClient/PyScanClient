@@ -1,6 +1,6 @@
 To start scan server:
 
-ScanServer -pluginCustomization plugin_customization.ini
+ScanServer -pluginCustomization plugin_customization.ini -console
 
 If scan server is executing in a different directory, it needs to be invoked with the full path
 to the plugin_customization.ini file,

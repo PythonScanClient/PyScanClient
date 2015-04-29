@@ -29,7 +29,10 @@
    <pv>
        <name>motor_x</name>
        <alias>xpos</alias>
-       <slew_rate>0.1</slew_rate>
+   </pv>
+   <pv>
+       <name>motor_y</name>
+       <alias>ypos</alias>
    </pv>
    
    <!-- In addition, a name_pattern is allowed
@@ -39,12 +42,12 @@
      -->
    <pv>
        <name_pattern>.pos</name_pattern>
-       <slew_rate>0.2</slew_rate>
+       <slew_rate>10</slew_rate>
    </pv>
 
-  <pv> <name>motor_y</name> <alias>ypos</alias> </pv>
-  <pv> <name>readback</name> <alias>readback</alias> </pv>
-  <pv> <name>setpoint</name> <alias>setpoint</alias> </pv>
-  <pv> <name>shutter</name> </pv>
-  <pv> <name>callback_test</name> </pv>
+   <pv>
+       <name_pattern>motor_.</name_pattern>
+       <slew_rate>10</slew_rate>
+   </pv>
+
 </scan_config>
