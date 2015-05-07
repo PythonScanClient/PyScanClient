@@ -6,7 +6,7 @@
   <show_grid>true</show_grid>
   <auto_zoom_to_fit_all>false</auto_zoom_to_fit_all>
   <scripts>
-    <path pathString="/share/opi/scan/scripts/alignment_init.py" checkConnect="true" sfe="false" seoe="false">
+    <path pathString="scripts/alignment_init.py" checkConnect="true" sfe="false" seoe="false">
       <pv trig="true">=1</pv>
     </path>
   </scripts>
