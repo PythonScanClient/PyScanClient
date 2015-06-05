@@ -247,7 +247,11 @@ class CommandTest(unittest.TestCase):
                                         ))
         print cmds
         self.assertEqual(str(cmds), "[\n    Parallel(\n        Sequence(\n            Comment('Chain1'),\n            Set('run', 1),\n            Delay(2),\n            Set('run', 0)\n        ),\n        Sequence(\n            Comment('Chain2'),\n            Set('foo', 1),\n            Delay(2),\n            Set('foo', 0)\n        )\n    )\n]")
-    
+
+    def testCommandAbstractMethodsMustBeImplemented(self):
+        class IncompleteCommand(Command):
+            pass
+        self.assertRaises(TypeError, IncompleteCommand)
 
 if __name__ == "__main__":
     unittest.main()

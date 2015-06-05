@@ -2,9 +2,10 @@
 Created on Mar 8,2015
 @author: qiuyx
 '''
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 
 class Command(object):
+    __metaclass__ = ABCMeta
     """Base class for all commands."""
     
     @abstractmethod
