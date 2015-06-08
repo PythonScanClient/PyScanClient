@@ -20,6 +20,7 @@ Contents:
    ndim_scan.rst
    site.rst
    misc.rst
+   version.rst
 
 Indices and tables
 ==================
