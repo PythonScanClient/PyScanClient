@@ -87,6 +87,8 @@ class Set(Command):
             ET.SubElement(xml, "readback").text = self.__device if self.__readback == True else self.__readback
             ET.SubElement(xml, "tolerance").text = str(self.__tolerance)
             need_timeout = True
+        else:
+            ET.SubElement(xml, "wait").text = "false"            
         if need_timeout  and  self.__timeout > 0:
             ET.SubElement(xml, "timeout").text = str(self.__timeout)
         

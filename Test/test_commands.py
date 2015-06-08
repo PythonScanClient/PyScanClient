@@ -39,23 +39,23 @@ class CommandTest(unittest.TestCase):
         cmd = Set("some_device", 3.14)
         print cmd
         self.assertEqual(str(cmd), "Set('some_device', 3.14)")
-        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value></set>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><wait>false</wait></set>")
 
         # Handle numeric as well as string for value
         cmd = Set("some_device", "Text")
         print cmd
         self.assertEqual(str(cmd), "Set('some_device', 'Text')")
-        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>\"Text\"</value></set>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>\"Text\"</value><wait>false</wait></set>")
 
         # With completion
         cmd = Set("some_device", 3.14, completion=True)
         print cmd
-        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><completion>true</completion></set>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>false</wait></set>")
 
         # .. and timeout
         cmd = Set("some_device", 3.14, completion=True, timeout=5.0)
         print cmd
-        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><completion>true</completion><timeout>5.0</timeout></set>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>false</wait><timeout>5.0</timeout></set>")
 
         # Setting a readback PV (the default one) enables wait-on-readback
         cmd = Set("some_device", 3.14, completion=True, readback=True, tolerance=1, timeout=10.0)
@@ -182,7 +182,7 @@ class CommandTest(unittest.TestCase):
         cmd = Loop('pv1', 1, 10, 0.1)
         print cmd
         self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1)")
-        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><body /></loop>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><wait>false</wait><body /></loop>")
 
         cmd = Loop('pv1', 1, 10, 0.1, Delay(5))
         print cmd
@@ -193,7 +193,7 @@ class CommandTest(unittest.TestCase):
         cmd = Loop('pv1', 1, 10, 0.1, body= [ Delay(1), Delay(2) ])
         print cmd
         self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1, [ Delay(1), Delay(2) ])")
-        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><body><delay><seconds>1</seconds></delay><delay><seconds>2</seconds></delay></body></loop>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><wait>false</wait><body><delay><seconds>1</seconds></delay><delay><seconds>2</seconds></delay></body></loop>")
 
         cmd = Loop('pv1', 1, 10, 0.1, Delay(1), Delay(2), readback=True)
         print cmd
@@ -202,7 +202,7 @@ class CommandTest(unittest.TestCase):
         cmd = Loop('pv1', 1, 10, 0.1, completion=True, timeout=10)
         print cmd
         self.assertEqual(str(cmd), "Loop('pv1', 1, 10, 0.1, completion=True, timeout=10)")
-        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><completion>true</completion><timeout>10</timeout><body /></loop>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><completion>true</completion><wait>false</wait><timeout>10</timeout><body /></loop>")
 
 
     def testXMLSequence(self):
