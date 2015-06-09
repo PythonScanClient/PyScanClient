@@ -197,7 +197,7 @@ class CommandTest(unittest.TestCase):
 
         cmd = Loop('pv1', 1, 10, 0.1, Delay(1), Delay(2), readback=True)
         print cmd
-        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><wait>true</wait><readback>pv1</readback><tolerance>0</tolerance><body><delay><seconds>1</seconds></delay><delay><seconds>2</seconds></delay></body></loop>")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<loop><device>pv1</device><start>1</start><end>10</end><step>0.1</step><wait>true</wait><readback>pv1</readback><tolerance>0.01</tolerance><body><delay><seconds>1</seconds></delay><delay><seconds>2</seconds></delay></body></loop>")
 
         cmd = Loop('pv1', 1, 10, 0.1, completion=True, timeout=10)
         print cmd

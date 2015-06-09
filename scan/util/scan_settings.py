@@ -47,7 +47,7 @@ class DeviceSettings(object):
     :param comparison: Comparison to use in Wait commands
     :param parallel:   Perform in parallel?
     """
-    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>=', parallel=False):
+    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=None, comparison='>=', parallel=False):
         self._name = name
         self._completion = completion
         self._readback = readback
@@ -90,8 +90,8 @@ class DeviceSettings(object):
         rb = self.getReadback()
         if rb:
             rb = "'" + rb + "'"
-        return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%g, comparison='%s', parallel=%s)" % (
-                self._name, str(self._completion), rb,  self._timeout, self._tolerance, self._comparison, str(self._parallel))
+        return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%s, comparison='%s', parallel=%s)" % (
+                self._name, str(self._completion), rb,  self._timeout, str(self._tolerance), self._comparison, str(self._parallel))
 
 
 
@@ -153,7 +153,7 @@ class ScanSettings(object):
         
         return device_name
         
-    def defineDeviceClass(self, name_pattern, completion=False, readback=False, timeout=0.0, tolerance=0.0, comparison='>='):
+    def defineDeviceClass(self, name_pattern, completion=False, readback=False, timeout=0.0, tolerance=None, comparison='>='):
         """Define a class of devices based on name
         
         Call this in the constructor of your derived class.
@@ -291,6 +291,9 @@ def SettingsBasedSet(prefixed_device, value, **kwargs):
     tolerance  = kwargs['tolerance'] if 'tolerance' in kwargs else settings.getTolerance()
     timeout    = kwargs['timeout'] if 'timeout' in kwargs else settings.getTimeout()
     errhandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
+    
+    if tolerance is None:
+        tolerance = 0.1
 
     return Set(settings.getName(), value,
                completion=completion, readback=readback, tolerance=tolerance, timeout=timeout, errhandler=errhandler)
@@ -324,6 +327,9 @@ def SettingsBasedLoop(prefixed_device, start, end, step, body=None, *args, **kwa
     tolerance  = kwargs['tolerance'] if 'tolerance' in kwargs else settings.getTolerance()
     timeout    = kwargs['timeout'] if 'timeout' in kwargs else settings.getTimeout()
     errhandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
+
+    if tolerance is None:
+        tolerance = abs(step)/10.0
     
     return Loop(settings.getName(), start, end, step, body, *args,
                 completion=completion, readback=readback, tolerance=tolerance, timeout=timeout, errhandler=errhandler)
@@ -349,6 +355,9 @@ def SettingsBasedWait(prefixed_device, value, **kwargs):
     tolerance  = kwargs['tolerance'] if 'tolerance' in kwargs else settings.getTolerance()
     timeout    = kwargs['timeout'] if 'timeout' in kwargs else settings.getTimeout()
     errhandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
-    
+
+    if tolerance is None:
+        tolerance = 0.1
+
     return Wait(settings.getName(), value,
                 comparison=comparison, tolerance=tolerance, timeout=timeout, errhandler=errhandler)

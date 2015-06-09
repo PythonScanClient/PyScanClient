@@ -101,7 +101,7 @@ class TableScanTest(unittest.TestCase):
           ]
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 2.0), Wait('Counter1', 10.0, comparison='>=', timeout=60, errhandler='OnErrorContinue'), Log('X', 'Y', 'Counter1'), Set('X', 3.0), Set('Y', 4.0), Wait('Counter1', 20.0, comparison='>=', timeout=60, errhandler='OnErrorContinue'), Log('X', 'Y', 'Counter1')]")
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 2.0), Wait('Counter1', 10.0, comparison='>=', tolerance=0.1, timeout=60, errhandler='OnErrorContinue'), Log('X', 'Y', 'Counter1'), Set('X', 3.0), Set('Y', 4.0), Wait('Counter1', 20.0, comparison='>=', tolerance=0.1, timeout=60, errhandler='OnErrorContinue'), Log('X', 'Y', 'Counter1')]")
 
 
     def testStartStop(self):
@@ -123,7 +123,7 @@ class TableScanTest(unittest.TestCase):
                   ],
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('shutter', 1), Set('X', 1.0), Set('Y', 2.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('X', 3.0), Set('Y', 4.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>='), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('shutter', 0)]")
+        self.assertEqual(str(cmds), "[Set('shutter', 1), Set('X', 1.0), Set('Y', 2.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('X', 3.0), Set('Y', 4.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('shutter', 0)]")
 
 
     def testScanSettings(self):
@@ -242,7 +242,7 @@ class TableScanTest(unittest.TestCase):
         )
         cmds = handle(table_scan)
         self.assertEqual(str(cmds),
-                         "[Include('lf_start.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Include('lf_next.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>='), Log('X', 'Neutrons'), Include('lf_end.scn')]")        
+                         "[Include('lf_start.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Include('lf_next.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Include('lf_end.scn')]")        
 
 
 if __name__ == "__main__":

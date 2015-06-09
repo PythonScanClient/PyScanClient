@@ -81,7 +81,7 @@ class Loop(Command):
             self.__body += args        
         self.__completion = kwargs['completion'] if 'completion' in kwargs else False
         self.__readback = kwargs['readback'] if 'readback' in kwargs else False
-        self.__tolerance = kwargs['tolerance'] if 'tolerance' in kwargs else 0
+        self.__tolerance = kwargs['tolerance'] if 'tolerance' in kwargs else abs(step)/10.0
         self.__timeout = kwargs['timeout'] if 'timeout' in kwargs else 0
         self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
             
@@ -163,7 +163,7 @@ class Loop(Command):
                 result += ", readback=True"
             else:
                 result += ", readback='%s'" % self.__readback
-            if self.__tolerance > 0:
+            if self.__tolerance is not None:
                 result += ', tolerance=%g' % self.__tolerance
         if use_timeout  and self.__timeout > 0:
             result += ', timeout=%g' % self.__timeout

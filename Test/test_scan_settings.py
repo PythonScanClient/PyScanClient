@@ -56,7 +56,7 @@ class DeviceSettingsTest(unittest.TestCase):
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), "SomeRandomDevice")
         self.assertEquals(s.getTimeout(), 0)
-        self.assertEquals(s.getTolerance(), 0)
+        self.assertTrue(s.getTolerance() is None)
         
         # Check device that should have special settings
         s = settings.getDefaultSettings("My:Lakeshore1")
@@ -81,7 +81,7 @@ class DeviceSettingsTest(unittest.TestCase):
         self.assertEquals(s.getCompletion(), True)
         self.assertEquals(s.getReadback(), "My:Motor:47.RBV")
         self.assertEquals(s.getTimeout(), 100)
-        self.assertEquals(s.getTolerance(), 0)
+        self.assertTrue(s.getTolerance() is None)
 
         # Different comparisons
         s = settings.getDefaultSettings("SomeCounter")
@@ -157,32 +157,34 @@ class DeviceSettingsTest(unittest.TestCase):
         setScanSettings(MyScanSettings())
 
         cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, Delay(1)); 
-        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1) ], completion=True, readback='My:Motor1.RBV', timeout=100)")
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1) ], completion=True, readback='My:Motor1.RBV', tolerance=0.2, timeout=100)")
 
         cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, Delay(1), Delay(2)); 
-        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=True, readback='My:Motor1.RBV', timeout=100)")
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=True, readback='My:Motor1.RBV', tolerance=0.2, timeout=100)")
 
         cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ]); 
-        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=True, readback='My:Motor1.RBV', timeout=100)")
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=True, readback='My:Motor1.RBV', tolerance=0.2, timeout=100)")
 
         cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=False); 
-        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], readback='My:Motor1.RBV', timeout=100)")
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], readback='My:Motor1.RBV', tolerance=0.2, timeout=100)")
 
         cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=False, timeout=0); 
-        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], readback='My:Motor1.RBV')")
+        self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], readback='My:Motor1.RBV', tolerance=0.2)")
 
         cmd = SettingsBasedLoop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ], completion=False, readback=False); 
         self.assertEquals(str(cmd), "Loop('My:Motor1', 1, 10, 2, [ Delay(1), Delay(2) ])")
+
+
 
 
     def testSettingsBasedWait(self):
         setScanSettings(MyScanSettings())
 
         cmd = SettingsBasedWait('SomePV', 42)
-        self.assertEquals(str(cmd), "Wait('SomePV', 42, comparison='>=')")
+        self.assertEquals(str(cmd), "Wait('SomePV', 42, comparison='>=', tolerance=0.1)")
 
         cmd = SettingsBasedWait('PerpetualCounter', 42)
-        self.assertEquals(str(cmd), "Wait('PerpetualCounter', 42, comparison='increase by')")
+        self.assertEquals(str(cmd), "Wait('PerpetualCounter', 42, comparison='increase by', tolerance=0.1)")
 
 
 
