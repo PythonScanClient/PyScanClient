@@ -85,6 +85,10 @@ class Loop(Command):
         self.__timeout = kwargs['timeout'] if 'timeout' in kwargs else 0
         self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
             
+    def getDevice(self):
+        """:return: Device name"""
+        return self.__device
+            
     def setCompletion(self, completion):
         """Change completion
         

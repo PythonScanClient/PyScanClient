@@ -45,6 +45,10 @@ class Wait(Command):
         self.__timeout = timeout
         self.__errHandler = errhandler
         
+    def getDevice(self):
+        """:return: Device name"""
+        return self.__device
+
     def setComparison(self, comparison):
         """Change comparison
         

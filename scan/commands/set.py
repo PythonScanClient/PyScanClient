@@ -34,6 +34,10 @@ class Set(Command):
         self.__tolerance = tolerance
         self.__timeout = timeout
         self.__errHandler = errhandler
+        
+    def getDevice(self):
+        """:return: Device name"""
+        return self.__device
     
     def setCompletion(self, completion):
         """Change completion
