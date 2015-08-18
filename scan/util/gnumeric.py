@@ -35,11 +35,14 @@ def readGnumeric(filename):
     >>> table = readGnumeric('/path/to/file.gnumeric')
     >>> print table
     """
+    logger.debug("UnZIP %s", filename)
     f = gzip.open(filename)
     gnumeric = f.read()
     f.close()
     
+    logger.debug("Parse XML")
     root = ET.fromstring(gnumeric)
+    del gnumeric
     
     # ET.dump(root)
     
@@ -52,49 +55,45 @@ def readGnumeric(filename):
     sheet = __findWithoutNamespace(sheets, "Sheet")
     if sheet is None:
         raise Exception("Cannot locate Sheets/Sheet")
-    
-    # Locate table size        
-    size = __findWithoutNamespace(sheet, "MaxRow")
-    if size is None:
-        raise Exception("Cannot locate Sheets/Sheet/MaxRow")
-    rows = int(size.text) + 1
-    
-    size = __findWithoutNamespace(sheet, "MaxCol")
-    if size is None:
-        raise Exception("Cannot locate Sheets/Sheet/MaxCol")
-    cols = int(size.text) + 1
-    
-    logger.debug("Size: %d rows, %d cols" % (rows, cols))
-    
-    # Create empty table, because cells will only provide
-    # data for non-empty cells, and maybe in random order
-    table = []
-    for r in range(rows):
-        row = []
-        for c in range(cols):
-            row.append("")
-        table.append(row)
-    
+    # Sheets/Sheet/MaxRow and Sheets/Sheet/MaxCol
+    # have size, but that can include many empty cells
+    # when for example setting the format for a 'column',
+    # so ignore
     cells = __findWithoutNamespace(sheet, "Cells")
     if cells is None:
         raise Exception("Cannot locate Sheets/Sheet/Cells")
     
+    # Locate all cells with valid content
+    max_row = 0
+    max_col = 0
+    valid = []
     for cell in cells:
         row = int(cell.attrib['Row'])
         col = int(cell.attrib['Col'])
         val = cell.text
+        if val is None:
+            continue
+        val = val.strip()
+        if len(val) <= 0:
+            continue
         logger.debug("Cell (%d, %d): %s" % (row, col, val))
+        valid.append((row, col, val))
+        if row > max_row:
+            max_row = row
+        if col > max_col:
+            max_col = col
+    del cells
+    del sheet
+    del root
+
+    logger.debug("Size: %d rows, %d cols", max_row, max_col)
+    # Create table, then populate cells
+    table = []
+    for r in range(max_row+1):
+        row = [ "" for c in range(max_col+1) ]
+        table.append(row)
+    for info in valid:
+        (row, col, val) = info
         table[row][col] = val
-    
-    # Trim empty trailing columns
-    while cols > 0:
-        for col in range(cols-1, 0, -1):
-            for row in range(rows):
-                if len(table[row][col].strip()) > 0:
-                    return table
-            # Remove rightmost table column
-            cols -= 1
-            for row in table:
-                del row[cols]
-    
+
     return table
