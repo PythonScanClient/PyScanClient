@@ -466,8 +466,8 @@ class TableScan:
                     i += 2
                 else:
                     i += 1
-            elif self.headers[i] in ( TableScan.COMMENT ):
-                # Ignore other special columns
+            elif self.headers[i] == TableScan.COMMENT:
+                # Comment is no device name
                 pass
             else:
                 # Parse device info
