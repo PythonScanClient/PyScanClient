@@ -18,16 +18,12 @@ Cells in each row provide the desired values.
 |  100      |   2     |
 +-----------+---------+
 
-At the end of each row, devices that were addressed by any table column
-are logged.
 The table above creates the following scan commands::
 
    Set('temperature', 50),
    Set('position', 1),
-   Log('temperature', 'position'),
    Set('temperature', 100),
    Set('position', 2),
-   Log('temperature', 'position')
 
 
 Cells can remain empty if a device should not be changed in that row.
@@ -52,18 +48,12 @@ Results in::
 
    Set('temperature', 50),
    Set('position', 1),
-   Log('temperature', 'position'),
    Set('position', 2),
-   Log('temperature', 'position'),
    Set('position', 3),
-   Log('temperature', 'position'),
    Set('temperature', 100),
    Set('position', 1),
-   Log('temperature', 'position'),
    Set('position', 2),
-   Log('temperature', 'position'),
    Set('position', 3),
-   Log('temperature', 'position')
 
 
 Ranges, Lists
