@@ -54,5 +54,5 @@ if __name__ == "__main__":
     for cmd in cmds:
         print cmd
     # Result:    
-    # Set('temperature', 10, completion=True, timeOut=300)
+    # Set('temperature', 10, completion=True, timeout=300)
     # Wait('PerpetualCounter', 10, comparison='increase by')

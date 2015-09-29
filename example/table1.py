@@ -25,12 +25,12 @@ for cmd in scan:
     print cmd
 """
 Result:
-Set('temperature', 50.0, completion=True, timeOut=300)
-Set('position', 1.0, completion=True, readback='position.RBV', timeOut=100)
-Set('position', 2.0, completion=True, readback='position.RBV', timeOut=100)
-Set('position', 3.0, completion=True, readback='position.RBV', timeOut=100)
-Set('temperature', 100.0, completion=True, timeOut=300)
-Set('position', 1.0, completion=True, readback='position.RBV', timeOut=100)
-Set('position', 2.0, completion=True, readback='position.RBV', timeOut=100)
-Set('position', 3.0, completion=True, readback='position.RBV', timeOut=100)
+Set('temperature', 50.0, completion=True, timeout=300)
+Set('position', 1.0, completion=True, readback='position.RBV', timeout=100)
+Set('position', 2.0, completion=True, readback='position.RBV', timeout=100)
+Set('position', 3.0, completion=True, readback='position.RBV', timeout=100)
+Set('temperature', 100.0, completion=True, timeout=300)
+Set('position', 1.0, completion=True, readback='position.RBV', timeout=100)
+Set('position', 2.0, completion=True, readback='position.RBV', timeout=100)
+Set('position', 3.0, completion=True, readback='position.RBV', timeout=100)
 """

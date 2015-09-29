@@ -124,7 +124,7 @@ a `Wait` command is created for the device to reach the given value.
 
 The table above will create the following scan::
 
-    Set('position', 2.0, completion=true, readback='position.RBV', timeOut=100)
+    Set('position', 2.0, completion=true, readback='position.RBV', timeout=100)
     Wait('counter', 10000.0, comparison='>=')
     Log('position', 'counter')
 
@@ -145,7 +145,7 @@ A prefix `-c` can disable the completion check:
 
 Resulting scan without completion for the 'position'::
 
-    Set('position', 2.0, readback='position.RBV', timeOut=100)
+    Set('position', 2.0, readback='position.RBV', timeout=100)
     Wait('counter', 10000.0, comparison='>=')
     Log('position', 'counter')
 
@@ -164,10 +164,10 @@ Waiting for `seconds` results in a simple `Delay`.
 
 The table above will create the following scan::
 
-    Set('position', 2.0, completion=true, readback='position.RBV', timeOut=100)
+    Set('position', 2.0, completion=true, readback='position.RBV', timeout=100)
     Delay(20)
     Log('position')
-    Set('position', 4.0, completion=true, readback='position.RBV', timeOut=100)
+    Set('position', 4.0, completion=true, readback='position.RBV', timeout=100)
     Delay(20)
     Log('position')
 
