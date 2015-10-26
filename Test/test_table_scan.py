@@ -186,6 +186,62 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 0.0), Set('Y', 1.0), Set('Y', 2.0), Set('Y', 3.0), Set('Y', 4.0), Set('X', 0.0), Set('Y', 0.0), Set('X', 0.0), Set('Y', 1.0), Set('X', 1.0), Set('Y', 0.0), Set('X', 1.0), Set('Y', 1.0)]")
 
+        table_scan = TableScan(
+          (   " X ", ),
+          [
+            [ "range(100,200,10)", ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 100.0), Set('X', 110.0), Set('X', 120.0), Set('X', 130.0), Set('X', 140.0), Set('X', 150.0), Set('X', 160.0), Set('X', 170.0), Set('X', 180.0), Set('X', 190.0)]")
+
+        table_scan = TableScan(
+          (   " X ", ),
+          [
+            [ "range(175,246,70)", ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 175.0), Set('X', 245.0)]")
+
+        print "\n=== Likely a misconfigured Range ==="
+        # This used to fail by creating Set('X', 'range(175,245,70)')
+        table_scan = TableScan(
+          (   " X ", ),
+          [
+            [ "range(175,245,70)", ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 175.0)]")
+
+        table_scan = TableScan(
+          (   "X", "Y" ),
+          [
+            [ "range(1,0,2)", "2" ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('Y', 2.0)]")
+
+        table_scan = TableScan(
+          (   "X", "Y" ),
+          [
+            [ "3", "[]" ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 3.0)]")
+
+        table_scan = TableScan(
+          (   "X", "Y" ),
+          [
+            [ "[3]", "[2]" ]
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 3.0), Set('Y', 2.0)]")
+
 
         print "\n=== Fractional Range Cells ==="
         table_scan = TableScan(

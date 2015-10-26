@@ -20,6 +20,18 @@ class TestRangeExpansion(unittest.TestCase):
         points = getIterable("range(0.5, 4, 0.5)")
         self.assertEqual(str(points), "[0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5]")
 
+        points = getIterable("range(175,245,70)")
+        self.assertEqual(str(points), "[175.0]")
+
+        points = getIterable("range(175,0,70)")
+        self.assertEqual(str(points), "[]")
+
+        text = getIterable("'Fred'")
+        self.assertTrue(text is None)
+
+        points = getIterable("[ 'a', 'b' ]")
+        self.assertEqual(str(points), "['a', 'b']")
+
     
     def test_expand(self):
         rows = [
@@ -41,7 +53,7 @@ class TestRangeExpansion(unittest.TestCase):
             print row
         self.assertEqual(len(result), 14)
 
-        # List, tuple        
+        # List, tuple
         rows = [
            [ "( 2, 4)",  "[ 0, 90, 180]",  "Seconds" ],
            ]
@@ -54,6 +66,22 @@ class TestRangeExpansion(unittest.TestCase):
             print row
         self.assertEqual(len(result), 6)
 
+
+        # Mix
+        rows = [
+           [ "'Fred'",  "range(2, 4, 2)",  "Seconds" ],
+           [ "Nop1",    "[]",  "Seconds" ],
+           [ "Jane",    "[2]",  "Seconds" ],
+           [ "Nop2",    "range(2, 0, 2)",  "Seconds" ],
+           ]
+        print "Original:"
+        for row in rows:
+            print row
+        print "Expanded:"
+        result = expandRanges(rows)
+        for row in result:
+            print row
+        self.assertEqual(len(result), 4)
 
 
 if __name__ == '__main__':

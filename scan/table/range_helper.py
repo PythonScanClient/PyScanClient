@@ -35,8 +35,6 @@ def getIterable(cell):
         if step == 0:
             raise Exception("Illegal range(start, stop, step=0)")
         value = start
-        if (step > 0 and end < start) or (step < 0 and end > start):
-            raise Exception("Ill-defined range(%f, %f, %f)" % (start, end, step))
         result = []
         while value < end if step > 0 else value > end:
             result.append(value)
@@ -71,11 +69,17 @@ def expandRangeInRow(row):
     for i in range(len(row)):
         cell = row[i]
         cell_range = getIterable(cell)
-        if cell_range:
+        if cell_range is not None:
             result = []
             for value in cell_range:
                 copy = list(row)
                 copy[i] = str(value)
+                result.append(copy)
+            # If cell expanded to nothing, return row with that cell cleared
+            # (not original 'range(2, 0, 1)', nor empty row)
+            if len(result) == 0:
+                copy = list(row)
+                copy[i] = ''
                 result.append(copy)
             # Performed one expansion, return for another pass
             return result
@@ -91,15 +95,17 @@ def expandRanges(rows):
        Iterates until there is nothing to expand.
     """
     result = []
+    nothing = True
     for row in rows:
         expanded = expandRangeInRow(row)
-        if expanded:
+        if expanded is not None:
+            nothing = False
             result.extend(expanded)
         else:
             result.append(row)
-    # If there was nothing expanded, return as is
-    if len(rows) == len(result):
-        return rows
+    # If nothing was expanded, return as is
+    if nothing:
+        return result
     # Expanded at least one cell on one row
     # check if there are more cells 
     return expandRanges(result)
