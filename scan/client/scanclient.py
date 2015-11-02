@@ -139,13 +139,14 @@ class ScanClient(object):
         return { 'simulation': simulation, 'seconds': seconds }
 
 
-    def submit(self, cmds, name='UnNamed'):
+    def submit(self, cmds, name='UnNamed', queue=True):
         """Submit scan to scan server for execution
         
         :param cmds: List of commands,
                      :class:`~scan.commands.commandsequence.CommandSequence`
                      or text with raw XML format.
         :param name: Name of scan
+        :param queue: Submit to scan server queue, or execute as soon as possible?
         
         :return: ID of submitted scan
         
@@ -160,12 +161,12 @@ class ScanClient(object):
         """
         quoted_name = urllib.quote(name, '')
         if isinstance(cmds, str):
-            result = self.__submitScanXML(cmds, quoted_name)     
+            result = self.__submitScanXML(cmds, quoted_name, queue)     
         elif isinstance(cmds, CommandSequence):
-            result = self.__submitScanSequence(cmds, quoted_name)
+            result = self.__submitScanSequence(cmds, quoted_name, queue)
         else:
             # Warp list, tuple, other iterable
-            result = self.__submitScanSequence(CommandSequence(cmds), quoted_name)
+            result = self.__submitScanSequence(CommandSequence(cmds), quoted_name, queue)
         
         xml = ET.fromstring(result)
         if xml.tag != 'id':
@@ -173,7 +174,7 @@ class ScanClient(object):
         return int(xml.text)
 
 
-    def __submitScanXML(self, scanXML, scanName):
+    def __submitScanXML(self, scanXML, scanName, queue=True):
         """Submit scan in raw XML-form.
         
         Using   POST {BaseURL}/scan/{scanName}
@@ -181,6 +182,7 @@ class ScanClient(object):
         
         :param scanXML: The XML content of your new scan
         :param scanName: The name you want to give the new scan
+        :param queue: Submit to scan server queue, or execute as soon as possible?
         
         :return: Raw XML for scan ID
 
@@ -191,19 +193,22 @@ class ScanClient(object):
         >>> id = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
         """
         url = self.__baseURL + self.__scanResource + '/' + scanName
+        if not queue:
+            url = url + "?queue=false"
         r = self.__do_request(url, 'POST', scanXML)
         return r
     
             
-    def __submitScanSequence(self, cmdSeq, scanName):
+    def __submitScanSequence(self, cmdSeq, scanName, queue=True):
         """Submit a CommandSequence
         
         :param cmdSeq: :class:`scan.commands.commandsequence.CommandSequence`
         :param scanName: The name needed to give the new scan
+        :param queue: Submit to scan server queue, or execute as soon as possible?
 
         :return: Raw XML for scan ID
         """
-        return self.__submitScanXML(cmdSeq.genSCN(),scanName)
+        return self.__submitScanXML(cmdSeq.genSCN(),scanName, queue)
       
            
     def scanInfos(self):

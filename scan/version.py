@@ -1,7 +1,8 @@
 
-__version__ = '1.0.6'
+__version__ = '1.0.7'
 
 version_history = """
+1.0.7 - Support ScanClient.submit(.., queue=False)
 1.0.6 - Fix ranges like 'range(1,2,1)' which failed because expansion contains only one item
 1.0.5 - Fix table 'Comment' check
 1.0.4 - Gnumeric support much faster and lower memory
