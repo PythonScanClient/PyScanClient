@@ -14,6 +14,42 @@ from scan.client.logdata import parseXMLData
 from scan.commands.commandsequence import CommandSequence
 from scaninfo import ScanInfo
 
+
+# Bug https://github.com/PythonScanClient/PyScanClient/issues/18
+#
+# urllib2 is based on _socket.py.
+# Depending on how BOY invokes jython,
+# even a new threadLocalStateInterpreter and a newly compiled
+# script can end up with a cached binary for org.python.jython_2.7.0.release/Lib/_socket.py,
+# where the _socket.NIO_GROUP has been shut down when the previous *.opi file closed
+# its threadLocalStateInterpreter.
+# Calls to urllib2 will then receive a connection error based on
+# "RejectedExecutionException: event executor terminated".
+import os
+if os.name == 'java':
+    import sys, _socket
+    # Log detail of the _socket code
+    #import logging
+    #logging.basicConfig(level=logging.DEBUG)
+    #log = logging.getLogger("_socket")
+    #log.setLevel(level=logging.DEBUG)
+
+    def checkSocketLib():
+        # Workaround: Detect closed NIO_GROUP and ee-create it
+        try:
+            if _socket.NIO_GROUP.isShutdown():
+                # print "RE-CREATEING NIO_GROUP!!!!!!!!!"
+                # _socket._NUM_THREADS is 10. Using only 2 threads.
+                _socket.NIO_GROUP = _socket.NioEventLoopGroup(2, _socket.DaemonThreadFactory("PyScan-Netty-Client-%s"))
+                sys.registerCloser(_socket._shutdown_threadpool)
+        except AttributeError:
+            print "Jython _socket.py has changed from jython_2.7.0"
+else:
+    def checkSocketLib():
+        # C-Python _socket.py needs no fix
+        pass
+
+
 class ScanClient(object):
     """Client interface to the scan server
     
@@ -52,6 +88,7 @@ class ScanClient(object):
        
         :return: XML response from scan server
         """
+        checkSocketLib()
         response = None
         try:
             # Register a Request Object with url:
