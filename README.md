@@ -2,6 +2,11 @@ PyScanClient
 ============
 A collaboratively developed Python/Jython Scan Server Client.
 
+Version Info
+------------
+
+See https://github.com/PythonScanClient/PyScanClient/blob/master/scan/version.py
+
 Documentation
 -------------
 
