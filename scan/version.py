@@ -1,7 +1,11 @@
 
-__version__ = '1.0.8'
+__version__ = '1.0.9'
 
 version_history = """
+1.0.9 - Scan settings match the complete name,
+        i.e. the pattern is anchored, as if
+        there was an implied "^...$" around the pattern.
+        Before, it was an implied "^.." only.
 1.0.8 - Workaround for 'event executor terminated'
 1.0.7 - Support ScanClient.submit(.., queue=False)
 1.0.6 - Fix ranges like 'range(1,2,1)' which failed because expansion contains only one item
