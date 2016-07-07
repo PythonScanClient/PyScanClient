@@ -181,7 +181,10 @@ class ScanSettings(object):
         :return: DeviceSettings for that device.
         """
         for setting in self.device_settings:
-            if re.match(setting.getName(), name):
+            # Look for full match, as if pattern used "^whatever$".
+            # re.match() implies the "^..", we assert the " ..$"
+            m = re.match(setting.getName(), name)
+            if (m is not None) and (m.group(0) == name):
                 # rb = False (no readback), True (use device name), or "SomeExactName" 
                 rb = setting._readback
                 if rb == True:
