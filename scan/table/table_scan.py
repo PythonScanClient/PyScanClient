@@ -20,10 +20,13 @@ Cells in each row provide the desired values.
 
 The table above creates the following scan commands::
 
+   Comment('# Line 1'),
    Set('temperature', 50),
    Set('position', 1),
+   Comment('# Line 2'),
    Set('temperature', 100),
    Set('position', 2),
+   Comment('# End'),
 
 
 Cells can remain empty if a device should not be changed in that row.
@@ -437,8 +440,9 @@ class TableScan:
         except ValueError:
             return text # Keep as string
     
-    def createScan(self):
+    def createScan(self, lineinfo=True):
         """Create scan.
+        :param lineinfo: By default, Comment commands are added for line info
         
         :return: List of commands.
         """
@@ -464,40 +468,52 @@ class TableScan:
                 col_device[i] = settings.parseDeviceSettings(self.headers[i])
             i += 1
         
+        # Add first column of line numbers
+        numbered = []
+        for row in self.rows:
+            numbered_row = list(row)
+            numbered_row.insert(0, len(numbered)+1)
+            numbered.append(numbered_row)
         # Expand any range(start, end, step) cells
-        expanded_rows = expandRanges(self.rows)
+        # (which will duplicate the line numbers)
+        expanded_rows = expandRanges(numbered)
         
         # Assemble commands for each row in the table
+        current_line = 0
         commands = list()
         log_devices = list()
         if self.log_always is not None:
             log_devices = list(self.log_always)
         if self.pre:
             commands += self.pre
-        line = 0
-        for row in expanded_rows:
-            line += 1
+        for numbered_row in expanded_rows:
+            line = numbered_row[0]
+            row = numbered_row[1:]
+            if line != current_line:
+                if lineinfo:
+                    commands.append(Comment("# Line %d" % line))
+                current_line = line
             # Parallel commands to execute in this row
             parallel_commands = list()
             # Handle all columns
-            i = 0
-            while i < self.cols:
-                what = self.headers[i]
-                if len(row[i]) <= 0:
+            c = 0
+            while c < self.cols:
+                what = self.headers[c]
+                if len(row[c]) <= 0:
                     pass # Empty column, nothing to do
                 elif what in self.special:
                     special_handler = self.special[what]
-                    value = self.__getValue(row[i])
+                    value = self.__getValue(row[c])
                     command = special_handler(value)
                     commands.append(command)
                 elif what == TableScan.COMMENT:
-                    text = row[i]
+                    text = row[c]
                     commands.append(Comment(text))           
                     # TODO if self.settings.comment:
                     #       commands.append(SetCommand(self.settings.comment, text))
                 elif what == TableScan.WAITFOR:
-                    waitfor = row[i]
-                    value = self.__getValue(row[i+1])
+                    waitfor = row[c]
+                    value = self.__getValue(row[c+1])
 
                     if waitfor.lower() != TableScan.COMPLETION  and  parallel_commands:
                         # Complete accumulated parallel_commands before starting the run
@@ -521,8 +537,8 @@ class TableScan:
                     else:
                         timeout = None
                         errhandler = None
-                        if i+2 < self.cols  and  self.headers[i+2] == TableScan.OR_TIME:
-                            or_time = row[i+2].strip()
+                        if c+2 < self.cols  and  self.headers[c+2] == TableScan.OR_TIME:
+                            or_time = row[c+2].strip()
                             if len(or_time) > 0:
                                 timeout = parseSeconds(or_time)
                                 errhandler = "OnErrorContinue"
@@ -540,20 +556,20 @@ class TableScan:
                     
                     # Skip TableScan.VALUE in addition to current column,
                     # so next two Exceptions should not happen unless there's an empty "WAIT_FOR"
-                    if i+2 < self.cols  and  self.headers[i+2] == TableScan.OR_TIME:
-                        i = i + 2
+                    if c+2 < self.cols  and  self.headers[c+2] == TableScan.OR_TIME:
+                        c = c + 2
                     else:
-                        i = i + 1
+                        c = c + 1
                 elif what == TableScan.VALUE:
                     raise Exception("Line %d: Found value '%s' in '%s' column after empty '%s' column.\nRow: %s" %
-                                    (line, row[i], TableScan.VALUE, TableScan.WAITFOR, str(row)))
+                                    (line, row[c], TableScan.VALUE, TableScan.WAITFOR, str(row)))
                 elif what == TableScan.OR_TIME:
                     raise Exception("Line %d: Found value '%s' in '%s' column after empty '%s' column.\nRow: %s" %
-                                    (line, row[i], TableScan.OR_TIME, TableScan.WAITFOR, str(row)))
+                                    (line, row[c], TableScan.OR_TIME, TableScan.WAITFOR, str(row)))
                 else:
                     # 'Normal' column that sets a device
-                    device = col_device[i]
-                    value = self.__getValue(row[i])
+                    device = col_device[c]
+                    value = self.__getValue(row[c])
                     command = SettingsBasedSet(what, value)
                         
                     if device.getParallel():
@@ -563,7 +579,7 @@ class TableScan:
                     
                     if not device.getName() in log_devices:
                         log_devices.append(device.getName())
-                i = i + 1
+                c = c + 1
             # End of columns in row
             # Complete accumulated parallel commands
             if parallel_commands:
@@ -573,7 +589,9 @@ class TableScan:
         if self.post:
             # End one long run at end of table
             commands += self.post
-        
+            
+        if lineinfo:
+            commands.append(Comment("# End"))
         return commands
 
         
@@ -592,4 +610,15 @@ class TableScan:
             result += ' [ "' + '", "'.join(line) + '" ],\n       '
         result += "]"
         return result
-    
+
+
+if __name__ == "__main__":
+    from scan.commands.commandsequence import CommandSequence
+    table = TableScan([ "A", "B" ],
+                    [
+                      [ "1", "" ],
+                      [ "2", "[5,6,7]"]
+                    ])
+    cmds = CommandSequence(table.createScan())
+    print(table)
+    print(cmds)

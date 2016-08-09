@@ -32,9 +32,9 @@ setScanSettings(MyScanSettings())
 #             if idle:
 #                 commands.insert(0, WaitCommand(idle, Comparison.EQUALS, 1, 0.1, 5.0))
 
-def handle(table):
+def handle(table, lineinfo=False):
     print table
-    cmds = table.createScan()
+    cmds = table.createScan(lineinfo=lineinfo)
     print
     for cmd in cmds:
         print str(cmd)
@@ -54,6 +54,9 @@ class TableScanTest(unittest.TestCase):
         )
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Comment('Setup'), Set('X', 1.0), Set('Y', 2.0), Set('Speed', 30.0), Comment('Count'), Set('Wavelength', 100.0), Comment('Wait'), Set('Wavelength', 200.0)]")
+
+        cmds = handle(table_scan, lineinfo=True)
+        self.assertEqual(str(cmds), "[Comment('# Line 1'), Comment('Setup'), Set('X', 1.0), Set('Y', 2.0), Set('Speed', 30.0), Comment('# Line 2'), Comment('Count'), Set('Wavelength', 100.0), Comment('# Line 3'), Comment('Wait'), Set('Wavelength', 200.0), Comment('# End')]")
 
         print "\n=== Wait for time ==="
         # Also using numbers instead of strings

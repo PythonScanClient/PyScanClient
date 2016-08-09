@@ -1,7 +1,10 @@
 
-__version__ = '1.0.9'
+__version__ = '1.1.0'
 
 version_history = """
+1.1.0 - Table scan adds "# Line .." and "# End" comments,
+        and also uses the original line number
+        in error messages, even for expanded rows.
 1.0.9 - Scan settings match the complete name,
         i.e. the pattern is anchored, as if
         there was an implied "^...$" around the pattern.
@@ -18,6 +21,6 @@ version_history = """
 """
 
 if __name__ == "__main__":
-    print "Version ", __version__
+    print("Version %s" % __version__)
     
-    print version_history
+    print(version_history)
