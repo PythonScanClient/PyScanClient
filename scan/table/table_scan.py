@@ -442,8 +442,8 @@ class TableScan:
     
     def createScan(self, lineinfo=True):
         """Create scan.
+
         :param lineinfo: By default, Comment commands are added for line info
-        
         :return: List of commands.
         """
         # Parse column headers.
