@@ -251,7 +251,7 @@ class ScanSettings(object):
         if readback == True:
             readback = device
         
-        return DeviceSettings(device, completion=completion, readback=readback, timeout=default.getTimeout(), tolerance=default.getTolerance(),
+        return DeviceSettings(default.getName(), completion=completion, readback=readback, timeout=default.getTimeout(), tolerance=default.getTolerance(),
                               comparison=default.getComparison(), parallel=parallel)
 
     def __str__(self):
