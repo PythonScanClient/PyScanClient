@@ -1,7 +1,10 @@
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 version_history = """
+1.1.1 - Allow site-specific ScanSettings to override
+        getDefaultSettings() such that is replaces
+        the PV name, preserving that name
 1.1.0 - Table scan adds "# Line .." and "# End" comments,
         and also uses the original line number
         in error messages, even for expanded rows.
