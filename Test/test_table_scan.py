@@ -191,6 +191,17 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Delay(300), Comment('Start Run'), Wait('counts', 10.0, comparison='>=', tolerance=0.1), Log('A', 'B', 'counts'), Comment('Stop Run')]")
 
+        print "\n=== Parallel with range and Delay ==="
+        table_scan = TableScan(
+          (   "+p A", "+p B",      "Delay"    ),
+          [
+            [ "1",    "[2, 4, 6]", "00:05:00" ],
+          ],
+          special = { 'Delay': lambda cell : Delay(parseSeconds(cell)) } 
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Delay(300), Parallel(Set('A', 1.0), Set('B', 4.0)), Delay(300), Parallel(Set('A', 1.0), Set('B', 6.0)), Delay(300)]")
+
 
 
     def testRange(self):
