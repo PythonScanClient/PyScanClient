@@ -189,7 +189,7 @@ class TableScanTest(unittest.TestCase):
           special = { 'Delay': lambda cell : Delay(parseSeconds(cell)) } 
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "")
+        self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Delay(300), Comment('Start Run'), Wait('counts', 10.0, comparison='>=', tolerance=0.1), Log('A', 'B', 'counts'), Comment('Stop Run')]")
 
 
 
