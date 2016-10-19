@@ -3,10 +3,12 @@
    @author: Kay Kasemir
 """
 import unittest
-from scan.commands import Set
+from scan.commands import Set, Comment, Delay
 from scan.table import TableScan
 from scan.util import ScanSettings, setScanSettings
 from scan.commands.include import Include
+from scan.util.seconds import parseSeconds
+
 
 class MyScanSettings(ScanSettings):
     def __init__(self):
@@ -155,25 +157,40 @@ class TableScanTest(unittest.TestCase):
     def testParallel(self):
         print "\n=== Parallel without Wait ==="
         table_scan = TableScan(
-          (   "X", "+p Y", "+p Z" ),
+          (   "+p A", "+p B", "C", "+p D", "+p E", "F" ),
           [
-            [ "1", "2",    "3" ],
+            [ "1",    "2",    "3", "4",    "5",    "6" ],
           ]
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('X', 1.0), Parallel(Set('Y', 2.0), Set('Z', 3.0))]")
+        self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Set('C', 3.0), Parallel(Set('D', 4.0), Set('E', 5.0)), Set('F', 6.0)]")
 
-        print "\n=== Parallel with Wait ==="
+        print "\n=== Parallel with Wait For ==="
         table_scan = TableScan(
-          (   "X", "+p Y", "+p Z", "Wait For", "Value" ),
+          (   "+p A", "+p B", "C", "+p D", "+p E", "Wait For",   "Value" ),
           [
-            [ "1", "2",    "3",    "Seconds",  "10"    ],
-            [  "",  "",     "",    "Seconds",  "02:00" ],
-            [ "4", "5",    "6",    "completion", ""    ],
-          ]
+            [ "1",    "2",    "3", "4",    "5",    "completion", "10"    ],
+            [ "6",    "7",    "8", "9",   "10",    "Seconds",    "10"    ],
+          ],
+          start = Comment('Start Run'),
+          stop  = Comment('Stop Run')
         )
         cmds = handle(table_scan)
-        self.assertEqual(str(cmds), "[Set('X', 1.0), Parallel(Set('Y', 2.0), Set('Z', 3.0)), Delay(10), Log('X', 'Y', 'Z'), Delay(120), Log('X', 'Y', 'Z'), Set('X', 4.0), Parallel(Set('Y', 5.0), Set('Z', 6.0)), Log('X', 'Y', 'Z')]")
+        self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Set('C', 3.0), Comment('Start Run'), Parallel(Set('D', 4.0), Set('E', 5.0)), Log('A', 'B', 'C', 'D', 'E'), Comment('Stop Run'), Parallel(Set('A', 6.0), Set('B', 7.0)), Set('C', 8.0), Parallel(Set('D', 9.0), Set('E', 10.0)), Comment('Start Run'), Delay(10), Log('A', 'B', 'C', 'D', 'E'), Comment('Stop Run')]")
+
+        print "\n=== Parallel with Delay and Wait For ==="
+        table_scan = TableScan(
+          (   "+p A", "+p B", "Delay",    "Wait For", "Value" ),
+          [
+            [ "1",    "2",    "00:05:00", "counts",   "10"    ],
+          ],
+          start = Comment('Start Run'),
+          stop  = Comment('Stop Run'),
+          special = { 'Delay': lambda cell : Delay(parseSeconds(cell)) } 
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "")
+
 
 
     def testRange(self):
@@ -281,27 +298,24 @@ class TableScanTest(unittest.TestCase):
         
 
     def testSpecialColumns(self):
-        print "\n=== 'Load Frame' columns ==="
+        print "\n=== Special columns ==="
         
-        # Special handling of "Load Frame" column:
         # Commands Start/Next/End turn into Include("lf_start.scn"), Include("lf_next.scn") resp. Include("lf_end.scn") 
-        special = { 'Load Frame': lambda cell : Include("lf_" + cell.lower() + ".scn") }
+        special = { 'Run Control': lambda cell : Include(cell + ".scn"),
+                    'Delay':       lambda cell : Delay(parseSeconds(cell)),
+                  }
         table_scan = TableScan(
-          (   "Load Frame", "X",  "Wait For", "Value", ),
+          (   "Run Control", "X", "Delay",    "Wait For", "Value", ),
           [
-            [ "Start",     "10",  "Neutrons",   "10" ],
-            [      "",     "20",  "Neutrons",   "10" ],
-            [      "",     "30",  "Neutrons",   "10" ],
-            [  "Next",     "10",  "Neutrons",   "10" ],
-            [      "",     "20",  "Neutrons",   "10" ],
-            [      "",     "30",  "Neutrons",   "10" ],
-            [   "End",       "",          "",     "" ],
+            [ "Start",      "10", "",         "Neutrons",   "10" ],
+            [ "",           "20", "00:01:00", "Neutrons",   "10" ],
+            [ "Stop",       "",   "",         "",           "" ],
           ],
           special = special
         )
         cmds = handle(table_scan)
         self.assertEqual(str(cmds),
-                         "[Include('lf_start.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Include('lf_next.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 20.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 30.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Include('lf_end.scn')]")        
+                         "[Include('Start.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 20.0), Delay(60), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Include('Stop.scn')]")        
 
 
 if __name__ == "__main__":

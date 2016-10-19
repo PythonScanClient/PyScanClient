@@ -8,3 +8,6 @@ python test_commands.py
 python test_table_scan.py
 python test_data.py
 python -m doctest test_ndim.txt
+
+# To run only one specific test:
+#  python test_table_scan.py TableScanTest.testParallel

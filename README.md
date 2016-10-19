@@ -43,9 +43,13 @@ Local installation:
    
 and then add the resulting $HOME/lib/python*/site-packages directory to your PYTHONPATH.
 
-
 Uninstall
 ---------
 
     # cd to where it was installed
     rm -rf PyScanClient*.egg-info scan 
+
+Running Tests
+-------------
+
+See Test/test_standalone

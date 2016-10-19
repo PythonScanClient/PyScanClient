@@ -1,10 +1,13 @@
 
-__version__ = '1.1.1'
+__version__ = '1.2.1'
 
 version_history = """
+1.2.1 - Table scan '+p' update.
+        Used to accumulate _all_ the parallel commands
+        on a line. Now only combines adjacent +p columns.
 1.1.1 - Allow site-specific ScanSettings to override
         getDefaultSettings() such that is replaces
-        the PV name, preserving that name
+        the PV name, preserving that name.
 1.1.0 - Table scan adds "# Line .." and "# End" comments,
         and also uses the original line number
         in error messages, even for expanded rows.

@@ -201,27 +201,89 @@ At each step, it will wait until either the 'counter' reaches a value of 10000,
 or one hour passes.
 
 
-All devices with a `+p` prefix will be accessed in parallel,
-awaiting completion before executing the 'Wait For' condition.
+Parallel Commands
+-----------------
 
-If there is no specific 'Wait For' condition, the cell can be set to
-`completion`.
+Device columns are typically processed sequentially from left to right,
+but sometimes it can be useful to for example command two motors or
+temperature controllers in parallel, waiting for both to proceed at the
+same time, waiting until both of them reach their respective desired value.
 
-+------+------+------------+--------+
-| +p x | +p y | Wait For   |  Value |
-+------+------+------------+--------+
-|  1   |   2  | counter    | 10000  |
-+------+------+------------+--------+
-|  3   |   4  | completion |   20   |
-+------+------+------------+--------+
+Device columns with a `+p` prefix are accessed in parallel.
+In this table, devices A and B will be commanded to some value,
+waiting for both to get there in parallel.
+Next, device C is set to some value.
+Once it reaches its value, devices D and E are again commanded in parallel,
+and finally device F is set to a value.
+
++------+------+---+------+------+---+
+| +p A | +p B | C | +p D | +p E | F |
++------+------+---+------+------+---+
+|  1   |  2   | 3 |  4   | 5    | 6 |
++------+------+---+------+------+---+
 
 Result::
 
-    Parallel(Set('x', 1.0), Set('y', 2.0))
-    Wait('counter', 10000.0, comparison='>=')
-    Log('x', 'y', 'counter')
-    Parallel(Set('x', 3.0), Set('y', 4.0))
-    Log('x', 'y', 'counter')
+    Parallel(Set('A', 1.0), Set('B', 2.0))
+    Set('C', 3.0)
+    Parallel(Set('D', 4.0), Set('E', 5.0))
+    Set('F', 6.0)
+
+Columns that set devices in parallel need to be adjacent.
+Whenever the next column does **not** use `+p`, the previously accumulated
+parallel commands are executed.
+
+If the next column is 'Wait For', the behavior depends on the 'Wait For' condition.
+If the special condition `completion` is used, the `Wait For` will perform the
+accumulated parallel commands.
+For other conditions, the accumulated commands are executed and then the 
+`Wait For` awaits the requested condition as usual.
+In this example we also assume that `Wait For` uses start/stop commands
+as explained below.
+
++------+------+---+------+------+------------+--------+
+| +p A | +p B | C | +p D | +p E | Wait For   |  Value |
++------+------+---+------+------+------------+--------+
+|  1   |  2   | 3 |  4   |  5   | completion |        |
++------+------+---+------+------+------------+--------+
+|  6   |  7   | 8 |  9   | 10   | Seconds    |  10    |
++------+------+---+------+------+------------+--------+
+
+Result::
+
+    Parallel(Set('A', 1.0), Set('B', 2.0))
+    Set('C', 3.0)
+    Comment('Start Run')
+    Parallel(Set('D', 4.0), Set('E', 5.0))
+    Log('A', 'B', 'C', 'D', 'E')
+    Comment('Stop Run')
+    Parallel(Set('A', 6.0), Set('B', 7.0))
+    Set('C', 8.0)
+    Parallel(Set('D', 9.0), Set('E', 10.0))
+    Comment('Start Run')
+    Delay(10)
+    Log('A', 'B', 'C', 'D', 'E')
+    Comment('Stop Run')
+
+
+Another example, which again includes start/stop commands
+as well as a special `Delay` column as described below:
+
++------+------+----------+------------+--------+
+| +p A | +p B | Delay    | Wait For   |  Value |
++------+------+----------+------------+--------+
+|  1   |  2   | 00:05:00 |  counts    |  10    |
++------+------+----------+------------+--------+
+
+Result::
+
+    Parallel(Set('A', 1.0), Set('B', 2.0))
+    Delay(300)
+    Comment('Start Run')
+    Wait('counts', 10.0, comparison='>=', tolerance=0.1)
+    Log('A', 'B', 'counts')
+    Comment('Stop Run')
+
 
 
 Log Additional Devices
@@ -290,15 +352,15 @@ For example, a column named "RunControl" with cell values "start" and "stop":
 +------------+
 | RunControl |
 +------------+
-| start      |
+| Start      |
 +------------+
-| stop       |
+| Stop       |
 +------------+
 
 would result in these commands::
 
-   Set("RunControl", "start")
-   Set("RunControl", "stop")
+   Set("RunControl", "Start")
+   Set("RunControl", "Stop")
 
 Assuming that the process variable "RunControl" is an enumerated type with valid states "start" and "stop",
 maybe connected to an IOC sequence to start and stop a data acquisition run, this will work just fine.
@@ -306,26 +368,44 @@ maybe connected to an IOC sequence to start and stop a data acquisition run, thi
 Extending the example, assume that you would rather use "Run Control" as a column name to distinguish it from
 an ordinary process variable, and the cell values should result in `Include` commands.
 
+Another example would be a "Delay" column that should turn into a plain delay.
+
 To handle such special cases, the `TableScan` API allows you to provide a dictionary with special column handler functions.
 Each function is called with the value of the cell, and it must return a scan command.
 
 Example::
 
-   special_handlers = { 'Run Control': lambda cell : Include(cell + ".scn") }
-   table_scan = TableScan(( "Run Control" ),
-                         [[ "start"       ],
-                          [ "stop"        ]
-                         ], special = special_handlers)
+    from scan.util.seconds import parseSeconds
+    special_handlers = { 'Run Control': lambda cell : Include(cell + ".scn"),
+                         'Delay':       lambda cell : Delay(parseSeconds(cell)),
+                       }
+    table_scan = TableScan(
+      (   "Run Control", "X",  "Delay",    "Wait For", "Value", ),
+      [
+        [ "Start",       "10", "",         "Neutrons", "10" ],
+        [ "",            "20", "00:01:00", "Neutrons", "10" ],
+        [ "Stop",        "",   "",         "",         "" ],
+      ],
+      special = special
+    )
 
 When handling cells for the "Run Control" column, the special handler function
-will now be invoked with the cell values, i.e. "start" and "stop"::
+will now be invoked with the cell values, i.e. "Start" and "Stop"::
    
-   lambda cell : Include(cell + ".scn")
+    lambda cell : Include(cell + ".scn")
 
 resulting in these commands::
 
-   Include("start.scn")
-   Include("stop.scn")
+    Include("Start.scn")
+    Include("Stop.scn")
+
+The "Delay" column will invoke this handler::
+    
+    lambda cell : Delay(parseSeconds(cell))
+
+resulting in this for the above example::
+
+    Delay(60)
 
 The special handler function can wrap multiple commands as a :class:`~scan.commands.sequence.Sequence` command.
 
@@ -440,6 +520,17 @@ class TableScan:
         except ValueError:
             return text # Keep as string
     
+    def __flushParallel(self, commands):
+        """:param commands: Where accumulated parallel commands are appended
+           :return: True if there were any parallel commands
+        """
+        if len(self.parallel_commands) > 0:
+            # Complete accumulated parallel_commands before starting the run
+            commands.append(Parallel(self.parallel_commands))
+            self.parallel_commands = list()
+            return True
+        return False
+    
     def createScan(self, lineinfo=True):
         """Create scan.
 
@@ -494,7 +585,7 @@ class TableScan:
                     commands.append(Comment("# Line %d" % line))
                 current_line = line
             # Parallel commands to execute in this row
-            parallel_commands = list()
+            self.parallel_commands = list()
             # Handle all columns
             c = 0
             while c < self.cols:
@@ -502,11 +593,13 @@ class TableScan:
                 if len(row[c]) <= 0:
                     pass # Empty column, nothing to do
                 elif what in self.special:
+                    self.__flushParallel(commands)
                     special_handler = self.special[what]
                     value = self.__getValue(row[c])
                     command = special_handler(value)
                     commands.append(command)
                 elif what == TableScan.COMMENT:
+                    self.__flushParallel(commands)
                     text = row[c]
                     commands.append(Comment(text))           
                     # TODO if self.settings.comment:
@@ -515,10 +608,9 @@ class TableScan:
                     waitfor = row[c]
                     value = self.__getValue(row[c+1])
 
-                    if waitfor.lower() != TableScan.COMPLETION  and  parallel_commands:
+                    if waitfor.lower() != TableScan.COMPLETION:
                         # Complete accumulated parallel_commands before starting the run
-                        commands.append(Parallel(parallel_commands))
-                        parallel_commands = list()
+                        self.__flushParallel(commands)
 
                     # Optional commands to mark start of a "Wait For"
                     if self.start:
@@ -527,10 +619,8 @@ class TableScan:
                     if waitfor.lower() == TableScan.COMPLETION:
                         # Assert that there are any parallel commands,
                         # because otherwise the 'WaitFor - Completion' was likely an error
-                        if not parallel_commands:
+                        if not self.__flushParallel(commands):
                             raise Exception("Line %d has no parallel commands to complete" % line)
-                        commands.append(Parallel(parallel_commands))
-                        parallel_commands = list()
                     elif waitfor.lower() == TableScan.SECONDS:
                         if value:
                             commands.append(Delay(parseSeconds(value)))
@@ -573,8 +663,11 @@ class TableScan:
                     command = SettingsBasedSet(what, value)
                         
                     if device.getParallel():
-                        parallel_commands.append(command)
+                        # Add one more parallel command
+                        self.parallel_commands.append(command)
                     else:
+                        # Normal command, flush accumulated parallel commands
+                        self.__flushParallel(commands)
                         commands.append(command)
                     
                     if not device.getName() in log_devices:
@@ -582,9 +675,7 @@ class TableScan:
                 c = c + 1
             # End of columns in row
             # Complete accumulated parallel commands
-            if parallel_commands:
-                commands.append(Parallel(parallel_commands))
-                parallel_commands = list()
+            self.__flushParallel(commands)
         
         if self.post:
             # End one long run at end of table
