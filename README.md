@@ -41,7 +41,14 @@ Local installation:
    
     python setup.py install --prefix=$HOME
    
-and then add the resulting $HOME/lib/python*/site-packages directory to your PYTHONPATH.
+and then add the resulting `$HOME/lib/python*/site-package`s directory to your PYTHONPATH.
+
+Minimal local installation:
+
+    python setup.py build
+
+and then add the resulting `build/lib` folder to your PYTHONPATH.
+
 
 Uninstall
 ---------
