@@ -73,6 +73,24 @@ resulting in this shorter version of the previous table:
 |  100      |[1, 2, 3]   |
 +-----------+------------+
 
+`range(start, stop, step)` behaves like the Python command, values end just before the `stop`,
+not including it.
+The resulting scan will almost be the same. Note how it will repeatedly set the temperature::
+
+   Set('temperature', 50),
+   Set('position', 1),
+   Set('temperature', 50),
+   Set('position', 2),
+   Set('temperature', 50),
+   Set('position', 3),
+   Set('temperature', 100),
+   Set('position', 1),
+   Set('temperature', 100),
+   Set('position', 2),
+   Set('temperature', 100),
+   Set('position', 3),
+
+
 Within a row, multiple ranges or lists are recursively expanded from right to left.
 This shorter table again results in the same scan commands:
 
@@ -112,12 +130,17 @@ Code Example
 'Wait For', 'Value', 'Or Time' Columns
 --------------------------------------
 
-These two columns create commands that wait for
+This combination of columns creates commands that wait for
 a condition, and then log all devices which
 have been used within the scan up to that point.
 
+They are typically used with `start` and `stop` commands
+described below to start data aquisition, then wait,
+then stop data aquisition.
+
 If the cell contains a device name,
-a `Wait` command is created for the device to reach the given value.
+a `Wait` command is created for the device to reach the given value,
+by default using a `>=` comparison.
 
 +----------+------------+--------+
 |position  |Wait For    |  Value |
@@ -128,7 +151,9 @@ a `Wait` command is created for the device to reach the given value.
 The table above will create the following scan::
 
     Set('position', 2.0, completion=true, readback='position.RBV', timeout=100)
+    # Typically some 'start' commands...
     Wait('counter', 10000.0, comparison='>=')
+    # Typically some 'stop' commands...
     Log('position', 'counter')
 
 The :class:`~scan.util.scan_settings.ScanSettings` 
