@@ -31,7 +31,7 @@ def getDatetime(time):
     :param time: Posix millisecond timestamp of logged sample
     :return: datetime
     '''
-    secs = time / 1000
+    secs = time / 1000.0
     return datetime.fromtimestamp(secs)
 
 
@@ -63,19 +63,7 @@ def alignTime(data, channel, intv = 0):
         yield (data[channel]['time'][i], data[channel]['value'][i])
 
 
-##TODO
-def alignInterpo(data, channel):
-    
-    '''
-    Iterate data by time.
-                          
-    :param: channel: Name of channel(device) needed to be iterate.
-    
-    :return: Iterator object.   
-    '''
-
-
-def getTable(data, *devices):
+def getTable(data, *devices, **kwargs):
     '''Create data table
     
     Aligns samples for given list of devices by sample ID.
@@ -83,62 +71,61 @@ def getTable(data, *devices):
     Ignoring the serialID 'gap'.
                           
     :param devices: One or more devices
+    :param kwargs:  with_id=True to add sample serial id,
+                    with_time=True to add time (seconds since epoch)
     
-    :return: Table. result[0] has values for first device, result[1] for second device and so on.
+    :return: Table. result[0],result[1], .. hold the sample ID (if with_id),
+                                            the time (if with_time),
+                                            then the values for first device, for second device and so on.
     '''
+    with_id = kwargs['with_id'] if 'with_id' in kwargs else False
+    with_time = kwargs['with_time'] if 'with_time' in kwargs else False
     
     devsIters = [ alignSerial(data, dev) for dev in devices]  # prepare devices iterators 
     cur_samps = [devIt.next() for devIt in devsIters]  # initial devices iterators  
-    result = [[] for dev in devices]  
+    result = [[] for dev in devices]
+    if with_id:
+        result.insert(0, [])
+    if with_time:
+        result.insert(0, [])
     cur_id = -1  # current sample id
+    cur_time = 0 # Current sample time
     index = 0
     
     while True:
-        
         try :
             cur_id = min((samp[0] for samp in cur_samps if samp is not None))  # find smallest sample ID as current id
+            cur_time = min((samp[2] for samp in cur_samps if samp is not None))  # find smallest sample time as current id
         except ValueError:  # finished
             break     
-        
+
+        data_col = 0
+        if with_id:
+            result[data_col].append(cur_id)
+            data_col += 1      
+        if with_time:
+            result[data_col].append(cur_time)
+            data_col += 1      
         for i in range(len(devsIters)):  # for each device ,there are 3 situations:
             if cur_samps[i] is None:  # 1. if device has been exhausted.
-                result[i].append(result[i][index-1])  # continue with previous value
+                result[data_col+i].append(result[data_col+i][index-1])  # continue with previous value
             
             elif cur_samps[i][0] == cur_id:  # 2. if serial_id is the current id ( means this device was logged at current serial_id)
                 try:
-                    result[i].append(cur_samps[i][1]) # fetch value
+                    result[data_col+i].append(cur_samps[i][1]) # fetch value
                     cur_samps[i] = devsIters[i].next() # step iter of current device and its value
                 except StopIteration:  # if current device is just exhausted
                     cur_samps[i] = None
                     
             elif cur_samps[i][0] > cur_id:  #3. if serial_id is in the future ( means this device was not logged at the current serial_id)
                 if index == 0:  # 1st loop
-                    result[i].append(None)
+                    result[data_col+i].append(None)
                 else:
-                    result[i].append(result[i][index-1])  # fetch and save the previous value
+                    result[data_col+i].append(result[data_col+i][index-1])  # fetch and save the previous value
             
         index += 1            
     
     return result 
-
-
-##TODO: Advanced getTable   
-def getTableAdvanced(data, alignBy = 'serial', interpo = 'step', *devices):
-    
-    '''Create data table
-    
-    Aligns samples for given list of devices by sample ID.
-    
-    :param alignBy: serial -> align value by sample id.
-                          time -> align value by timestamp
-                          
-    :param interpo:   step -> 
-                    linear -> 
-                          
-    :param devices: One or more devices
-    
-    :return: Table. result[0] has values for first device, result[1] for second device and so on.     
-    '''
 
 
 class Data(object):
@@ -265,5 +252,4 @@ class Data(object):
             prettyOut += "    'value'  : "  + str(self.__logData[key]['value']) 
             prettyOut += '\n} , \n'
         return prettyOut
-
 
