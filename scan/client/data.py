@@ -95,7 +95,7 @@ def getTable(data, *devices, **kwargs):
     while True:
         try :
             cur_id = min((samp[0] for samp in cur_samps if samp is not None))  # find smallest sample ID as current id
-            cur_time = min((samp[2] for samp in cur_samps if samp is not None))  # find smallest sample time as current id
+            cur_time = max((samp[2] for samp in cur_samps if samp is not None))  # find last time stamp
         except ValueError:  # finished
             break     
 
