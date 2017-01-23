@@ -10,15 +10,14 @@ See https://github.com/PythonScanClient/PyScanClient/blob/master/scan/version.py
 Documentation
 -------------
 
-For snapshot, see http://ics-web.sns.ornl.gov/css/PyScanClient
+For latest snapshot of documentation, see http://ics-web.sns.ornl.gov/css/PyScanClient
 
-Based on sphinx, http://sphinx-doc.org/
-
+To build local copy of documentation from sources, you need to install sphinx, http://sphinx-doc.org/.
 To install on Linux (RedHat):
     
     sudo yum install python-sphinx
 
-To build:
+To build documentation from sources:
 
     cd doc
     make clean html
@@ -28,7 +27,6 @@ Then view `doc/_build/html/index.html` in web browser.
 
 This repository is at https://github.com/PythonScanClient/PyScanClient
 
-When reaching initial production state, it may be transferred to https://github.com/ControlSystemStudio/PyScanClient
 
 Install
 -------
