@@ -3,10 +3,28 @@ Unit test for RangeHelper
 
 @author: Kay Kasemir
 """
-from scan.table.range_helper import getIterable, expandRanges
+from scan.table.range_helper import getRangeOrLoop, range_matcher, loop_matcher, getIterable, expandRanges
 import unittest
 
 class TestRangeExpansion(unittest.TestCase):
+
+    def test_range(self):
+        r = getRangeOrLoop("range(2, 5, 0.5)", range_matcher)
+        self.assertEqual(str(r), "(2.0, 5.0, 0.5)")
+
+        r = getRangeOrLoop("range(5)", range_matcher)
+        self.assertEqual(str(r), "(0, 5.0, 1)")
+
+        r = getRangeOrLoop("range(2, 5)", range_matcher)
+        self.assertEqual(str(r), "(2.0, 5.0, 1)")
+
+        r = getRangeOrLoop("loop(2, 5)", range_matcher)
+        self.assertEqual(str(r), "None")
+
+        r = getRangeOrLoop("loop(2, 5)", loop_matcher)
+        self.assertEqual(str(r), "(2.0, 5.0, 1)")
+
+        
     def test_iterable(self):
         points = getIterable("[ 2, 4 ]")
         self.assertEqual(str(points), "[2, 4]")

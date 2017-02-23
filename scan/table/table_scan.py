@@ -59,40 +59,146 @@ Results in::
    Set('position', 3),
 
 
-Ranges, Lists
+Loops
+-----
+
+Cells can contain `loop(start, end, step)` to set a device in a loop:
+
++-------------+
+|position     |
++-------------+
+|loop(2, 5, 1)|
++-------------+
+
+Results in this loop to set the 'position' to 2, 3, 4 and then 5::
+
+   Loop('position', 2, 5, 1)
+
+When using `loop(start, end)` without specifying `step`, the step defaults to 1.
+
+Colummns following a `loop` are handled inside the loop:
+
++-------------+--------+
+|position     | camera |
++-------------+--------+
+|loop(2, 5, 1)| snap   |
++-------------+--------+
+
+Results in a loop for the position, triggering a camera at each position::
+
+   Loop('position', 0, 3, 0.5,
+        [ Set('camera', 'snap') ]
+       )
+
+Loops can be nested, again placing columns following a `loop` inside that loop:
+
++-----------+-----------+--------+
+|X          | Y         | camera |
++-----------+-----------+--------+
+|loop(1, 10)| loop(2, 5)|snap    |
++-----------+-----------+--------+
+
+Results in an outer loop for the X position with an inner loop for the Y position, triggering a camera at each position::
+
+   Loop('X', 1, 10, 1,
+        [ Loop('Y', 2, 5, 1,
+               [ Set('Camera', 'Snap') ]
+              )
+        ]
+       )
+
+When using nested loops, note details regarding 
+:ref:`Loop Direction <loop-direction>`
+which can be used for reversing the direction of inner loops
+to more efficiently scan a surface.
+
+
+Lists, Ranges
 -------------
 
-Cells that contain a `range()` command or list will be expanded,
-resulting in this shorter version of the previous table:
+Cells that contain a list of values or a `range()` command will be expanded
+as if you had entered separate rows for each value:
 
-+-----------+------------+
-|temperature|position    |
-+-----------+------------+
-|   50      |range(1,4,1)|
-+-----------+------------+
-|  100      |[1, 2, 3]   |
-+-----------+------------+
++-------------+
+|position     |
++-------------+
+|[1, -3, 7, 2]|
++-------------+
 
-`range(start, stop, step)` behaves like the Python command, values end just before the `stop`,
-not including it.
-The resulting scan will almost be the same. Note how it will repeatedly set the temperature::
+is equivalent to
 
-   Set('temperature', 50),
-   Set('position', 1),
-   Set('temperature', 50),
-   Set('position', 2),
-   Set('temperature', 50),
-   Set('position', 3),
-   Set('temperature', 100),
-   Set('position', 1),
-   Set('temperature', 100),
-   Set('position', 2),
-   Set('temperature', 100),
-   Set('position', 3),
++---------+
+|position |
++---------+
+| 1       |
++---------+
+| -3      |
++---------+
+| 7       |
++---------+
+| 2       |
++---------+
 
+Compared to a `loop` which always generates equidistant values,
+the list can contain any sequence of values.
 
-Within a row, multiple ranges or lists are recursively expanded from right to left.
-This shorter table again results in the same scan commands:
+The `range` behaves similar to the Python `range(start, stop, step)` command,
+generating values from `start` up to but **excluding** `stop`.
+
++------------+
+|position    |
++------------+
+|range(1,4,1)|
++------------+
+
+is equivalent to
+
++---------+
+|position |
++---------+
+| 1       |
++---------+
+| 2       |
++---------+
+| 3       |
++---------+
+
+`loop(start, end, step)` should be preferred over `range(start, stop, step)`
+because of the inclusive and thus more obvious handling of `end` vs. `stop`.
+
+In addition, each `loop` translates into a single `Loop` command:
+
++----------------+
+|position        |
++----------------+
+|loop(1,100,0.1) |
++----------------+
+
+becomes::
+
+   Loop('position', 1, 100, 0.1)
+
+This `range`-based table will set `position` to the same values:
+
++-------------------+
+|position           |
++-------------------+
+|range(1,100.1,0.1) |
++-------------------+
+
+The resulting scan, however, becomes a sequence of 1000 `Set` commands::
+
+   Set('position', 1)
+   Set('position', 1.1)
+   Set('position', 1.2)
+   ...
+   Set('position', 99.9)
+   Set('position', 100)
+
+For larger loops respectively ranges, the loop will be more efficient.
+
+Within a row, multiple ranges or lists are recursively expanded from right to left,
+similar to the nesting of loops:
 
 +-----------+------------+
 |temperature|position    |
@@ -100,6 +206,23 @@ This shorter table again results in the same scan commands:
 | [50,100]  | [1, 2, 3]  |
 +-----------+------------+
 
+is expanded into
+
++-----------+------------+
+|temperature|position    |
++-----------+------------+
+|  50       |  1         |
++-----------+------------+
+|  50       |  2         |
++-----------+------------+
+|  50       |  3         |
++-----------+------------+
+| 100       |  1         |
++-----------+------------+
+| 100       |  2         |
++-----------+------------+
+| 100       |  3         |
++-----------+------------+
 
 
 Scan Settings
@@ -130,17 +253,12 @@ Code Example
 'Wait For', 'Value', 'Or Time' Columns
 --------------------------------------
 
-This combination of columns creates commands that wait for
+These two columns create commands that wait for
 a condition, and then log all devices which
 have been used within the scan up to that point.
 
-They are typically used with `start` and `stop` commands
-described below to start data aquisition, then wait,
-then stop data aquisition.
-
 If the cell contains a device name,
-a `Wait` command is created for the device to reach the given value,
-by default using a `>=` comparison.
+a `Wait` command is created for the device to reach the given value.
 
 +----------+------------+--------+
 |position  |Wait For    |  Value |
@@ -151,9 +269,7 @@ by default using a `>=` comparison.
 The table above will create the following scan::
 
     Set('position', 2.0, completion=true, readback='position.RBV', timeout=100)
-    # Typically some 'start' commands...
     Wait('counter', 10000.0, comparison='>=')
-    # Typically some 'stop' commands...
     Log('position', 'counter')
 
 The :class:`~scan.util.scan_settings.ScanSettings` 
@@ -441,9 +557,9 @@ API
 # @author: Kay Kasemir
 
 from scan.commands import Command, Comment, Delay, Log, Parallel
-from scan.util.scan_settings import getScanSettings, SettingsBasedSet, SettingsBasedWait
+from scan.util.scan_settings import getScanSettings, SettingsBasedSet, SettingsBasedLoop, SettingsBasedWait
 from scan.util.seconds import parseSeconds
-from range_helper import expandRanges
+from range_helper import getRangeOrLoop, loop_matcher, expandRanges
 from scan.util.spreadsheet import readSpreadsheet, writeSpreadsheet
 
 def loadTableScan(filename, pre=None, post=None, start=None, stop=None):
@@ -501,7 +617,8 @@ class TableScan:
         self.cols = len(self.headers)
         self.rows = []
         self.width = [ len(h) for h in self.headers ]
-        for row in rows:
+        for r in range(len(rows)):
+            row = rows[r]
             is_empty = True
             patched_row = []
             for c in range(len(row)):
@@ -514,7 +631,7 @@ class TableScan:
                 if width > 0:
                     is_empty = False
             if len(patched_row) != len(self.headers):
-                raise ValueError("Not all rows have equal number of columns")
+                raise ValueError("Table has %d columns but row %d has only %d" % (len(self.headers), r, len(patched_row)))
             if not is_empty:
                 self.rows.append(patched_row)
     
@@ -605,9 +722,10 @@ class TableScan:
         for numbered_row in expanded_rows:
             line = numbered_row[0]
             row = numbered_row[1:]
+            row_commands = commands
             if line != current_line:
                 if lineinfo:
-                    commands.append(Comment("# Line %d" % line))
+                    row_commands.append(Comment("# Line %d" % line))
                 current_line = line
             # Parallel commands to execute in this row
             self.parallel_commands = list()
@@ -618,37 +736,37 @@ class TableScan:
                 if len(row[c]) <= 0:
                     pass # Empty column, nothing to do
                 elif what in self.special:
-                    self.__flushParallel(commands)
+                    self.__flushParallel(row_commands)
                     special_handler = self.special[what]
                     value = self.__getValue(row[c])
                     command = special_handler(value)
-                    commands.append(command)
+                    row_commands.append(command)
                 elif what == TableScan.COMMENT:
-                    self.__flushParallel(commands)
+                    self.__flushParallel(row_commands)
                     text = row[c]
-                    commands.append(Comment(text))           
+                    row_commands.append(Comment(text))           
                     # TODO if self.settings.comment:
-                    #       commands.append(SetCommand(self.settings.comment, text))
+                    #       row_commands.append(SetCommand(self.settings.comment, text))
                 elif what == TableScan.WAITFOR:
                     waitfor = row[c]
                     value = self.__getValue(row[c+1])
 
                     if waitfor.lower() != TableScan.COMPLETION:
                         # Complete accumulated parallel_commands before starting the run
-                        self.__flushParallel(commands)
+                        self.__flushParallel(row_commands)
 
                     # Optional commands to mark start of a "Wait For"
                     if self.start:
-                        commands += self.start
+                        row_commands += self.start
 
                     if waitfor.lower() == TableScan.COMPLETION:
                         # Assert that there are any parallel commands,
                         # because otherwise the 'WaitFor - Completion' was likely an error
-                        if not self.__flushParallel(commands):
+                        if not self.__flushParallel(row_commands):
                             raise Exception("Line %d has no parallel commands to complete" % line)
                     elif waitfor.lower() == TableScan.SECONDS:
                         if value:
-                            commands.append(Delay(parseSeconds(value)))
+                            row_commands.append(Delay(parseSeconds(value)))
                     else:
                         timeout = None
                         errhandler = None
@@ -658,16 +776,16 @@ class TableScan:
                                 timeout = parseSeconds(or_time)
                                 errhandler = "OnErrorContinue"
                         cmd = SettingsBasedWait(waitfor, value, timeout=timeout, errhandler=errhandler)
-                        commands.append(cmd)
+                        row_commands.append(cmd)
                         if not waitfor in log_devices:
                             log_devices.append(waitfor)
                     
                     if len(log_devices) > 0:
-                        commands.append(Log(log_devices))
+                        row_commands.append(Log(log_devices))
 
                     # Optional commands to mark end of a "Wait For"
                     if self.stop:
-                        commands += self.stop
+                        row_commands += self.stop
                     
                     # Skip TableScan.VALUE in addition to current column,
                     # so next two Exceptions should not happen unless there's an empty "WAIT_FOR"
@@ -682,26 +800,45 @@ class TableScan:
                     raise Exception("Line %d: Found value '%s' in '%s' column after empty '%s' column.\nRow: %s" %
                                     (line, row[c], TableScan.OR_TIME, TableScan.WAITFOR, str(row)))
                 else:
-                    # 'Normal' column that sets a device
+                    # 'Normal' column that sets a device directly or in loop
                     device = col_device[c]
                     value = self.__getValue(row[c])
-                    command = SettingsBasedSet(what, value)
-                        
-                    if device.getParallel():
-                        # Add one more parallel command
-                        self.parallel_commands.append(command)
+                    
+                    if type(value) is float:
+                        loop = None
                     else:
-                        # Normal command, flush accumulated parallel commands
-                        self.__flushParallel(commands)
-                        commands.append(command)
+                        loop = getRangeOrLoop(str(value), loop_matcher)
+
+                    if loop is None:
+                        command = SettingsBasedSet(what, value)
+                        if device.getParallel():
+                            # Add one more parallel command
+                            self.parallel_commands.append(command)
+                        else:
+                            # Normal command, flush accumulated parallel commands
+                            self.__flushParallel(row_commands)
+                            row_commands.append(command)
+                    else:
+                        # Create loop
+                        self.__flushParallel(row_commands)
+                        if device.getParallel():
+                            raise Exception("Line %d: Cannot use loop(..) with parallel access in column '%s'" %
+                                            (line, what))
+                        body = list()
+                        command = SettingsBasedLoop(what, loop[0], loop[1], loop[2], body)
+                        row_commands.append(command)
+                        
+                        # Place remaining commands in row into body of this loop
+                        row_commands = command.getBody()
                     
                     if not device.getName() in log_devices:
                         log_devices.append(device.getName())
                 c = c + 1
             # End of columns in row
             # Complete accumulated parallel commands
-            self.__flushParallel(commands)
+            self.__flushParallel(row_commands)
         
+        # End of row
         if self.post:
             # End one long run at end of table
             commands += self.post
@@ -738,3 +875,12 @@ if __name__ == "__main__":
     cmds = CommandSequence(table.createScan())
     print(table)
     print(cmds)
+
+    table = TableScan([ "A",             "B" ],
+                    [
+                      [ "Loop(1, 2, 1)", "loop(5, 7, 1)" ]
+                    ])
+    cmds = CommandSequence(table.createScan())
+    print(table)
+    print(cmds)
+

@@ -14,17 +14,19 @@ __re_dbl = " *([-+]?[0-9]+\.?[0-9]*(?:[eE][-+]?[0-9]+)?) *"
 # Regular expression for the range([start,] stop[, step]) command,
 # capturing the start, end and step arguments
 __re_range = "range\((?:" + __re_dbl + ",)?" + __re_dbl + "(?:," + __re_dbl +")?\)"
+
+# Similar for loop([start,] stop[, step])
+__re_loop = "[Ll]oop\((?:" + __re_dbl + ",)?" + __re_dbl + "(?:," + __re_dbl +")?\)"
+
 range_matcher = re.compile(__re_range)
+loop_matcher = re.compile(__re_loop)
 
-
-def getIterable(cell):
-    """If cell contains a range, list or tuple, return that iterable.
-       Otherwise returns None
+def getRangeOrLoop(cell, matcher):
+    """Using either the range_matcher or loop_matcher,
+       get the (start, end, step) or None
     """
-    cell = str(cell).strip()
-
-    # Check for "range(...)"    
-    m = range_matcher.match(cell)
+    # Check for "range(...)" or "loop(...)"
+    m = matcher.match(cell)
     if m:
         # Evaluate yourself to support fractional steps
         # (like numpy.arange, but without requiring numpy)
@@ -33,7 +35,23 @@ def getIterable(cell):
         end = float(end)
         step = float(step) if step else 1
         if step == 0:
-            raise Exception("Illegal range(start, stop, step=0)")
+            raise Exception("Illegal step=0 in " + cell)
+        return (start, end, step)
+    else:
+        return None
+    
+def getIterable(cell):
+    """If cell contains a range, list or tuple, return that iterable.
+       Otherwise returns None
+    """
+    cell = str(cell).strip()
+
+    # Check for "range(...)"
+    rng = getRangeOrLoop(cell, range_matcher)
+    if rng is not None:
+        # Evaluate yourself to support fractional steps
+        # (like numpy.arange, but without requiring numpy)
+        (start, end, step) = rng
         value = start
         result = []
         while value < end if step > 0 else value > end:

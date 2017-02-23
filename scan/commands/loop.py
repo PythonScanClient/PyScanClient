@@ -30,10 +30,10 @@ class Loop(Command):
     Set `pv1` to 1, 1.5, 2, 2.5, 3, .., 9.5, 10:
         >>> cmd = Loop('pv1', 1, 10, 0.5)
     
-    Set `pv1` to 10, 9, 8, 7, .., 1:
+    Set `pv1` to 10, 9, 8, 7, .., 1, i.e. stepping down:
         >>> cmd = Loop('pv1', 10, 1, -1)
     
-    At each step of the loop, perform additional commands:    
+    At each step of the loop, perform additional commands:
         >>> cmd = Loop('pv1', 1, 10, 1, Set('daq', 1), Delay(10), Set('daq', 0))
         >>> cmd = Loop('pv1', 1, 10, 1,
         ...            body = [ Set('daq', 1), Delay(10), Set('daq', 0) ])
@@ -41,27 +41,27 @@ class Loop(Command):
     When after loop updates `pv1`, check for its readback to match, then perform commands within the loop:
         >>> cmd = Loop('pv1', 1, 10, 1, Set('daq', 1), Delay(10), Set('daq', 0), readback=True)
     
-    Special behavior of nested loops. If step size is 'wrong', the loops will cycle direction:
-        >>> cmd = Loop('x', 1, 3, 1, body=[ Loop('y', 1, 3, -1 ])
+    .. _`loop-direction`:
     
-    Will result in these values:
     
-    =  =
-    x  y
-    =  =
-    1  1
-    1  2
-    1  3
-    2  3
-    2  2
-    2  1
-    3  1
-    3  2
-    3  3
-    =  =
+    For nested loops, note the special handling of the step direction.
+    Consider a normal nested loop for 'xpos' and 'ypos' both stepping from 0 to 5 with a positive step:
+    
+        >>> cmd = Loop('xpos', 0, 5, 1, [ Loop('ypos', 0, 5, 1 ])
+    
+    In this example, the step size for the inner loop is 'wrong'.
+    Going from 0 to 5 ordinarily means stepping up by +1 in each loop iteration,
+    but the step is instead provided as -1, as if this was a loop from 5 down to 0:
+    
+        >>> cmd = Loop('xpos', 0, 5, 1, [ Loop('ypos', 0, 5, -1 ])
+    
+    As a result, the loop will cycle its direction between +1 and -1.
+    
+    .. image:: scan_alternate.png
     
     Note how the direction of the inner loop changes.
     This can be useful for scanning the X/Y surface of a sample.    
+    
     """
     def __init__(self, device, start, end, step, body=None, *args, **kwargs):
         if not isinstance(device, str):
@@ -118,6 +118,21 @@ class Loop(Command):
         :param timeout:    Timeout in seconds, used for `completion` and `readback`.
         """
         self.__timeout = timeout
+        
+    def getBody(self):
+        """Obtain list of body commands.
+        
+           The Loop(..) constructor creates a safe
+           copy of the passed 'body' to prevent side effects
+           when that body is later changed and maybe
+           used to construct another Loop(..) instance.
+           
+           If there is a desire to change the loop's body
+           (before it's submitted to the scan server),
+           this method provides that list of commands.
+           :return: Loop body
+        """
+        return self.__body
         
     def genXML(self):
         xml = ET.Element('loop')

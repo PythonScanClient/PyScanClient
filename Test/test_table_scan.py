@@ -27,7 +27,6 @@ setScanSettings(MyScanSettings())
 
 # TODO 'Comment' column can be comment command or Set('SomeCommentPV')
 # TODO Fix Log command
-# TODO Devices to always log
 # TODO Start by waiting for all motors to be idle
 #         for motor in motors:
 #             idle = self.settings.getMotorIdlePV(motor)
@@ -306,7 +305,56 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Set('X', 10.0), Delay(10), Log('neutrons', 'X')]")
 
-        
+    def testLoop(self):
+        print "\n=== Loop Cells ==="
+        # Plain loop commands
+        table_scan = TableScan(
+          [   "position" ],
+          [
+            [ "loop(2, 5, 1)" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Loop('position', 2, 5, 1)]")
+
+        table_scan = TableScan(
+          (   "position",        "camera"),
+          [
+            [ "Loop(0, 3, 0.5)", "snap"],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Loop('position', 0, 3, 0.5, [ Set('camera', 'snap') ])]")
+
+        table_scan = TableScan(
+          (   "X",          "Y",        "Camera"),
+          [
+            [ "loop(1,10)", "Loop(2,5)", "Snap"],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Loop('X', 1, 10, 1, [ Loop('Y', 2, 5, 1, [ Set('Camera', 'Snap') ]) ])]")
+
+        # Can be mixed with range or list, but note that list is expanded first.
+        # This works as nestet list & loop:
+        table_scan = TableScan(
+          (   "X",      "Y",      "Camera"),
+          [
+            [ "[1, 2]", "Loop(3)", "Snap"],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Loop('Y', 0, 3, 1, [ Set('Camera', 'Snap') ]), Set('X', 2.0), Loop('Y', 0, 3, 1, [ Set('Camera', 'Snap') ])]")
+
+        # Here, however, the list is _first_ expanded into rows
+        table_scan = TableScan(
+          (   "X",       "Y",      "Camera"),
+          [
+            [ "Loop(3)", "[1, 2]", "Snap"],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Loop('X', 0, 3, 1, [ Set('Y', 1.0), Set('Camera', 'Snap') ]), Loop('X', 0, 3, 1, [ Set('Y', 2.0), Set('Camera', 'Snap') ])]")
 
     def testSpecialColumns(self):
         print "\n=== Special columns ==="

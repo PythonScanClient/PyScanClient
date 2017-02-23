@@ -1,7 +1,8 @@
 
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 
 version_history = """
+1.3.0 - Table scan 'loop' support.
 1.2.1 - Table scan '+p' update.
         Used to accumulate _all_ the parallel commands
         on a line. Now only combines adjacent +p columns.
