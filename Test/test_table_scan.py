@@ -65,7 +65,7 @@ class TableScanTest(unittest.TestCase):
           (   "X",  "Y", "Wait For", "Value" ),
           [
             [  1,   2,  "seconds",   10 ],
-            [  3,   4,  "seconds",   20 ],
+            [  3,   4,  "time",   20 ],
           ]
         )
         cmds = handle(table_scan)

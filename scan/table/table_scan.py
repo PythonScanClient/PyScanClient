@@ -296,14 +296,14 @@ Resulting scan without completion for the 'position'::
 For more prefix options see :class:`~scan.util.scan_settings.ScanSettings`.
 
 
-Waiting for `seconds` results in a simple `Delay`.
+Waiting for `seconds` or `time` results in a simple `Delay`.
 
 +----------+------------+--------+
 |position  |Wait For    |  Value |
 +----------+------------+--------+
 |  2       | seconds    |   20   |
 +----------+------------+--------+
-|  4       | seconds    |   20   |
+|  4       | time       |   20   |
 +----------+------------+--------+
 
 The table above will create the following scan::
@@ -315,7 +315,10 @@ The table above will create the following scan::
     Delay(20)
     Log('position')
 
-The delay is specified in seconds or a "HH:MM:SS" notation for hours, minutes, seconds.
+The delay is specified in seconds, a "HH:MM:SS" notation for hours, minutes, seconds,
+or "MM:SS" for minutes, seconds.
+When using "HH:MM:SS" or "MM:SS", `time` may be a more appropriate 'Wait For' condition,
+but either `seconds` or `time` are permitted.
 The following rows are all equivalent:
 
 +----------+------------+----------+
@@ -323,9 +326,11 @@ The following rows are all equivalent:
 +----------+------------+----------+
 |  1       | seconds    |      120 |
 +----------+------------+----------+
-|  1       | seconds    |    01:00 |
+|  1       | time       |    01:00 |
 +----------+------------+----------+
 |  1       | seconds    | 00:01:00 |
++----------+------------+----------+
+|  1       | time       | 00:01:00 |
 +----------+------------+----------+
 
 
@@ -598,6 +603,7 @@ class TableScan:
     OR_TIME = "Or Time"
     COMPLETION = "completion"
     SECONDS = "seconds"
+    TIME = "time"
     
     def __init__(self, headers, rows, pre=None, post=None, start=None, stop=None, log_always=None, special=dict()):
         self.name = "Table Scan"
@@ -764,7 +770,7 @@ class TableScan:
                         # because otherwise the 'WaitFor - Completion' was likely an error
                         if not self.__flushParallel(row_commands):
                             raise Exception("Line %d has no parallel commands to complete" % line)
-                    elif waitfor.lower() == TableScan.SECONDS:
+                    elif waitfor.lower() in ( TableScan.SECONDS, TableScan.TIME ):
                         if value:
                             row_commands.append(Delay(parseSeconds(value)))
                     else:
