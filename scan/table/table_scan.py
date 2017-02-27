@@ -682,7 +682,9 @@ class TableScan:
     def createScan(self, lineinfo=True):
         """Create scan.
 
-        :param lineinfo: By default, Comment commands are added for line info
+        :param lineinfo: By default Comment commands are added for line info.
+                         If scan settings include a "table_scan_row",
+                         that PV will also be set.
         :return: List of commands.
         """
         # Parse column headers.
@@ -732,6 +734,8 @@ class TableScan:
             if line != current_line:
                 if lineinfo:
                     row_commands.append(Comment("# Line %d" % line))
+                    if settings.table_scan_row:
+                        row_commands.append(SettingsBasedSet(settings.table_scan_row, line))
                 current_line = line
             # Parallel commands to execute in this row
             self.parallel_commands = list()

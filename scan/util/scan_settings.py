@@ -108,6 +108,9 @@ class ScanSettings(object):
         # In derived class, may register special behavior for certain devices
         # self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
         
+        # PV that gets updated with the currently executed table scan row
+        self.table_scan_row = None
+        
     def loadDeviceClasses(self, json_filename):
         """Load device classes from JSON file
         
