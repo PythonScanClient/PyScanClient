@@ -15,6 +15,9 @@ class TestRangeExpansion(unittest.TestCase):
         r = getRangeOrLoop("range(5)", range_matcher)
         self.assertEqual(str(r), "(0, 5.0, 1)")
 
+        r = getRangeOrLoop("range (5)", range_matcher)
+        self.assertEqual(str(r), "(0, 5.0, 1)")
+
         r = getRangeOrLoop("range(2, 5)", range_matcher)
         self.assertEqual(str(r), "(2.0, 5.0, 1)")
 
@@ -22,6 +25,9 @@ class TestRangeExpansion(unittest.TestCase):
         self.assertEqual(str(r), "None")
 
         r = getRangeOrLoop("loop(2, 5)", loop_matcher)
+        self.assertEqual(str(r), "(2.0, 5.0, 1)")
+
+        r = getRangeOrLoop("loop ( 2 , 5 )", loop_matcher)
         self.assertEqual(str(r), "(2.0, 5.0, 1)")
 
         
