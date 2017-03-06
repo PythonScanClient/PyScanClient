@@ -412,6 +412,29 @@ Result::
     Comment('Stop Run')
 
 
+Note that the 'Wait For' with `completion` can be useful even for a single parallel command.
+In this example, A is written by itself, not in parallel with other operations,
+but the parallel mechanism allows you to wait for the completion, i.e.
+a run is started and then stopped while A is set:
+
++------+------------+--------+
+| +p A | Wait For   |  Value |
++------+------------+--------+
+|  1   | completion |        |
++------+------------+--------+
+
+
+Result::
+
+    Comment('Start Run')
+    Parallel(Set('A', 1.0))
+    Log('A')
+    Comment('Stop Run')
+    
+
+
+
+
 Another example, which again includes start/stop commands
 as well as a special `Delay` column as described below:
 
