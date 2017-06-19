@@ -853,16 +853,16 @@ class TableScan:
                             row_commands.append(command)
                     else:
                         # Create loop
-                        self.__flushParallel(row_commands)
-                        if device.getParallel():
-                            raise Exception("Line %d: Cannot use loop(..) with parallel access in column '%s'" %
-                                            (line, what))
                         body = list()
                         command = SettingsBasedLoop(what, loop[0], loop[1], loop[2], body)
-                        row_commands.append(command)
-                        
-                        # Place remaining commands in row into body of this loop
-                        row_commands = command.getBody()
+                        if device.getParallel():
+                            self.parallel_commands.append(command)
+                        else:                            
+                            self.__flushParallel(row_commands)
+                            row_commands.append(command)
+                            
+                            # Place remaining commands in row into body of this loop
+                            row_commands = command.getBody()
                     
                     if not device.getName() in log_devices:
                         log_devices.append(device.getName())

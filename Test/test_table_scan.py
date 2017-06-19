@@ -376,6 +376,45 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds),
                          "[Include('Start.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 20.0), Delay(60), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Include('Stop.scn')]")        
 
+    def testParallelLoops(self):
+        print "\n=== Parallel Loops ==="
+        
+        # Loops can be 'parallel'
+        table_scan = TableScan(
+          (   "+p X",    "+p Y", "Z", "Wait For", "Value", ),
+          [
+            [ "Loop(3)", "",     "",  "time",     "00:01:00" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds),
+                         "[Parallel(Loop('X', 0, 3, 1)), Delay(60), Log('X')]")
+
+        # .. but the result may not be what users want.
+        # This loops X, and in parallel it loops Y, the latter doing the nestest 1 minute wait
+        table_scan = TableScan(
+          (   "+p X",    "+p Y",    "Z", "Wait For", "Value", ),
+          [
+            [ "Loop(3)", "Loop(5)", "", "time",      "00:01:00" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds),
+                         "[Parallel(Loop('X', 0, 3, 1), Loop('Y', 0, 5, 1)), Delay(60), Log('X', 'Y')]")
+        # Parallel loops will _not_ synchronize their steps.
+        # That would need a step-by-step table like this:
+        table_scan = TableScan(
+          (   "+p X", "+p Y", "Z", "Wait For", "Value", ),
+          [
+            [ "0",    "0",    "", "time",      "00:01:00" ],
+            [ "1",    "1",    "", "time",      "00:01:00" ],
+            [ "2",    "2",    "", "time",      "00:01:00" ],
+          ]
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds),
+                         "[Parallel(Set('X', 0.0), Set('Y', 0.0)), Delay(60), Log('X', 'Y'), Parallel(Set('X', 1.0), Set('Y', 1.0)), Delay(60), Log('X', 'Y'), Parallel(Set('X', 2.0), Set('Y', 2.0)), Delay(60), Log('X', 'Y')]")
+
 
 if __name__ == "__main__":
     unittest.main()

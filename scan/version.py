@@ -1,7 +1,8 @@
 
-__version__ = '1.3.3'
+__version__ = '1.3.4'
 
 version_history = """
+1.3.4 - Allow 'loop' for parallel columns.
 1.3.3 - Allow space after 'loop' or 'range'.
 1.3.2 - Table scan writes current row to PV settings.table_scan_row.
 1.3.1 - Table scan 'time' as alternative for 'seconds'.
