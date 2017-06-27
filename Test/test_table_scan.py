@@ -130,6 +130,19 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('shutter', 1), Set('X', 1.0), Set('Y', 2.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('X', 3.0), Set('Y', 4.0), Set('counter:reset', 1, completion=True), Set('counter:enable', 1, completion=True), Set('daq:enable', 1, completion=True), Wait('counter', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Y', 'counter'), Set('daq:enable', 0, completion=True), Set('counter:enable', 0, completion=True), Set('shutter', 0)]")
 
 
+    def testWaitFor(self):
+        print "\n=== Wait For spelled lowecase ==="
+        table_scan = TableScan(
+          (   "X",  "wait for", "value" ),
+          [
+            [ "1",  "seconds", "10" ],
+          ],
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Set('X', 1.0), Delay(10), Log('X')]")
+
+
+
     def testScanSettings(self):
         print "\n=== ScanSettings configure Motor for completion and RBV ==="
         table_scan = TableScan(

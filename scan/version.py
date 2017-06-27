@@ -1,7 +1,8 @@
 
-__version__ = '1.3.4'
+__version__ = '1.3.5'
 
 version_history = """
+1.3.5 - Allow lower-case 'wait for', 'value' columns.
 1.3.4 - Allow 'loop' for parallel columns.
 1.3.3 - Allow space after 'loop' or 'range'.
 1.3.2 - Table scan writes current row to PV settings.table_scan_row.

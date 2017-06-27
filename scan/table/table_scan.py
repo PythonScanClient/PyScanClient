@@ -715,16 +715,16 @@ class TableScan:
         col_device = [ None for i in range(self.cols) ]
         i = 0
         while i < self.cols:
-            if self.headers[i] == TableScan.WAITFOR:
+            if self.headers[i].lower() == TableScan.WAITFOR.lower():
                 # Column TableScan.WAITFOR must be followed by TableScan.VALUE
-                if i >= self.cols-1  or  self.headers[i+1] != TableScan.VALUE:
+                if i >= self.cols-1  or  self.headers[i+1].lower() != TableScan.VALUE.lower():
                     raise ValueError(TableScan.WAITFOR + " column must be followed by " + TableScan.VALUE)
                 # .. and may then be followed by TableScan.OR_TIME
-                if i < self.cols-2  and  self.headers[i+2] == TableScan.OR_TIME:
+                if i < self.cols-2  and  self.headers[i+2].lower() == TableScan.OR_TIME.lower():
                     i += 2
                 else:
                     i += 1
-            elif self.headers[i] == TableScan.COMMENT:
+            elif self.headers[i].lower() == TableScan.COMMENT.lower():
                 # Comment is no device name
                 pass
             else:
@@ -774,13 +774,13 @@ class TableScan:
                     value = self.__getValue(row[c])
                     command = special_handler(value)
                     row_commands.append(command)
-                elif what == TableScan.COMMENT:
+                elif what.lower() == TableScan.COMMENT.lower():
                     self.__flushParallel(row_commands)
                     text = row[c]
                     row_commands.append(Comment(text))           
                     # TODO if self.settings.comment:
                     #       row_commands.append(SetCommand(self.settings.comment, text))
-                elif what == TableScan.WAITFOR:
+                elif what.lower() == TableScan.WAITFOR.lower():
                     waitfor = row[c]
                     value = self.__getValue(row[c+1])
 
@@ -822,14 +822,14 @@ class TableScan:
                     
                     # Skip TableScan.VALUE in addition to current column,
                     # so next two Exceptions should not happen unless there's an empty "WAIT_FOR"
-                    if c+2 < self.cols  and  self.headers[c+2] == TableScan.OR_TIME:
+                    if c+2 < self.cols  and  self.headers[c+2].lower() == TableScan.OR_TIME.lower():
                         c = c + 2
                     else:
                         c = c + 1
-                elif what == TableScan.VALUE:
+                elif what.lower() == TableScan.VALUE.lower():
                     raise Exception("Line %d: Found value '%s' in '%s' column after empty '%s' column.\nRow: %s" %
                                     (line, row[c], TableScan.VALUE, TableScan.WAITFOR, str(row)))
-                elif what == TableScan.OR_TIME:
+                elif what.lower() == TableScan.OR_TIME.lower():
                     raise Exception("Line %d: Found value '%s' in '%s' column after empty '%s' column.\nRow: %s" %
                                     (line, row[c], TableScan.OR_TIME, TableScan.WAITFOR, str(row)))
                 else:
