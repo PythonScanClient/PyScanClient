@@ -50,8 +50,25 @@ def parseSeconds(text):
     except:
         raise Exception("Cannot parse seconds from '%s'" % text)
 
+def formatSecondsAsTime(seconds):
+    """Format seconds as HH:MM:SS
+
+    >>> formatSecondsAsTime(6)
+    '00:00:06'
+    >>> formatSecondsAsTime(60)
+    '00:01:00'
+    >>> formatSecondsAsTime(2*60*60 + 3*60 + 4)
+    '02:03:04'
+    """
+    seconds = int(seconds)
+    hours = seconds / 60 / 60
+    seconds -= hours * 60 * 60
+    minutes = seconds / 60
+    seconds -= minutes * 60
+    return "%02d:%02d:%02d" % (hours, minutes, seconds)
+
 if __name__ == "__main__":
-    print "Performing doctest..."
+    print ("Performing doctest...")
     import doctest
     doctest.testmod()
     
