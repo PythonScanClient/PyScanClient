@@ -810,8 +810,9 @@ class TableScan:
                                 errhandler = "OnErrorContinue"
                         cmd = SettingsBasedWait(waitfor, value, timeout=timeout, errhandler=errhandler)
                         row_commands.append(cmd)
-                        if not waitfor in log_devices:
-                            log_devices.append(waitfor)
+                        waitfor_device = settings.getDefaultSettings(waitfor).getName()
+                        if not waitfor_device in log_devices:
+                            log_devices.append(waitfor_device)
                     
                     if len(log_devices) > 0:
                         row_commands.append(Log(log_devices))

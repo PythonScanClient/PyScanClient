@@ -1,7 +1,8 @@
 
-__version__ = '1.3.6'
+__version__ = '1.3.7'
 
 version_history = """
+1.3.7 - Table 'Wait For' logs the name returned by settings, allowing for alias
 1.3.6 - Add seconds.formatSecondsAsTime()
 1.3.5 - Allow lower-case 'wait for', 'value' columns.
 1.3.4 - Allow 'loop' for parallel columns.
