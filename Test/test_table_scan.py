@@ -214,6 +214,15 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Delay(300), Parallel(Set('A', 1.0), Set('B', 4.0)), Delay(300), Parallel(Set('A', 1.0), Set('B', 6.0)), Delay(300)]")
 
+        print "\n=== Parallel with Timeout ==="
+        table_scan = TableScan(
+          (   "+p A", "Wait For", "Value", "Or Time"   ),
+          [
+            [ "1",    "Completion", "", "00:05:00" ],
+          ] 
+        )
+        cmds = handle(table_scan)
+        self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), timeout=300, errhandler='OnErrorContinue'), Log('A')]")
 
 
     def testRange(self):

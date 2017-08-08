@@ -783,7 +783,14 @@ class TableScan:
                 elif what.lower() == TableScan.WAITFOR.lower():
                     waitfor = row[c]
                     value = self.__getValue(row[c+1])
-
+                    timeout = 0
+                    errhandler = None
+                    if c+2 < self.cols  and  self.headers[c+2] == TableScan.OR_TIME:
+                        or_time = row[c+2].strip()
+                        if len(or_time) > 0:
+                            timeout = parseSeconds(or_time)
+                            errhandler = "OnErrorContinue"
+ 
                     if waitfor.lower() != TableScan.COMPLETION:
                         # Complete accumulated parallel_commands before starting the run
                         self.__flushParallel(row_commands)
@@ -795,19 +802,16 @@ class TableScan:
                     if waitfor.lower() == TableScan.COMPLETION:
                         # Assert that there are any parallel commands,
                         # because otherwise the 'WaitFor - Completion' was likely an error
-                        if not self.__flushParallel(row_commands):
+                        if self.__flushParallel(row_commands):
+                            command = row_commands[-1]
+                            if timeout > 0:
+                                row_commands[-1] = Parallel(command.getBody(), timeout = timeout, errhandler = errhandler)
+                        else:
                             raise Exception("Line %d has no parallel commands to complete" % line)
                     elif waitfor.lower() in ( TableScan.SECONDS, TableScan.TIME ):
                         if value:
                             row_commands.append(Delay(parseSeconds(value)))
                     else:
-                        timeout = None
-                        errhandler = None
-                        if c+2 < self.cols  and  self.headers[c+2] == TableScan.OR_TIME:
-                            or_time = row[c+2].strip()
-                            if len(or_time) > 0:
-                                timeout = parseSeconds(or_time)
-                                errhandler = "OnErrorContinue"
                         cmd = SettingsBasedWait(waitfor, value, timeout=timeout, errhandler=errhandler)
                         row_commands.append(cmd)
                         waitfor_device = settings.getDefaultSettings(waitfor).getName()

@@ -51,6 +51,9 @@ class Parallel(Command):
         self.__timeout = kwargs['timeout'] if 'timeout' in kwargs else 0
         self.__errHandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
         
+    def getBody(self):
+        return self.__body
+    
     def genXML(self):
         xml = ET.Element('parallel')
         
