@@ -17,7 +17,11 @@ def parseSeconds(text):
     >>> parseSeconds("00:00:01")
     1
     >>> parseSeconds("120")
-    120
+    120.0
+    >>> parseSeconds("6.0")
+    6.0
+    >>> parseSeconds("13.4")
+    13.4
     >>> parseSeconds("01:01:01")
     3661
     >>> parseSeconds("2:01")
@@ -25,7 +29,7 @@ def parseSeconds(text):
     >>> parseSeconds("02:01")
     121
     >>> parseSeconds("48000")
-    48000
+    48000.0
     
     Can also be called with number:
     
@@ -46,7 +50,7 @@ def parseSeconds(text):
         seconds = int(match.group(2))
         return minutes*60 + seconds
     try:
-        return int(text)
+        return float(text)
     except:
         raise Exception("Cannot parse seconds from '%s'" % text)
 

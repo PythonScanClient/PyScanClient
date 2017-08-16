@@ -1,7 +1,8 @@
 
-__version__ = '1.3.8'
+__version__ = '1.3.9'
 
 version_history = """
+1.3.9 - Seconds parser: Allow float "6.0" or "6.5"
 1.3.8 - Table 'Wait For: Completion' support 'Or Time:..'
 1.3.7 - Table 'Wait For' logs the name returned by settings, allowing for alias
 1.3.6 - Add seconds.formatSecondsAsTime()
