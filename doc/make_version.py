@@ -11,6 +11,8 @@ To obtain version info::
    print version_history
 """
 
+import sys
+sys.path.append("..")
 from scan.version import __version__, version_history
 
 print "Version history::"
