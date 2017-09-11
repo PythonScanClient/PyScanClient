@@ -1,5 +1,9 @@
 """Unit test of the TableScan
 
+   To run just a single test:
+
+   python -m unittest test_table_scan.TableScanTest.testBadInput
+
    @author: Kay Kasemir
 """
 import unittest
@@ -131,7 +135,7 @@ class TableScanTest(unittest.TestCase):
 
 
     def testWaitFor(self):
-        print "\n=== Wait For spelled lowecase ==="
+        print "\n=== 'Wait For' spelled lowercase ==="
         table_scan = TableScan(
           (   "X",  "wait for", "value" ),
           [
@@ -437,6 +441,54 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds),
                          "[Parallel(Set('X', 0.0), Set('Y', 0.0)), Delay(60), Log('X', 'Y'), Parallel(Set('X', 1.0), Set('Y', 1.0)), Delay(60), Log('X', 'Y'), Parallel(Set('X', 2.0), Set('Y', 2.0)), Delay(60), Log('X', 'Y')]")
 
+    def testBadInput(self):
+        print "\n=== Bad Input ==="
+        
+        # No list of rows, just single row
+        with self.assertRaises(Exception) as context:
+            table_scan = TableScan(
+              (   "+p X",    "+p Y", "Z", "Wait For", "Value", ),
+                [ "Loop(3)", "",     "",  "time",     "00:01:00" ],
+            )
+        print("Caught: " + str(context.exception))
+        self.assertTrue("Table needs list of rows" in str(context.exception))
+
+        # Missing column in rows
+        with self.assertRaises(Exception) as context:
+            table_scan = TableScan(
+              (   "+p X",    "+p Y", "Z", "Wait For", "Value", ),
+              [ [ "Loop(3)", "",     "",  "time",     "00:01:00" ],
+                [ "Loop(3)", "",     "",  "time",                ],
+              ]
+            )
+        print("Caught: " + str(context.exception))
+        self.assertTrue("Table has 5 columns but row 1 has only 4" in str(context.exception))
+
+
+        # Missing 'Value' column (either nothing or the wrong column)
+        with self.assertRaises(Exception) as context:
+            table_scan = TableScan(
+              (   "+p X",    "+p Y", "Z", "Wait For" ),
+              [ [ "Loop(3)", "",     "",  "time",    ],
+              ]
+            )
+            table_scan.createScan()
+        print("Caught: " + str(context.exception))
+        self.assertTrue("Wait For column must be followed by Value" in str(context.exception))
+
+        with self.assertRaises(Exception) as context:
+            table_scan = TableScan(
+              (   "+p X",    "+p Y", "Z", "Wait For", "ShouldBeValue", ),
+              [ [ "Loop(3)", "",     "",  "time",     "00:01:00" ],
+              ]
+            )
+            table_scan.createScan()
+        print("Caught: " + str(context.exception))
+        self.assertTrue("Wait For column must be followed by Value" in str(context.exception))
+
+
+
 
 if __name__ == "__main__":
     unittest.main()
+

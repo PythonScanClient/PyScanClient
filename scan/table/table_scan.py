@@ -646,6 +646,12 @@ class TableScan:
         self.cols = len(self.headers)
         self.rows = []
         self.width = [ len(h) for h in self.headers ]
+
+        if not (isinstance(rows, list)
+                and 
+                all(isinstance(row, list) for row in rows)):
+            raise ValueError("Table needs list of rows, but got %s" % str(rows))
+
         for r in range(len(rows)):
             row = rows[r]
             is_empty = True
