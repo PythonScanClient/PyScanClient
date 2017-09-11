@@ -3,6 +3,7 @@
 
 # Generated docs
 doc/_build
+doc/version.rst
 
 *.class
 
