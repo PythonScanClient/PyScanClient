@@ -604,6 +604,15 @@ def loadTableScan(filename, pre=None, post=None, start=None, stop=None):
     rows = table[1:]
     return TableScan(headers, rows, pre, post, start, stop)
 
+def is_list(x):
+    """Check if argument is a list of some form"""
+    if isinstance(x, (list, tuple)):
+        return True
+    # Check for java.util.ArrayList and the like
+    if "list" in str(type(x)).lower():
+        return True
+    return False
+
 class TableScan:
     """Create Table scan
     
@@ -647,9 +656,9 @@ class TableScan:
         self.rows = []
         self.width = [ len(h) for h in self.headers ]
 
-        if not (isinstance(rows, list)
+        if not (is_list(rows)
                 and 
-                all(isinstance(row, list) for row in rows)):
+                all(is_list(row) for row in rows)):
             raise ValueError("Table needs list of rows, but got %s" % str(rows))
 
         for r in range(len(rows)):

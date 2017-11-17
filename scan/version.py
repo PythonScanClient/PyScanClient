@@ -1,7 +1,8 @@
 
-__version__ = '1.3.10'
+__version__ = '1.3.11'
 
 version_history = """
+1.3.11 - Fix list-of-lists check
 1.3.10 - Table: Check 'rows' for list-of-lists
 1.3.9 - Seconds parser: Allow float "6.0" or "6.5"
 1.3.8 - Table 'Wait For: Completion' support 'Or Time:..'
