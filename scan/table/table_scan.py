@@ -611,6 +611,8 @@ def is_list(x):
     # Check for java.util.ArrayList and the like
     if "list" in str(type(x)).lower():
         return True
+    if "array" in str(type(x)).lower():
+        return True
     return False
 
 class TableScan:
