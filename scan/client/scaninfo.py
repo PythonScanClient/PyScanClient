@@ -5,6 +5,7 @@ All rights reserved. Use is subject to license terms and conditions
 
 @author: Kay Kasemir
 """
+from datetime import datetime
 
 class ScanInfo(object):
     """Information about a scan
@@ -30,14 +31,16 @@ class ScanInfo(object):
     def isDone(self):
         """:return: `True` if scan has completed, successful or not"""
         return not (self.state in ( 'Idle', 'Running', 'Paused' )) 
-    
+
     def percentage(self):
         """:return: Percent of work done, 0...100"""
         if self.total_work_units <= 0:
             return 0;
         return int(self.performed_work_units * 100 / self.total_work_units);
     
-    # TODO Methods to convert raw seconds into time stamps
+    def createdDatetime(self):
+        """:return: datetime when scan was created"""
+        return datetime.fromtimestamp(self.created / 1000)
     
     # TODO Turn id, name, ... into @property?
     
