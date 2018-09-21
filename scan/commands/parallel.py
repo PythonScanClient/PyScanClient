@@ -53,6 +53,10 @@ class Parallel(Command):
         
     def getBody(self):
         return self.__body
+
+    def append(self, *commands):
+        for cmd in commands:
+            self.__body.append(cmd)
     
     def genXML(self):
         xml = ET.Element('parallel')

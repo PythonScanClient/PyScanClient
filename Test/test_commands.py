@@ -119,6 +119,11 @@ class CommandTest(unittest.TestCase):
         print cmd
         self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body><error_handler>MyHandler</error_handler></parallel>")
 
+        cmd = Parallel()
+        cmd.append(Comment("One"), Comment("Two"))
+        print cmd
+        self.assertEqual(ET.tostring(cmd.genXML()), "<parallel><body><comment><text>One</text></comment><comment><text>Two</text></comment></body></parallel>")
+
     def testLog(self):
         # One device
         cmd = Log("pv1")
