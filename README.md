@@ -6,7 +6,7 @@ Supports both the original Eclipse-based Scan Server and the Phoebus-based versi
 Documentation
 -------------
 
-For latest snapshot of documentation, see https://controlssoftware.sns.ornl.gov/css_pyscanclient/.
+For latest snapshot of documentation, see https://controlssoftware.sns.ornl.gov/css_pyscanclient/html.
 
 To build local copy of documentation from sources, you need to install sphinx, http://sphinx-doc.org/.
 To install on Linux (RedHat):
