@@ -1,16 +1,12 @@
 PyScanClient
 ============
-A collaboratively developed Python/Jython Scan Server Client.
-
-Version Info
-------------
-
-See https://github.com/PythonScanClient/PyScanClient/blob/master/scan/version.py
+A Python/Jython library for accessing the CS-Studio Scan Server.
+Supports both the original Eclipse-based Scan Server and the Phoebus-based version.
 
 Documentation
 -------------
 
-For latest snapshot of documentation, see http://ics-web.sns.ornl.gov/css/PyScanClient
+For latest snapshot of documentation, see https://controlssoftware.sns.ornl.gov/css_pyscanclient/.
 
 To build local copy of documentation from sources, you need to install sphinx, http://sphinx-doc.org/.
 To install on Linux (RedHat):
@@ -23,10 +19,6 @@ To build documentation from sources:
     make clean html
 
 Then view `doc/_build/html/index.html` in web browser.
-
-
-This repository is at https://github.com/PythonScanClient/PyScanClient
-
 
 Install
 -------
@@ -47,7 +39,6 @@ Minimal local installation:
 
 and then add the resulting `build/lib` folder to your PYTHONPATH.
 
-
 Uninstall
 ---------
 
@@ -58,3 +49,10 @@ Running Tests
 -------------
 
 See Test/test_standalone
+
+Version Info
+------------
+
+See https://github.com/PythonScanClient/PyScanClient/blob/master/scan/version.py
+
+This repository is at https://github.com/PythonScanClient/PyScanClient
