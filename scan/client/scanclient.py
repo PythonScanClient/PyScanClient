@@ -1,22 +1,20 @@
 '''
-Copyright (c) 2014 
+Copyright (c) 2014-2018
 All rights reserved. Use is subject to license terms and conditions.
-Created on Dec 30, 2014
-Updated on Mar 19,2015
 @author: Yongxiang Qiu, Kay Kasemir
 '''
 
 import time
 import xml.etree.ElementTree as ET
 import urllib
-import urllib2
 from scan.client.logdata import parseXMLData
 from scan.commands.commandsequence import CommandSequence
 from scaninfo import ScanInfo
 
-
-# Bug https://github.com/PythonScanClient/PyScanClient/issues/18
+# Python code uses urllib2.
+# When accessed from jython, there were two problems.
 #
+# 1) https://github.com/PythonScanClient/PyScanClient/issues/18
 # urllib2 is based on _socket.py.
 # Depending on how BOY invokes jython,
 # even a new threadLocalStateInterpreter and a newly compiled
@@ -25,29 +23,97 @@ from scaninfo import ScanInfo
 # its threadLocalStateInterpreter.
 # Calls to urllib2 will then receive a connection error based on
 # "RejectedExecutionException: event executor terminated".
+# Workaround was to re-create the _socket.NIO_GROUP
+# and call sys.registerCloser(_socket._shutdown_threadpool)
+#
+# 2) https://github.com/ControlSystemStudio/cs-studio/issues/2535
+# After updating to jython 2.7.1, the HTTP 'POST' appeared limited
+# to sending 65k of data.
+#
+# Workaround for both is to use Java HTTP API for jython
 import os
 if os.name == 'java':
-    import sys, _socket
-    # Log detail of the _socket code
-    #import logging
-    #logging.basicConfig(level=logging.DEBUG)
-    #log = logging.getLogger("_socket")
-    #log.setLevel(level=logging.DEBUG)
+    import java.lang
+    from java.io import BufferedReader, InputStreamReader, OutputStream
+    from java.net import HttpURLConnection, URL
 
-    def checkSocketLib():
-        # Workaround: Detect closed NIO_GROUP and ee-create it
+    def perform_request(url, method='GET', data=None):
         try:
-            if _socket.NIO_GROUP.isShutdown():
-                # print "RE-CREATEING NIO_GROUP!!!!!!!!!"
-                # _socket._NUM_THREADS is 10. Using only 2 threads.
-                _socket.NIO_GROUP = _socket.NioEventLoopGroup(2, _socket.DaemonThreadFactory("PyScan-Netty-Client-%s"))
-                sys.registerCloser(_socket._shutdown_threadpool)
-        except AttributeError:
-            print "Jython _socket.py has changed from jython_2.7.0"
+            connection = URL(url).openConnection()
+            connection.setRequestProperty("Connection", "close")
+            connection.setRequestProperty("User-Agent", "PyScanClient")
+            connection.setRequestProperty("Accept", "text/xml")
+            connection.setDoOutput(True)
+            connection.setRequestMethod(method)
+            if data is not None:
+                data = java.lang.String(data).getBytes()
+                connection.setRequestProperty("Content-Type", "text/xml")
+                connection.setRequestProperty("Content-Length", str(len(data)))
+                out = connection.getOutputStream()
+                out.write(data)
+                out.close()
+    
+            inp = BufferedReader(InputStreamReader(connection.getInputStream()))
+            result = java.lang.StringBuilder()
+            while True:
+                line = inp.readLine()
+                if line is None:
+                    break
+                result.append(line).append('\n')
+            inp.close()
+            result = result.toString()
+            connection.disconnect()
+            return result
+        except java.lang.Exception as e:
+            raise Exception("%s: %s" % (url, str(e)))
+
 else:
-    def checkSocketLib():
-        # C-Python _socket.py needs no fix
-        pass
+    import urllib2
+
+    def perform_request(url, method='GET', data=None):
+        """Perform HTTP request with scan server
+        
+        :param url:    URL
+        :param method: 'GET', 'PUT', ...
+        :param data:   Optional data
+       
+        :return: XML response from scan server
+        """
+        response = None
+        try:
+            # Register a Request Object with url:
+            req = urllib2.Request(url)
+            # Add XML header
+            if data is not None:
+                req.add_header('content-type' , 'text/xml')
+            # Get OpenerDirector Object
+            opener = urllib2.build_opener()
+            
+            if method=='GET':
+                response = opener.open(req)
+                
+            elif method=='POST':
+                response = opener.open(req, data)
+                
+            elif method=='DELETE':
+                req.get_method = lambda : 'DELETE'
+                response = opener.open(req)
+                
+            elif method=='PUT':
+                req.get_method = lambda : 'PUT'
+                response = opener.open(req, data)
+            else:
+                raise Exception('Undefined HttpRequest Type %s' % method)
+            
+            return response.read()
+        except urllib2.URLError as e:
+            if hasattr(e, 'reason'):
+                raise Exception("Failed to reach scan server at %s: %s" % (url, e.reason))
+            elif hasattr(e, 'code'):
+                raise Exception("Scan server at %s returned error code %d" % (url, e.code))
+        finally:
+            if response:
+                response.close()
 
 
 class ScanClient(object):
@@ -78,54 +144,7 @@ class ScanClient(object):
     def __repr__(self):
         return "ScanClient('%s', %d)" % (self.__host, self.__port)
 
-    
-    def __do_request(self, url, method='GET', data=None):
-        """Perform HTTP request with scan server
-        
-        :param url:    URL
-        :param method: 'GET', 'PUT', ...
-        :param data:   Optional data
-       
-        :return: XML response from scan server
-        """
-        checkSocketLib()
-        response = None
-        try:
-            # Register a Request Object with url:
-            req = urllib2.Request(url)
-            # Add XML header
-            if data is not None:
-                req.add_header('content-type' , 'text/xml')
-            # Get OpenerDirector Object
-            opener = urllib2.build_opener()
-            
-            if method=='GET':
-                response = opener.open(req)
-                
-            elif method=='POST':
-                response = opener.open(req, data)
-                
-            elif method=='DELETE':
-                req.get_method = lambda : 'DELETE'
-                response = opener.open(req)
-                
-            elif method=='PUT':
-                req.get_method = lambda : 'PUT'
-                response = opener.open(req, data)
-            else:
-                raise Exception('Undefined HttpRequest Type %s' % method)
-            
-            return response.read()
-        except urllib2.URLError as e:
-            if hasattr(e, 'reason'):
-                raise Exception("Failed to reach scan server at %s:%d: %s" % (self.__host, self.__port, e.reason))
-            elif hasattr(e, 'code'):
-                raise Exception("Scan server at %s:%d returned error code %d" % (self.__host, self.__port, e.code))
-        finally:
-            if response:
-                response.close()
 
-        
     def serverInfo(self):
         """Get scan server information
         
@@ -140,7 +159,7 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.serverInfo()
         """
-        return self.__do_request(self.__baseURL + self.__serverResource + self.__serverInfoResource)
+        return perform_request(self.__baseURL + self.__serverResource + self.__serverInfoResource)
 
                 
     def simulate(self, cmds):
@@ -167,7 +186,7 @@ class ScanClient(object):
             
         url = self.__baseURL + self.__simulateResource
 
-        result = self.__do_request(url, 'POST', scan)
+        result = perform_request(url, 'POST', scan)
         xml = ET.fromstring(result)
         if xml.tag != 'simulation':
             raise Exception("Expected scan <simulation>, got <%s>" % xml.tag)
@@ -232,7 +251,7 @@ class ScanClient(object):
         url = self.__baseURL + self.__scanResource + '/' + scanName
         if not queue:
             url = url + "?queue=false"
-        r = self.__do_request(url, 'POST', scanXML)
+        r = perform_request(url, 'POST', scanXML)
         return r
     
             
@@ -260,7 +279,7 @@ class ScanClient(object):
         >>> infos = client.scanInfos()
         >>> print [ str(info) for info in infos ]
         """
-        xml = self.__do_request(self.__baseURL + self.__scansResource)
+        xml = perform_request(self.__baseURL + self.__scansResource)
         scans = ET.fromstring(xml)
         result = list()
         for scan in scans.findall('scan'):
@@ -281,7 +300,7 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.scanInfo(42)
         """
-        xml = self.__do_request(self.__baseURL + self.__scanResource + '/' + str(scanID))
+        xml = perform_request(self.__baseURL + self.__scanResource + '/' + str(scanID))
         return ScanInfo(ET.fromstring(xml))
 
 
@@ -305,7 +324,7 @@ class ScanClient(object):
         >>> client.submit(client.scanCmds(scanid))
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/commands'
-        xml = self.__do_request(url)
+        xml = perform_request(url)
         return xml
 
 
@@ -332,7 +351,7 @@ class ScanClient(object):
         >>>     time.sleep(10
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/last_serial'
-        xml = self.__do_request(url)
+        xml = perform_request(url)
         ET.fromstring(xml)
         return int(ET.fromstring(xml).text)
 
@@ -352,7 +371,7 @@ class ScanClient(object):
         :return: XML with info about devices.
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/devices'
-        xml = self.__do_request(url)
+        xml = perform_request(url)
         return xml
 
 
@@ -393,7 +412,7 @@ class ScanClient(object):
         >>> client.pause(id)
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/pause'
-        self.__do_request(url, 'PUT')
+        perform_request(url, 'PUT')
 
 
     def resume(self, scanID=-1):
@@ -410,7 +429,7 @@ class ScanClient(object):
         >>> client.resume(id)
         """
         url=self.__baseURL + self.__scanResource + '/' + str(scanID) + '/resume'
-        self.__do_request(url, 'PUT')
+        perform_request(url, 'PUT')
 
 
     def abort(self, scanID=-1):
@@ -426,7 +445,7 @@ class ScanClient(object):
         >>> client.abort(id)
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/abort'
-        self.__do_request(url, 'PUT')
+        perform_request(url, 'PUT')
 
 
     def delete(self, scanID):
@@ -442,7 +461,7 @@ class ScanClient(object):
         >>> client.abort(id)
         >>> client.delete(id)
         """
-        self.__do_request(self.__baseURL + self.__scanResource + '/' + str(scanID), 'DELETE')
+        perform_request(self.__baseURL + self.__scanResource + '/' + str(scanID), 'DELETE')
 
 
     def clear(self):
@@ -454,7 +473,7 @@ class ScanClient(object):
         
         >>> client.clear()
         """
-        self.__do_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
+        perform_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
 
     def patch(self, scanID, address, property, value):  # @ReservedAssignment
         """Update scan on server.
@@ -482,7 +501,7 @@ class ScanClient(object):
         >>> client.resume(id)
         """
         xml = "<patch><address>%d</address><property>%s</property><value>%s</value></patch>" % (address, property, str(value))
-        self.__do_request(self.__baseURL + self.__scanResource + '/' + str(id) + '/patch', 'PUT', xml)
+        perform_request(self.__baseURL + self.__scanResource + '/' + str(id) + '/patch', 'PUT', xml)
 
 
     def getData(self, scanID):
@@ -519,6 +538,6 @@ class ScanClient(object):
            Times in Posix milliseconds
         """
         url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/data'
-        xml = self.__do_request(url)
+        xml = perform_request(url)
         return parseXMLData(xml)
 
