@@ -1,7 +1,8 @@
 
-__version__ = '1.3.12'
+__version__ = '1.4.0'
 
 version_history = """
+1.4.0 - Jython uses Java HTTP API, CPython uses urllib2
 1.3.12 - Add Parallel.append(..) method
 1.3.11 - Fix list-of-lists check
 1.3.10 - Table: Check 'rows' for list-of-lists
