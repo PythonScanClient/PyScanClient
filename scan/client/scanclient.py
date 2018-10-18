@@ -127,18 +127,12 @@ class ScanClient(object):
     >>> client = ScanClient('localhost')
     """
     __baseURL = None
-    __serverResource = "/server"
-    __serverInfoResource = "/info"
-    __simulateResource = "/simulate"
-    __scansResource = "/scans"
-    __scansCompletedResource = "/completed"
-    __scanResource = "/scan"
        
     def __init__(self, host='localhost', port=4810):
         self.__host = host
         self.__port = int(port) #no matter what type of 'port' input, self._port keeps to be int.
         #May implement a one to one host+port with instance in the future.
-        self.__baseURL = "http://"+self.__host+':'+str(self.__port)
+        self.__baseURL = "http://" + self.__host + ':' + str(self.__port)
 
     
     def __repr__(self):
@@ -159,7 +153,7 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.serverInfo()
         """
-        return perform_request(self.__baseURL + self.__serverResource + self.__serverInfoResource)
+        return perform_request(self.__baseURL + "/server/info")
 
                 
     def simulate(self, cmds):
@@ -184,7 +178,7 @@ class ScanClient(object):
             # Warp list, tuple, other iterable
             scan = CommandSequence(cmds).genSCN()
             
-        url = self.__baseURL + self.__simulateResource
+        url = self.__baseURL + "/simulate"
 
         result = perform_request(url, 'POST', scan)
         xml = ET.fromstring(result)
@@ -248,7 +242,7 @@ class ScanClient(object):
         >>> ssc=ScanClient('localhost',4810)
         >>> id = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
         """
-        url = self.__baseURL + self.__scanResource + '/' + scanName
+        url = self.__baseURL + "/scan/" + scanName
         if not queue:
             url = url + "?queue=false"
         r = perform_request(url, 'POST', scanXML)
@@ -279,7 +273,7 @@ class ScanClient(object):
         >>> infos = client.scanInfos()
         >>> print [ str(info) for info in infos ]
         """
-        xml = perform_request(self.__baseURL + self.__scansResource)
+        xml = perform_request(self.__baseURL + "/scans")
         scans = ET.fromstring(xml)
         result = list()
         for scan in scans.findall('scan'):
@@ -300,7 +294,7 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.scanInfo(42)
         """
-        xml = perform_request(self.__baseURL + self.__scanResource + '/' + str(scanID))
+        xml = perform_request(self.__baseURL + "/scan/" + str(scanID))
         return ScanInfo(ET.fromstring(xml))
 
 
@@ -323,7 +317,7 @@ class ScanClient(object):
         >>> # Submit it again:
         >>> client.submit(client.scanCmds(scanid))
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/commands'
+        url = self.__baseURL + "/scan/" + str(scanID) + '/commands'
         xml = perform_request(url)
         return xml
 
@@ -350,7 +344,7 @@ class ScanClient(object):
         >>>        last_log_fetched = last_logged
         >>>     time.sleep(10
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/last_serial'
+        url = self.__baseURL + "/scan/" + str(scanID) + '/last_serial'
         xml = perform_request(url)
         ET.fromstring(xml)
         return int(ET.fromstring(xml).text)
@@ -370,7 +364,7 @@ class ScanClient(object):
         
         :return: XML with info about devices.
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/devices'
+        url = self.__baseURL + "/scan/" + str(scanID) + '/devices'
         xml = perform_request(url)
         return xml
 
@@ -411,7 +405,7 @@ class ScanClient(object):
         >>> id = client.submit(commands)
         >>> client.pause(id)
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/pause'
+        url = self.__baseURL + "/scan/" + str(scanID) + '/pause'
         perform_request(url, 'PUT')
 
 
@@ -428,7 +422,7 @@ class ScanClient(object):
         >>> client.pause(id)
         >>> client.resume(id)
         """
-        url=self.__baseURL + self.__scanResource + '/' + str(scanID) + '/resume'
+        url=self.__baseURL + "/scan/" + str(scanID) + '/resume'
         perform_request(url, 'PUT')
 
 
@@ -444,7 +438,7 @@ class ScanClient(object):
         >>> id = client.submit(commands)
         >>> client.abort(id)
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(scanID) + '/abort'
+        url = self.__baseURL + "/scan/" + str(scanID) + '/abort'
         perform_request(url, 'PUT')
 
 
@@ -461,7 +455,7 @@ class ScanClient(object):
         >>> client.abort(id)
         >>> client.delete(id)
         """
-        perform_request(self.__baseURL + self.__scanResource + '/' + str(scanID), 'DELETE')
+        perform_request(self.__baseURL + "/scan/" + str(scanID), 'DELETE')
 
 
     def clear(self):
@@ -473,7 +467,7 @@ class ScanClient(object):
         
         >>> client.clear()
         """
-        perform_request(self.__baseURL + self.__scansResource + self.__scansCompletedResource, 'DELETE')
+        perform_request(self.__baseURL + "/scans/completed", 'DELETE')
 
     def patch(self, scanID, address, property, value):  # @ReservedAssignment
         """Update scan on server.
@@ -501,7 +495,7 @@ class ScanClient(object):
         >>> client.resume(id)
         """
         xml = "<patch><address>%d</address><property>%s</property><value>%s</value></patch>" % (address, property, str(value))
-        perform_request(self.__baseURL + self.__scanResource + '/' + str(id) + '/patch', 'PUT', xml)
+        perform_request(self.__baseURL + "/scan/" + str(id) + '/patch', 'PUT', xml)
 
 
     def getData(self, scanID):
@@ -537,7 +531,7 @@ class ScanClient(object):
         time:
            Times in Posix milliseconds
         """
-        url = self.__baseURL + self.__scanResource + '/' + str(scanID)+'/data'
+        url = self.__baseURL + "/scan/" + str(scanID) + '/data'
         xml = perform_request(url)
         return parseXMLData(xml)
 
