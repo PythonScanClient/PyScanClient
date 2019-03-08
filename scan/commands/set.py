@@ -23,7 +23,18 @@ class Set(Command):
     
     Example:
         >>> cmd = Set('position', 10.5)
-        
+
+    Note usage of timeout:
+    When the command awaits completion, the timeout is applied to the completion check,
+    i.e. we await the completion callback for `timeout` seconds.
+    If another readback check is performed after the completion,
+    this check is immediate, comparing the readback right now,
+    and not waiting for the readback to match within another `timeout` seconds.
+
+    On the other hand, if completion is not used,
+    the timeout is applied to the readback check.
+    So in case a readback comparison is requested,
+    we wait for up to `timeout` seconds for the readback to be within tolerance.    
     """
 
     def __init__(self, device, value, completion=False, readback=False, tolerance=0.0, timeout=0.0, errhandler=None):
