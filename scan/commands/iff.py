@@ -59,6 +59,7 @@ class If(Command):
            If there is a desire to change the body
            (before it's submitted to the scan server),
            this method provides that list of commands.
+
            :return: Body
         """
         return self.__body
