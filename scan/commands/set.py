@@ -120,10 +120,11 @@ class Set(Command):
             result += ", %s" % str(self.__value)
         if self.__completion:
             result += ', completion=True'
-            result += ', timeout='+str(self.__timeout)
+            if self.__timeout!=0.0:
+                result += ', timeout='+str(self.__timeout)
         if isinstance(self.__readback, str):
             result += ", readback='%s'" % self.__readback
-            result += ", tolerance='%f'" % self.__tolerance
+            result += ", tolerance=%f" % self.__tolerance
             if not self.__completion and  self.__timeout!=0.0:
                 result += ', timeout='+str(self.__timeout)
         elif self.__readback:
