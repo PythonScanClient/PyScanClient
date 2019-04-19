@@ -54,6 +54,12 @@ Parallel
 .. autoclass:: scan.commands.parallel.Parallel
    :members:
 
+If
+--
+
+.. autoclass:: scan.commands.iff.If
+   :members:
+
 Include
 -------
 

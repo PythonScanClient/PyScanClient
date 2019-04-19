@@ -3,6 +3,7 @@ from scan.commands.command import Command
 from scan.commands.comment import Comment
 from scan.commands.configlog import ConfigLog
 from scan.commands.delay import Delay
+from scan.commands.iff import If
 from scan.commands.include import Include
 from scan.commands.log import Log
 from scan.commands.loop import Loop

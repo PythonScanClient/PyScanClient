@@ -183,6 +183,18 @@ class CommandTest(unittest.TestCase):
         self.assertEqual(str(cmd), "Wait('counts', 1000, comparison='increase by', timeout=5, errhandler='someHandler')")
         self.assertEqual(ET.tostring(cmd.genXML()), "<wait><device>counts</device><value>1000</value><comparison>INCREASE_BY</comparison><timeout>5.0</timeout><error_handler>someHandler</error_handler></wait>")
 
+    def testIf(self):
+        cmd = If('device', '>', 3.14)
+        print cmd
+        self.assertEqual(str(cmd), "If('device', '>', 3.14, tolerance=0.1)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<if><device>device</device><comparison>ABOVE</comparison><value>3.14</value><tolerance>0.1</tolerance><body /></if>")
+
+        cmd = If('device', '>', 3.14, [ Comment('BODY') ])
+        print cmd
+        self.assertEqual(str(cmd), "If('device', '>', 3.14, [ Comment('BODY') ], tolerance=0.1)")
+        self.assertEqual(ET.tostring(cmd.genXML()), "<if><device>device</device><comparison>ABOVE</comparison><value>3.14</value><tolerance>0.1</tolerance><body><comment><text>BODY</text></comment></body></if>")
+
+
     def testLoop(self):
         cmd = Loop('pv1', 1, 10, 0.1)
         print cmd
