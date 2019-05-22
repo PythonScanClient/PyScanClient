@@ -16,6 +16,10 @@ class ScanInfo(object):
         self.id = int(xml.find('id').text)
         self.name = xml.find('name').text
         self.created = int(xml.find('created').text)
+
+        node = xml.find('finish')
+        self.finish = 0 if node is None else int(node.text)
+
         self.state = xml.find('state').text
         self.runtime = int(xml.find('runtime').text)
         
@@ -41,9 +45,7 @@ class ScanInfo(object):
     def createdDatetime(self):
         """:return: datetime when scan was created"""
         return datetime.fromtimestamp(self.created / 1000)
-    
-    # TODO Turn id, name, ... into @property?
-    
+
     def __str__(self):
         if self.state == 'Running':
             return "'%s' [%d]: %s, %d %%" % (self.name, self.id, self.state, self.percentage())
