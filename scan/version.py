@@ -1,7 +1,8 @@
 
-__version__ = '1.5.0'
+__version__ = '1.5.1'
 
 version_history = """
+1.5.1 - ScanInfo.finish
 1.5.0 - If(..) command
 1.4.1 - Better Set(..) representation
 1.4.0 - Jython uses Java HTTP API, CPython uses urllib2
