@@ -1,7 +1,8 @@
 
-__version__ = '1.5.1'
+__version__ = '1.5.2'
 
 version_history = """
+1.5.2 - Try to use cElementTree
 1.5.1 - ScanInfo.finish
 1.5.0 - If(..) command
 1.4.1 - Better Set(..) representation

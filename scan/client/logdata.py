@@ -1,7 +1,10 @@
 """Log Data Support
 """
 
-import xml.etree.ElementTree as ET
+try:
+    import xml.etree.cElementTree as ET
+except:
+    import xml.etree.ElementTree as ET
 
 from datetime import  datetime
 

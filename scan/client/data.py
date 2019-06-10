@@ -3,7 +3,10 @@ Created on Mar 27,2015
 
 @author: Yongxiang Qiu, Kay Kasemir
 '''
-import xml.etree.ElementTree as ET
+try:
+    import xml.etree.cElementTree as ET
+except:
+    import xml.etree.ElementTree as ET
 from datetime import  datetime
 
 def getTimeSeries(data, name, convert='plain'):

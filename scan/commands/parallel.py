@@ -4,7 +4,10 @@ Parallel Command
 @author: Kay Kasemir
 '''
 from scan.commands import Command
-import xml.etree.ElementTree as ET 
+try:
+    import xml.etree.cElementTree as ET
+except:
+    import xml.etree.ElementTree as ET
 
 class Parallel(Command):
     """Perform multiple commands in parallel.

@@ -5,7 +5,10 @@ All rights reserved. Use is subject to license terms and conditions.
 '''
 
 import time
-import xml.etree.ElementTree as ET
+try:
+    import xml.etree.cElementTree as ET
+except:
+    import xml.etree.ElementTree as ET
 import urllib
 from scan.client.logdata import parseXMLData
 from scan.commands.commandsequence import CommandSequence

@@ -4,7 +4,10 @@ Created on Mar 8,2015
 '''
 from string import lower
 from scan.commands.command import Command
-import xml.etree.ElementTree as ET 
+try:
+    import xml.etree.cElementTree as ET
+except:
+    import xml.etree.ElementTree as ET
 
 class ConfigLog(Command):
     """Config automatic logging.

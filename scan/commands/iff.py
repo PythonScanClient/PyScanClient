@@ -1,5 +1,8 @@
 from scan.commands.command import Command
-import xml.etree.ElementTree as ET 
+try:
+    import xml.etree.cElementTree as ET
+except:
+    import xml.etree.ElementTree as ET
 
 class If(Command):
     """Conditionally execute commands.
