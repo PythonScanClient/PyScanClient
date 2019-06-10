@@ -498,7 +498,7 @@ class ScanClient(object):
         >>> client.resume(id)
         """
         xml = "<patch><address>%d</address><property>%s</property><value>%s</value></patch>" % (address, property, str(value))
-        perform_request(self.__baseURL + "/scan/" + str(id) + '/patch', 'PUT', xml)
+        perform_request(self.__baseURL + "/scan/" + str(scanID) + '/patch', 'PUT', xml)
 
 
     def getData(self, scanID):
