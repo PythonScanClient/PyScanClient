@@ -10,7 +10,7 @@ class If(Command):
     :param device:     Device name
     :param value:      Desired value.
     :param comparison: How current value is compared to the desired value.
-                       Options: '=', '>', '>=', '<' , '<='.
+                       Options: '=', '!=', '>', '>=', '<' , '<='.
     :param body:       One or more commands
     :param tolerance:  Tolerance when checking numeric `readback`.
                        Defaults to 0.1
@@ -22,6 +22,7 @@ class If(Command):
     """
 
     __comparisons= {'=':'EQUALS',
+                    '!=':'UNEQUAL',
                     '>':'ABOVE',
                     '>=':'AT_LEAST',
                     '<':'BELOW',

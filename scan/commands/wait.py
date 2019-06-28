@@ -16,7 +16,7 @@ class Wait(Command):
     :param  value:       Desired value.
     :param  comparison:  How current value is compared to the desired value.
                          Defaults to '='.
-                         Other options: '>', '>=', '<' , '<=', 'increase by','decrease by'
+                         Other options: '!=', '>', '>=', '<' , '<=', 'increase by','decrease by'
     :param  tolerance:  Tolerance used for numeric comparison. Defaults to 0, not used for string values.
     :param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
     :param  errhandler: Default None.
@@ -31,6 +31,7 @@ class Wait(Command):
     """
     
     __comparisons= {'=':'EQUALS',
+                    '!=':'UNEQUAL',
                     '>':'ABOVE',
                     '>=':'AT_LEAST',
                     '<':'BELOW',
