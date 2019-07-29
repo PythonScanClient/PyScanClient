@@ -398,10 +398,10 @@ class ScanClient(object):
         while True:
             try:
                 info = self.scanInfo(scanID)
-                if info.isDone():
-                    return info
                 if info.state in ( 'Aborted', 'Failed' ):
                     raise Exception(str(info))
+                if info.isDone():
+                    return info
             except:
                 pass
             time.sleep(1)
