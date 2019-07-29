@@ -1,7 +1,8 @@
 
-__version__ = '1.5.4'
+__version__ = '1.5.5'
 
 version_history = """
+1.5.5 - scanInfo() time out
 1.5.4 - Add '!=' to If() and Wait()
 1.5.3 - Fix 'id' vs. 'scanID' in patch()
 1.5.2 - Try to use cElementTree

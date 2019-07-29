@@ -40,7 +40,7 @@ if os.name == 'java':
     from java.io import BufferedReader, InputStreamReader, OutputStream
     from java.net import HttpURLConnection, URL
 
-    def perform_request(url, method='GET', data=None):
+    def perform_request(url, method='GET', data=None, timeout=None):
         try:
             connection = URL(url).openConnection()
             connection.setRequestProperty("Connection", "close")
@@ -73,7 +73,7 @@ if os.name == 'java':
 else:
     import urllib2
 
-    def perform_request(url, method='GET', data=None):
+    def perform_request(url, method='GET', data=None, timeout=None):
         """Perform HTTP request with scan server
         
         :param url:    URL
@@ -93,7 +93,10 @@ else:
             opener = urllib2.build_opener()
             
             if method=='GET':
-                response = opener.open(req)
+                if timeout:
+                    response = opener.open(req, timeout=timeout)
+                else:
+                    response = opener.open(req)
                 
             elif method=='POST':
                 response = opener.open(req, data)
@@ -264,11 +267,12 @@ class ScanClient(object):
         return self.__submitScanXML(cmdSeq.genSCN(),scanName, queue)
       
            
-    def scanInfos(self):
+    def scanInfos(self, timeout=20):
         """Get information of all scans 
         
         Using `GET {BaseURL}/scans`
         
+        :param timeout: Throws exception when no reply within that time in seconds
         :return: List of :class:`~scan.client.scaninfo.ScanInfo`
         
         Example::
@@ -276,7 +280,7 @@ class ScanClient(object):
         >>> infos = client.scanInfos()
         >>> print [ str(info) for info in infos ]
         """
-        xml = perform_request(self.__baseURL + "/scans")
+        xml = perform_request(self.__baseURL + "/scans", timeout=timeout)
         scans = ET.fromstring(xml)
         result = list()
         for scan in scans.findall('scan'):
@@ -284,12 +288,13 @@ class ScanClient(object):
         return result
 
 
-    def scanInfo(self, scanID):
+    def scanInfo(self, scanID, timeout=10):
         """Get information for a scan
         
         Using `GET {BaseURL}/scan/{id}`
               
         :param scanID: The ID of scan for which to fetch information.
+        :param timeout: Throws exception when no reply within that time in seconds
         :return: :class:`~scan.client.scaninfo.ScanInfo`
         
         Example::
@@ -297,9 +302,8 @@ class ScanClient(object):
         >>> client = ScanClient()
         >>> print client.scanInfo(42)
         """
-        xml = perform_request(self.__baseURL + "/scan/" + str(scanID))
+        xml = perform_request(self.__baseURL + "/scan/" + str(scanID), timeout=timeout)
         return ScanInfo(ET.fromstring(xml))
-
 
     def scanCmds(self, scanID):
         """Get the commands of scan.
@@ -381,19 +385,26 @@ class ScanClient(object):
         
         In case the scan failed or was aborted,
         an exception is raised.
+
+        If scan information is not available
+        (timeout while requesting it),
+        keep checking.
         
         :param scanID: ID of scan on which to wait
         
         :return: Scan info
         :raise Exception: If scan was aborted or failed. 
         """
-        info = self.scanInfo(scanID)
-        while not info.isDone():
+        while True:
+            try:
+                info = self.scanInfo(scanID)
+                if info.isDone():
+                    return info
+                if info.state in ( 'Aborted', 'Failed' ):
+                    raise Exception(str(info))
+            except:
+                pass
             time.sleep(1)
-            info = self.scanInfo(scanID)
-        if info.state in ( 'Aborted', 'Failed' ):
-            raise Exception(str(info))
-        return info
 
 
     def pause(self, scanID=-1):
