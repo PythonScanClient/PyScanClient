@@ -1,7 +1,8 @@
 
-__version__ = '1.5.5'
+__version__ = '1.5.6'
 
 version_history = """
+1.5.6 - wait..() fix
 1.5.5 - scanInfo() time out
 1.5.4 - Add '!=' to If() and Wait()
 1.5.3 - Fix 'id' vs. 'scanID' in patch()

@@ -375,6 +375,13 @@ class ScanClient(object):
         xml = perform_request(url)
         return xml
 
+    def __getInfo(self, scanID):
+        """Keep getting scan info while disconnected/timed out"""
+        while True:
+            try:
+                return self.scanInfo(scanID)
+            except:
+                time.sleep(1)
 
     def waitUntilDone(self, scanID):
         """Wait until scan finishes.
@@ -396,14 +403,11 @@ class ScanClient(object):
         :raise Exception: If scan was aborted or failed. 
         """
         while True:
-            try:
-                info = self.scanInfo(scanID)
-                if info.state in ( 'Aborted', 'Failed' ):
-                    raise Exception(str(info))
-                if info.isDone():
-                    return info
-            except:
-                pass
+            info = self.__getInfo(scanID)
+            if info.state in ( 'Aborted', 'Failed' ):
+                raise Exception(str(info))
+            if info.isDone():
+                return info
             time.sleep(1)
 
 
