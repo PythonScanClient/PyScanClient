@@ -2,7 +2,7 @@
 
 """
 # @author Kay Kasemir
-
+from collections import OrderedDict
 from scan.util import SettingsBasedLoop
 from scan.commands.command import Command
 from scan.commands.log import Log
@@ -47,7 +47,7 @@ def createNDimScan(*parameters):
     args = list(parameters)
 
     # Assemble the commands
-    return __decodeScan(set(), args)
+    return __decodeScan(OrderedDict(), args)
  
 def __decodeLoop(parms):
     """Decode loop parameters
@@ -74,19 +74,19 @@ def __decodeScan(to_log, args):
         # Log what needs to be logged. May be nothing.
         if len(to_log) <= 0:
             return []
-        return [ Log(list(to_log)) ]
+        return [ Log(list(to_log.keys())) ]
     
     # Analyze next argument
     arg = args.pop(0)
     if isinstance(arg, str):
         # Remember device to log
-        to_log.add(arg)
+        to_log.update({ arg: None })
         return __decodeScan(to_log, args)
     elif isinstance(arg, tuple):
         # Loop specification
         scan = __decodeLoop(arg)
         # Remember loop variable for log
-        to_log.add(scan[0])
+        to_log.update({ scan[0]: None })
         # Create loop with remaining arguments as body
         return [ SettingsBasedLoop(scan[0], scan[1], scan[2], scan[3],
                                    __decodeScan(to_log, args))
