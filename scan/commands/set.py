@@ -119,6 +119,13 @@ class Set(Command):
         result = "Set('%s'" % self.__device
         if isinstance(self.__value, str):
             result += ", '%s'" % self.__value
+        elif isinstance(self.__value, float):
+            # Reproduce the default floating point number format provided by Python 2 (and 3.1)
+            # (See: https://stackoverflow.com/questions/25898733/why-does-strfloat-return-more-digits-in-python-3-than-python-2/25899600#25899600)
+            if self.__value.is_integer():
+                result += ", %.12g.0" % self.__value
+            else:
+                result += ", %.12g" % self.__value
         else:
             result += ", %s" % str(self.__value)
         if self.__completion:
