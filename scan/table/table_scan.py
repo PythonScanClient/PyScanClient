@@ -587,7 +587,7 @@ API
 from scan.commands import Command, Comment, Delay, Log, Parallel
 from scan.util.scan_settings import getScanSettings, SettingsBasedSet, SettingsBasedLoop, SettingsBasedWait
 from scan.util.seconds import parseSeconds
-from range_helper import getRangeOrLoop, loop_matcher, expandRanges
+from .range_helper import getRangeOrLoop, loop_matcher, expandRanges
 from scan.util.spreadsheet import readSpreadsheet, writeSpreadsheet
 
 def loadTableScan(filename, pre=None, post=None, start=None, stop=None):

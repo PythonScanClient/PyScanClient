@@ -6,6 +6,7 @@
 
    @author: Kay Kasemir
 """
+from __future__ import print_function
 import unittest
 from scan.commands import Set, Comment, Delay
 from scan.table import TableScan
@@ -38,17 +39,17 @@ setScanSettings(MyScanSettings())
 #                 commands.insert(0, WaitCommand(idle, Comparison.EQUALS, 1, 0.1, 5.0))
 
 def handle(table, lineinfo=False):
-    print table
+    print(table)
     cmds = table.createScan(lineinfo=lineinfo)
-    print
+    print()
     for cmd in cmds:
-        print str(cmd)
+        print(str(cmd))
     return cmds
 
 
 class TableScanTest(unittest.TestCase):
     def testBasics(self):
-        print "\n=== Basic Table ==="
+        print("\n=== Basic Table ===")
         table_scan = TableScan(
           (   "Comment", "X ",  "Y", "Speed", "Wavelength" ),
           [
@@ -63,7 +64,7 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan, lineinfo=True)
         self.assertEqual(str(cmds), "[Comment('# Line 1'), Comment('Setup'), Set('X', 1.0), Set('Y', 2.0), Set('Speed', 30.0), Comment('# Line 2'), Comment('Count'), Set('Wavelength', 100.0), Comment('# Line 3'), Comment('Wait'), Set('Wavelength', 200.0), Comment('# End')]")
 
-        print "\n=== Wait for time ==="
+        print("\n=== Wait for time ===")
         # Also using numbers instead of strings
         table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value" ),
@@ -76,7 +77,7 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Y', 2.0), Delay(10), Log('X', 'Y'), Set('X', 3.0), Set('Y', 4.0), Delay(20), Log('X', 'Y')]")
 
 
-        print "\n=== Wait for PV ==="
+        print("\n=== Wait for PV ===")
         table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value" ),
           [
@@ -88,7 +89,7 @@ class TableScanTest(unittest.TestCase):
         #self.assertEqual(str(cmds), "")
 
 
-        print "\n=== Wait for PV using 'increment' ==="
+        print("\n=== Wait for PV using 'increment' ===")
         table_scan = TableScan(
           (   "X",  "Y", "Wait For",        "Value" ),
           [
@@ -100,7 +101,7 @@ class TableScanTest(unittest.TestCase):
         #self.assertEqual(str(cmds), "")
 
 
-        print "\n=== Wait for PV or Max Time ==="
+        print("\n=== Wait for PV or Max Time ===")
         table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value", "Or Time" ),
           [
@@ -113,7 +114,7 @@ class TableScanTest(unittest.TestCase):
 
 
     def testStartStop(self):
-        print "\n=== Start/stop at each step ==="
+        print("\n=== Start/stop at each step ===")
         table_scan = TableScan(
           (   "X",  "Y", "Wait For", "Value" ),
           [
@@ -135,7 +136,7 @@ class TableScanTest(unittest.TestCase):
 
 
     def testWaitFor(self):
-        print "\n=== 'Wait For' spelled lowercase ==="
+        print("\n=== 'Wait For' spelled lowercase ===")
         table_scan = TableScan(
           (   "X",  "wait for", "value" ),
           [
@@ -148,7 +149,7 @@ class TableScanTest(unittest.TestCase):
 
 
     def testScanSettings(self):
-        print "\n=== ScanSettings configure Motor for completion and RBV ==="
+        print("\n=== ScanSettings configure Motor for completion and RBV ===")
         table_scan = TableScan(
           (   "X ",  "Motor1" ),
           [
@@ -159,7 +160,7 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('X', 1.0), Set('Motor1', 2.0, completion=True, timeout=100, readback='Motor1.RBV', tolerance=0.100000)]")
 
 
-        print "\n=== Override ScanSettings for Motor ==="
+        print("\n=== Override ScanSettings for Motor ===")
         table_scan = TableScan(
           (   "Motor1",  "-cr Motor2" ),
           [
@@ -171,7 +172,7 @@ class TableScanTest(unittest.TestCase):
 
 
     def testParallel(self):
-        print "\n=== Parallel without Wait ==="
+        print("\n=== Parallel without Wait ===")
         table_scan = TableScan(
           (   "+p A", "+p B", "C", "+p D", "+p E", "F" ),
           [
@@ -181,7 +182,7 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Set('C', 3.0), Parallel(Set('D', 4.0), Set('E', 5.0)), Set('F', 6.0)]")
 
-        print "\n=== Parallel with Wait For ==="
+        print("\n=== Parallel with Wait For ===")
         table_scan = TableScan(
           (   "+p A", "+p B", "C", "+p D", "+p E", "Wait For",   "Value" ),
           [
@@ -194,7 +195,7 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Set('C', 3.0), Comment('Start Run'), Parallel(Set('D', 4.0), Set('E', 5.0)), Log('A', 'B', 'C', 'D', 'E'), Comment('Stop Run'), Parallel(Set('A', 6.0), Set('B', 7.0)), Set('C', 8.0), Parallel(Set('D', 9.0), Set('E', 10.0)), Comment('Start Run'), Delay(10), Log('A', 'B', 'C', 'D', 'E'), Comment('Stop Run')]")
 
-        print "\n=== Parallel with Delay and Wait For ==="
+        print("\n=== Parallel with Delay and Wait For ===")
         table_scan = TableScan(
           (   "+p A", "+p B", "Delay",    "Wait For", "Value" ),
           [
@@ -207,7 +208,7 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Delay(300), Comment('Start Run'), Wait('counts', 10.0, comparison='>=', tolerance=0.1), Log('A', 'B', 'counts'), Comment('Stop Run')]")
 
-        print "\n=== Parallel with range and Delay ==="
+        print("\n=== Parallel with range and Delay ===")
         table_scan = TableScan(
           (   "+p A", "+p B",      "Delay"    ),
           [
@@ -218,7 +219,7 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Parallel(Set('A', 1.0), Set('B', 2.0)), Delay(300), Parallel(Set('A', 1.0), Set('B', 4.0)), Delay(300), Parallel(Set('A', 1.0), Set('B', 6.0)), Delay(300)]")
 
-        print "\n=== Parallel with Timeout ==="
+        print("\n=== Parallel with Timeout ===")
         table_scan = TableScan(
           (   "+p A", "Wait For", "Value", "Or Time"   ),
           [
@@ -230,7 +231,7 @@ class TableScanTest(unittest.TestCase):
 
 
     def testRange(self):
-        print "\n=== Range Cells ==="
+        print("\n=== Range Cells ===")
         table_scan = TableScan(
           (   " X ",  "Y", ),
           [
@@ -260,7 +261,7 @@ class TableScanTest(unittest.TestCase):
         cmds = handle(table_scan)
         self.assertEqual(str(cmds), "[Set('X', 175.0), Set('X', 245.0)]")
 
-        print "\n=== Likely a misconfigured Range ==="
+        print("\n=== Likely a misconfigured Range ===")
         # This used to fail by creating Set('X', 'range(175,245,70)')
         table_scan = TableScan(
           (   " X ", ),
@@ -299,7 +300,7 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('X', 3.0), Set('Y', 2.0)]")
 
 
-        print "\n=== Fractional Range Cells ==="
+        print("\n=== Fractional Range Cells ===")
         table_scan = TableScan(
           (   " X ", ),
           [
@@ -310,7 +311,7 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('X', 0.2), Set('X', 0.9), Set('X', 1.6), Set('X', 2.3), Set('X', 3.0), Set('X', 3.7), Set('X', 4.4), Set('X', 5.1)]")
 
     def testLogAlways(self):
-        print "\n=== log_always ==="
+        print("\n=== log_always ===")
         
         table_scan = TableScan(
           (   "X",  "Wait For", "Value", ),
@@ -332,7 +333,7 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Set('X', 10.0), Delay(10), Log('neutrons', 'X')]")
 
     def testLoop(self):
-        print "\n=== Loop Cells ==="
+        print("\n=== Loop Cells ===")
         # Plain loop commands
         table_scan = TableScan(
           [   "position" ],
@@ -383,7 +384,7 @@ class TableScanTest(unittest.TestCase):
         self.assertEqual(str(cmds), "[Loop('X', 0, 3, 1, [ Set('Y', 1.0), Set('Camera', 'Snap') ]), Loop('X', 0, 3, 1, [ Set('Y', 2.0), Set('Camera', 'Snap') ])]")
 
     def testSpecialColumns(self):
-        print "\n=== Special columns ==="
+        print("\n=== Special columns ===")
         
         # Commands Start/Next/End turn into Include("lf_start.scn"), Include("lf_next.scn") resp. Include("lf_end.scn") 
         special = { 'Run Control': lambda cell : Include(cell + ".scn"),
@@ -403,7 +404,7 @@ class TableScanTest(unittest.TestCase):
                          "[Include('Start.scn'), Set('X', 10.0), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Set('X', 20.0), Delay(60), Wait('Neutrons', 10.0, comparison='>=', tolerance=0.1), Log('X', 'Neutrons'), Include('Stop.scn')]")        
 
     def testParallelLoops(self):
-        print "\n=== Parallel Loops ==="
+        print("\n=== Parallel Loops ===")
         
         # Loops can be 'parallel'
         table_scan = TableScan(
@@ -442,7 +443,7 @@ class TableScanTest(unittest.TestCase):
                          "[Parallel(Set('X', 0.0), Set('Y', 0.0)), Delay(60), Log('X', 'Y'), Parallel(Set('X', 1.0), Set('Y', 1.0)), Delay(60), Log('X', 'Y'), Parallel(Set('X', 2.0), Set('Y', 2.0)), Delay(60), Log('X', 'Y')]")
 
     def testBadInput(self):
-        print "\n=== Bad Input ==="
+        print("\n=== Bad Input ===")
         
         # No list of rows, just single row
         with self.assertRaises(Exception) as context:

@@ -47,13 +47,13 @@ def writeSpreadsheet(filename, table):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) <= 1:
-        print "Usage: spreadsheet file.csv other.xls finally.gnumeric"
+        print("Usage: spreadsheet file.csv other.xls finally.gnumeric")
     else:
         for filename in sys.argv[1:]:
-            print ("========= %s ===========" % file)
+            print(("========= %s ===========" % file))
             # logging.basicConfig(level=logging.NOTSET)
             table = readSpreadsheet(filename)
             header = table[0]
             rows = table[1:]
-            print "Header: ", header
-            print "Rows: ", rows
+            print("Header: ", header)
+            print("Rows: ", rows)

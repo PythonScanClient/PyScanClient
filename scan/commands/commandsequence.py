@@ -3,6 +3,7 @@ Created on Mar 8 ,2015
 
 @author: qiuyx
 '''
+from __future__ import print_function
 try:
     import xml.etree.cElementTree as ET
 except:
@@ -88,35 +89,35 @@ class CommandSequence(object):
 
 
 if __name__ == "__main__":
-    from comment import Comment
-    from loop import Loop
-    from parallel import Parallel
+    from .comment import Comment
+    from .loop import Loop
+    from .parallel import Parallel
     
-    print CommandSequence(
+    print(CommandSequence(
           [
                Loop('x', 1, 10, 0.5)
-          ])
+          ]))
 
-    print CommandSequence(
+    print(CommandSequence(
           [
                Loop('x', 1, 10, 0.5, Comment("Hello"))
-          ])
+          ]))
 
-    print CommandSequence(
+    print(CommandSequence(
           [
                Loop('x', 1, 10, 0.5, Comment("Hello"), completion=True)
-          ])
+          ]))
  
-    print CommandSequence(
+    print(CommandSequence(
           [
                Loop('x', 1, 10, 0.5,
                [
                    Comment("Hello"),
                    Comment("World")
                ], completion=True, timeout=10)
-          ])
+          ]))
 
-    print CommandSequence(
+    print(CommandSequence(
           [
                Loop('x', 2, 20, 5,
                [
@@ -126,12 +127,12 @@ if __name__ == "__main__":
                        Comment("World")
                    ], completion=True, timeout=10)
                ])
-          ])
+          ]))
 
-    print CommandSequence(
+    print(CommandSequence(
           [
                Parallel(
                     Loop('x', 1, 10, 0.5, Comment("Hello")),
                     Loop('y', 1, 10, 0.5, Comment("There"))
                )
-          ])
+          ]))

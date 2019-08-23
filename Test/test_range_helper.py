@@ -3,6 +3,7 @@ Unit test for RangeHelper
 
 @author: Kay Kasemir
 """
+from __future__ import print_function
 from scan.table.range_helper import getRangeOrLoop, range_matcher, loop_matcher, getIterable, expandRanges
 import unittest
 
@@ -68,26 +69,26 @@ class TestRangeExpansion(unittest.TestCase):
            # One range stepping down
            [ "Line 4",  "range(2)",  "Seconds",  "range(2,0,-1)" ],
            ]
-        print "Original:"
+        print("Original:")
         for row in rows:
-            print row
-        print "Expanded:"
+            print(row)
+        print("Expanded:")
         result = expandRanges(rows)
         for row in result:
-            print row
+            print(row)
         self.assertEqual(len(result), 14)
 
         # List, tuple
         rows = [
            [ "( 2, 4)",  "[ 0, 90, 180]",  "Seconds" ],
            ]
-        print "Original:"
+        print("Original:")
         for row in rows:
-            print row
-        print "Expanded:"
+            print(row)
+        print("Expanded:")
         result = expandRanges(rows)
         for row in result:
-            print row
+            print(row)
         self.assertEqual(len(result), 6)
 
 
@@ -98,13 +99,13 @@ class TestRangeExpansion(unittest.TestCase):
            [ "Jane",    "[2]",  "Seconds" ],
            [ "Nop2",    "range(2, 0, 2)",  "Seconds" ],
            ]
-        print "Original:"
+        print("Original:")
         for row in rows:
-            print row
-        print "Expanded:"
+            print(row)
+        print("Expanded:")
         result = expandRanges(rows)
         for row in result:
-            print row
+            print(row)
         self.assertEqual(len(result), 4)
 
 

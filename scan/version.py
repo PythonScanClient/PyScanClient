@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 __version__ = '1.5.6'
 
@@ -49,6 +50,6 @@ version_history = """
 """
 
 if __name__ == "__main__":
-    print("Version %s" % __version__)
+    print(("Version %s" % __version__))
     
     print(version_history)
