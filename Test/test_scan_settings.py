@@ -144,10 +144,10 @@ class DeviceSettingsTest(unittest.TestCase):
         setScanSettings(MyScanSettings())
 
         cmd = SettingsBasedSet('My:Motor1', 42)
-        self.assertEquals(str(cmd), "Set('My:Motor1', 42, completion=True, readback='My:Motor1.RBV', timeout=100)")
+        self.assertEquals(str(cmd), "Set('My:Motor1', 42, completion=True, timeout=100, readback='My:Motor1.RBV', tolerance=0.100000)")
 
         cmd = SettingsBasedSet('Unknown:Motor1', 42)
-        self.assertEquals(str(cmd), "Set('Unknown:Motor1', 42, readback='Unknown:Motor1.RBV')")
+        self.assertEquals(str(cmd), "Set('Unknown:Motor1', 42, readback='Unknown:Motor1.RBV', tolerance=0.100000)")
 
         cmd = SettingsBasedSet('Unknown:Motor1', 42, readback=False)
         self.assertEquals(str(cmd), "Set('Unknown:Motor1', 42)")
