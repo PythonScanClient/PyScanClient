@@ -4,8 +4,11 @@ Created on Mar 8,2015
 '''
 from abc import abstractmethod, ABCMeta
 
-class Command(object):
-    __metaclass__ = ABCMeta
+# Metaclass compatible with Python 2 *and* 3
+# (See: https://stackoverflow.com/questions/35673474/using-abc-abcmeta-in-a-way-it-is-compatible-both-with-python-2-7-and-python-3-5)
+ABC = ABCMeta('ABC', (object,), {'__slots__': ()}) 
+
+class Command(ABC):
     """Base class for all commands."""
     
     @abstractmethod

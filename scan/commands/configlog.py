@@ -2,7 +2,6 @@
 Created on Mar 8,2015
 @author: qiuyx
 '''
-from string import lower
 from scan.commands.command import Command
 try:
     import xml.etree.cElementTree as ET
@@ -24,8 +23,8 @@ class ConfigLog(Command):
     def genXML(self):
         xml=ET.Element('config_log');
         
-        ET.SubElement(xml, 'automatic').text = lower(str(self.__auto))
-        #return '<config_log>'+'<automatic>'+lower(str(self.__automatic))+'</automatic>'+'</config_log>'
+        ET.SubElement(xml, 'automatic').text = str(self.__auto).lower()
+        #return '<config_log>'+'<automatic>'+str(self.__automatic).lower()+'</automatic>'+'</config_log>'
         
         if self.__errHandler:
             ET.SubElement(xml,'error_handler').text = str(self.__errHandler)

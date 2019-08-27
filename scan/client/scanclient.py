@@ -9,10 +9,13 @@ try:
     import xml.etree.cElementTree as ET
 except:
     import xml.etree.ElementTree as ET
-import urllib
+try:
+    from urllib import quote        # Python 2
+except:
+    from urllib.parse import quote  # Python 3
 from scan.client.logdata import parseXMLData
 from scan.commands.commandsequence import CommandSequence
-from scaninfo import ScanInfo
+from .scaninfo import ScanInfo
 
 # Python code uses urllib2.
 # When accessed from jython, there were two problems.
@@ -71,7 +74,7 @@ if os.name == 'java':
             raise Exception("%s: %s" % (url, str(e)))
 
 else:
-    import urllib2
+    import requests
 
     def perform_request(url, method='GET', data=None, timeout=None):
         """Perform HTTP request with scan server
@@ -84,42 +87,35 @@ else:
         """
         response = None
         try:
-            # Register a Request Object with url:
-            req = urllib2.Request(url)
-            # Add XML header
-            if data is not None:
-                req.add_header('content-type' , 'text/xml')
-            # Get OpenerDirector Object
-            opener = urllib2.build_opener()
-            
+            # PUT/POST header
+            headers = { 'content-type': 'text/xml' }
+
             if method=='GET':
                 if timeout:
-                    response = opener.open(req, timeout=timeout)
+                    response = requests.request('GET', url, timeout=timeout)
                 else:
-                    response = opener.open(req)
-                
+                    response = requests.request('GET', url)
+
             elif method=='POST':
-                response = opener.open(req, data)
-                
+                response = requests.request('POST', url, headers=headers, data=data)
+
             elif method=='DELETE':
-                req.get_method = lambda : 'DELETE'
-                response = opener.open(req)
-                
+                response = requests.request('DELETE', url)
+
             elif method=='PUT':
-                req.get_method = lambda : 'PUT'
-                response = opener.open(req, data)
+                response = requests.request('PUT', url, headers=headers, data=data)
             else:
                 raise Exception('Undefined HttpRequest Type %s' % method)
-            
-            return response.read()
-        except urllib2.URLError as e:
-            if hasattr(e, 'reason'):
-                raise Exception("Failed to reach scan server at %s: %s" % (url, e.reason))
-            elif hasattr(e, 'code'):
-                raise Exception("Scan server at %s returned error code %d" % (url, e.code))
-        finally:
-            if response:
-                response.close()
+
+        except requests.RequestException as e:
+            raise Exception("Failed to reach scan server at %s: %s" % (url, e))
+
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as e:
+            raise Exception("Scan server at %s returned error code %d" % (url, e.response.code))
+
+        return response.text
 
 
 class ScanClient(object):
@@ -215,7 +211,7 @@ class ScanClient(object):
         >>> cmds.append(Set('x', 10))
         >>> id = client.submit( cmds, "My Second Scan")
         """
-        quoted_name = urllib.quote(name, '')
+        quoted_name = quote(name, '')
         if isinstance(cmds, str):
             result = self.__submitScanXML(cmds, quoted_name, queue)     
         elif isinstance(cmds, CommandSequence):

@@ -3,6 +3,7 @@ Unit test of ScanSettings
 
 @author: Kay Kasemir
 """
+from __future__ import print_function
 import unittest
 from scan.commands.delay import Delay
 from scan.util.scan_settings import DeviceSettings, ScanSettings, setScanSettings, SettingsBasedSet, SettingsBasedLoop, SettingsBasedWait
@@ -32,17 +33,17 @@ class MyScanSettings(ScanSettings):
 class DeviceSettingsTest(unittest.TestCase):
     def testDefaultSettings(self):
         s = DeviceSettings("device", readback=False)
-        print s
+        print(s)
         self.assertEquals(s.getName(), "device")
         self.assertEquals(s.getReadback(), None)
 
         s = DeviceSettings("device", readback=True)
-        print s
+        print(s)
         self.assertEquals(s.getName(), "device")
         self.assertEquals(s.getReadback(), "device")
 
         s = DeviceSettings("device", readback="other")
-        print s
+        print(s)
         self.assertEquals(s.getName(), "device")
         self.assertEquals(s.getReadback(), "other")
 
@@ -51,7 +52,7 @@ class DeviceSettingsTest(unittest.TestCase):
         
         # Device that has no specific settings, using the default
         s = settings.getDefaultSettings("SomeRandomDevice")
-        print s
+        print(s)
         self.assertEquals(s.getName(), "SomeRandomDevice")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), "SomeRandomDevice")
@@ -60,7 +61,7 @@ class DeviceSettingsTest(unittest.TestCase):
         
         # Check device that should have special settings
         s = settings.getDefaultSettings("My:Lakeshore1")
-        print s
+        print(s)
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), True)
         self.assertEquals(s.getReadback(), None)
@@ -69,14 +70,14 @@ class DeviceSettingsTest(unittest.TestCase):
 
         # Check device that should NOT have them
         s = settings.getDefaultSettings("Your:Lakeshore1")
-        print s
+        print(s)
         self.assertEquals(s.getName(), "Your:Lakeshore1")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), "Your:Lakeshore1")
         
         # 'Motor' that uses *.RBV for a readback
         s = settings.getDefaultSettings("My:Motor:47")
-        print s
+        print(s)
         self.assertEquals(s.getName(), "My:Motor:47")
         self.assertEquals(s.getCompletion(), True)
         self.assertEquals(s.getReadback(), "My:Motor:47.RBV")
@@ -85,11 +86,11 @@ class DeviceSettingsTest(unittest.TestCase):
 
         # Different comparisons
         s = settings.getDefaultSettings("SomeCounter")
-        print s
+        print(s)
         self.assertEquals(s.getComparison(), '>=')
 
         s = settings.getDefaultSettings("PerpetualCounter")
-        print s
+        print(s)
         self.assertEquals(s.getComparison(), 'increase by')
 
 
@@ -98,7 +99,7 @@ class DeviceSettingsTest(unittest.TestCase):
         
         spec = "My:Lakeshore1"
         s = settings.parseDeviceSettings(spec)
-        print "%s -> %s" % (spec, s)
+        print("%s -> %s" % (spec, s))
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), True)
         self.assertEquals(s.getReadback(), None)
@@ -111,14 +112,14 @@ class DeviceSettingsTest(unittest.TestCase):
 
         spec = "-c My:Lakeshore1"
         s = settings.parseDeviceSettings(spec)
-        print "%s -> %s" % (spec, s)
+        print("%s -> %s" % (spec, s))
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), None)
 
         spec = "+p-c+r My:Lakeshore1"
         s = settings.parseDeviceSettings(spec)
-        print "%s -> %s" % (spec, s)
+        print("%s -> %s" % (spec, s))
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), "My:Lakeshore1")
@@ -126,14 +127,14 @@ class DeviceSettingsTest(unittest.TestCase):
 
         spec = "+pr My:Lakeshore1"
         s = settings.parseDeviceSettings(spec)
-        print "%s -> %s" % (spec, s)
+        print("%s -> %s" % (spec, s))
         self.assertEquals(s.getName(), "My:Lakeshore1")
         self.assertEquals(s.getReadback(), "My:Lakeshore1")
         self.assertEquals(s.getParallel(), True)
 
         spec = "+p-cr My:Motor:47"
         s = settings.parseDeviceSettings(spec)
-        print "%s -> %s" % (spec, s)
+        print("%s -> %s" % (spec, s))
         self.assertEquals(s.getName(), "My:Motor:47")
         self.assertEquals(s.getCompletion(), False)
         self.assertEquals(s.getReadback(), None)

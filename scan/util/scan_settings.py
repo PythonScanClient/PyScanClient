@@ -28,11 +28,22 @@ API
 """
 #@author: Kay Kasemir
 import re
+import sys
 import json
 
 from scan.commands.set import Set
 from scan.commands.loop import Loop
 from scan.commands.wait import Wait
+
+# Dictionary iterator compatible with Python 2 *and* 3
+# (See: https://github.com/benjaminp/six/blob/master/six.py#L586)
+if sys.version_info[0] == 2:
+    def iteritems(d, **kw):
+        return d.iteritems(**kw)
+else:
+    unicode = str
+    def iteritems(d, **kw):
+        return iter(d.items(**kw))
 
 class DeviceSettings(object):
     """Describes how a device should be accessed in a scan.
@@ -129,7 +140,7 @@ class ScanSettings(object):
         with open(json_filename) as config_file:
             device_config = json.load(config_file)
          
-        for dev, attr in device_config.iteritems():
+        for dev, attr in iteritems(device_config):
             f = lambda x: x.encode('ascii') if isinstance(x, (unicode, str) ) else x
             self.defineDeviceClass(dev.encode('ascii'), 
                                    completion=attr.get('completion', False),

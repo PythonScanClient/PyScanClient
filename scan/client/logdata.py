@@ -98,7 +98,7 @@ def iterateTable(*iters):
     raw_data = list()
     for i in range(N):
         try:
-            raw_data.append(iters[i].next())
+            raw_data.append(next(iters[i]))
         except StopIteration:
             raw_data.append(None)
 
@@ -123,7 +123,7 @@ def iterateTable(*iters):
                 values[i] = raw_data[i][2]
                 # .. and prepare for next iteration
                 try:
-                    raw_data[i] = iters[i].next()
+                    raw_data[i] = next(iters[i])
                 except StopIteration:
                     raw_data[i] = None
             # else: leave values[i] unchanged, repeating previous data

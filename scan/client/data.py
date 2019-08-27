@@ -46,7 +46,7 @@ def alignSerial(data, channel):
     
     :return: ( (id1, value1, time1) ,(id2, value2, time2), ..., (idn, valuen, timen))
     '''
-    R = range(len(data[channel]['id'])) 
+    R = list(range(len(data[channel]['id']))) 
     for i in iter(R):
         yield (data[channel]['id'][i], data[channel]['value'][i], data[channel]['time'][i])
 
@@ -61,7 +61,7 @@ def alignTime(data, channel, intv = 0):
     
     :return: Iterator object.   
     '''
-    R = range(len(data[channel]['time']))
+    R = list(range(len(data[channel]['time'])))
     for i in iter(R):
         yield (data[channel]['time'][i], data[channel]['value'][i])
 
@@ -85,7 +85,7 @@ def getTable(data, *devices, **kwargs):
     with_time = kwargs['with_time'] if 'with_time' in kwargs else False
     
     devsIters = [ alignSerial(data, dev) for dev in devices]  # prepare devices iterators 
-    cur_samps = [devIt.next() for devIt in devsIters]  # initial devices iterators  
+    cur_samps = [next(devIt) for devIt in devsIters]  # initial devices iterators  
     result = [[] for dev in devices]
     if with_id:
         result.insert(0, [])
@@ -116,7 +116,7 @@ def getTable(data, *devices, **kwargs):
             elif cur_samps[i][0] == cur_id:  # 2. if serial_id is the current id ( means this device was logged at current serial_id)
                 try:
                     result[data_col+i].append(cur_samps[i][1]) # fetch value
-                    cur_samps[i] = devsIters[i].next() # step iter of current device and its value
+                    cur_samps[i] = next(devsIters[i]) # step iter of current device and its value
                 except StopIteration:  # if current device is just exhausted
                     cur_samps[i] = None
                     

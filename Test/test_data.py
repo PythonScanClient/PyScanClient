@@ -1,3 +1,4 @@
+from __future__ import print_function
 from scan.client.logdata import iterateSamples, getDatetime, parseXMLData, createTable
 
 # client = ScanClient()
@@ -101,19 +102,19 @@ xml_text = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
 # client.getData(id) calls this to turn the XML data into a data dict:
 data = parseXMLData(xml_text)
-print data
+print(data)
 
 # Direct access to data dict
-print "Times: ", [ str(getDatetime(time)) for time in  data['motor_x']['time'] ]
-print "Values: ", data['motor_x']['value']
+print("Times: ", [ str(getDatetime(time)) for time in  data['motor_x']['time'] ])
+print("Values: ", data['motor_x']['value'])
 
 # Demo of sample iterator
 for s in iterateSamples(data, 'motor_x'):
-    print "%s (%2d): %s" % (str(getDatetime(s[1])), s[0], str(s[2]))
+    print("%s (%2d): %s" % (str(getDatetime(s[1])), s[0], str(s[2])))
 
 # Create table, i.e. align samples for different devices by sample ID:    
 table = createTable(data, 'motor_x', 'motor_y')
-print table[0]
-print table[1]
+print(table[0])
+print(table[1])
 
 # With numpy/scipy:  plot(table[0], table[1]) etc.

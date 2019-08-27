@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 import os
 from scan.util.spreadsheet import readSpreadsheet, writeSpreadsheet
@@ -11,7 +12,7 @@ class SpreadsheetTest(unittest.TestCase):
         writeSpreadsheet(filename, table)
         
         table2 = readSpreadsheet(filename)
-        print table2
+        print(table2)
         self.assertEqual(table, table2)
 
         os.remove(filename)
@@ -23,7 +24,7 @@ class SpreadsheetTest(unittest.TestCase):
         table.save(filename)
         
         table2 = loadTableScan(filename)
-        print table
+        print(table)
         self.assertEqual(table.headers, table2.headers)
         self.assertEqual(table.rows, table2.rows)
 

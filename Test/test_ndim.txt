@@ -1,3 +1,4 @@
+>>> from __future__ import print_function
 >>> from scan import *
 
 >>> class MyScanSettings(ScanSettings):
@@ -7,7 +8,7 @@
 ... 
 >>> setScanSettings(MyScanSettings())
  
->>> print CommandSequence(createNDimScan(('xpos', 1, 10)))
+>>> print(CommandSequence(createNDimScan(('xpos', 1, 10))))
 [
     Loop('xpos', 1, 10, 1,
     [
@@ -17,7 +18,7 @@
 >>> 
 
 
->>> print CommandSequence(createNDimScan(('xpos', 1, 10), 'readback'))
+>>> print(CommandSequence(createNDimScan(('xpos', 1, 10), 'readback')))
 [
     Loop('xpos', 1, 10, 1,
     [
@@ -25,8 +26,8 @@
     ], completion=True)
 ]
    
->>> print CommandSequence(createNDimScan(('xpos', 1, 10),
-...                                      ('ypos', 1, 5, 0.2), 'readback'))
+>>> print(CommandSequence(createNDimScan(('xpos', 1, 10),
+...                                      ('ypos', 1, 5, 0.2), 'readback')))
 [
     Loop('xpos', 1, 10, 1,
     [
@@ -37,10 +38,10 @@
     ], completion=True)
 ]
 
->>> print CommandSequence(createNDimScan(
+>>> print(CommandSequence(createNDimScan(
 ...          ('xpos', 1, 10),
 ...              ('ypos', 1, 5, 0.2),
-...                   Set('xyz', 1), Set('xyz', 0)))
+...                   Set('xyz', 1), Set('xyz', 0))))
 [
     Loop('xpos', 1, 10, 1,
     [
