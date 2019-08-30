@@ -12,7 +12,7 @@ except:
 from scan.commands.command import Command
 from scan.util.xml_helper import indent
 
-class CommandSequence(object):
+class CommandSequence(list):
     """A sequence of scan commands
     
     Basically a list of commands,
@@ -22,19 +22,16 @@ class CommandSequence(object):
     :param commands: One or more commands, or existing list of commands.
     """
     def __init__(self, *commands):
-        self.commands=[]
-        for command in commands:
-            # Append individual command
-            if isinstance(command, Command):
-                self.commands.append(command)
-            else:
-                # Assume iterable tuple, list, set, .. and append its content
-                self.commands += list(command)
+        super(CommandSequence, self).__init__()
+        self.append(*commands)
             
-    def __len__(self):
-        """:return: Number of commands"""
-        return len(self.commands)
-    
+    def __iadd__(self, other):
+        if isinstance(other, list):
+            self.append(*other)
+        else:
+            self.append(other)
+        return self
+
     def append(self, *commands):
         """Append more commands to the sequence
         
@@ -43,15 +40,15 @@ class CommandSequence(object):
         for command in commands:
             # Append individual command
             if isinstance(command, Command):
-                self.commands.append(command)
+                super(CommandSequence, self).append(command)
             else:
                 # Assume iterable tuple, list, set, .. and append its content
-                self.commands += list(command)
+                self.append(list(command))
     
     def genSCN(self):
         """:return: Command in XML format suitable for scan server"""
         scn = ET.Element('commands')
-        for c in self.commands:
+        for c in self:
             scn.append(c.genXML())
         
         indent(scn)
@@ -72,11 +69,11 @@ class CommandSequence(object):
             ]
             
         """
-        if len(self.commands) == 0:
+        if len(self) == 0:
             return "[]"
 
         result = "["
-        for cmd in self.commands:
+        for cmd in self:
             result += "\n" + cmd.format(1)
         result += "\n]"
         return result
@@ -85,7 +82,7 @@ class CommandSequence(object):
         return self.format()
     
     def __repr__(self):
-        return "CommandSequence(" + str(self.commands) + ")"
+        return "CommandSequence(" + str(self) + ")"
 
 
 if __name__ == "__main__":
