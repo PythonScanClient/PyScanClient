@@ -1,8 +1,9 @@
 from __future__ import print_function
 
-__version__ = '1.5.6'
+__version__ = '1.6.0'
 
 version_history = """
+1.6.0 - Add support for Python3, CPython uses requests library
 1.5.6 - wait..() fix
 1.5.5 - scanInfo() time out
 1.5.4 - Add '!=' to If() and Wait()
