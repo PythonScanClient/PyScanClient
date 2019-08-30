@@ -42,8 +42,8 @@ class CommandSequence(list):
             if isinstance(command, Command):
                 super(CommandSequence, self).append(command)
             else:
-                # Assume iterable tuple, list, set, .. and append its content
-                self.append(list(command))
+                # Assume iterable tuple, list, set, .. and extend this list by its content
+                self.extend(list(command))
     
     def genSCN(self):
         """:return: Command in XML format suitable for scan server"""
