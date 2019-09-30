@@ -1,8 +1,9 @@
 from __future__ import print_function
 
-__version__ = '1.6.0'
+__version__ = '1.7.0'
 
 version_history = """
+1.7.0 - CommandSequence class inherits from list
 1.6.0 - Add support for Python3, CPython uses requests library
 1.5.6 - wait..() fix
 1.5.5 - scanInfo() time out

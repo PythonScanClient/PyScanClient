@@ -5,7 +5,7 @@ Created on
 '''
 from distutils.core import setup
 setup(name='PyScanClient',
-      version='1.6.0',
+      version='1.7.0',
       description='Python Scan Server Client Lib',
       author='Qiu Yongxiang, Kay Kasemir',
       author_email='qiuyongxiang05@gmail.com, kasemirk@ornl.gov',
