@@ -27,7 +27,7 @@ class Set(Command):
     Example:
         >>> cmd = Set('position', 10.5)
 
-    Note usage of timeout:
+    *Note usage of timeout:*
     When the command awaits completion, the timeout is applied to the completion check,
     i.e. we await the completion callback for `timeout` seconds.
     If another readback check is performed after the completion,
@@ -38,6 +38,71 @@ class Set(Command):
     the timeout is applied to the readback check.
     So in case a readback comparison is requested,
     we wait for up to `timeout` seconds for the readback to be within tolerance.    
+
+    *Note use of completion:*
+    EPICS Channel Access does not communicate if completion ('put-callback') is actually
+    supported. When writing to a PV that does not support completion, the call is returned
+    right away, just as it would for a PV that supports completion and happens to complete
+    quickly.
+    Similarly, a PV that supports completion will only tell us when it's 'done',
+    no matter if it completed successfully, or if it eventually gave up and completed
+    without actually reaching the desired setpoint.
+
+    **Use case 1: Neither completion nor readback**
+
+    The `Set` command simply writes to the device.
+
+    This would be suitable for a write-and-forget PV.
+    For example, a PV that turns a power supply on or off, and
+    the device reacts quasi immediately.
+
+    **Use case 2: No completion, but readback**
+
+    The `Set` command writes to the device, and uses the `timeout`
+    to wait for the readback to match the written value.
+
+    This can be sufficient for simple, well behaved devices,
+    but can be problematic for a device where the readback will
+    take time to settle. Examples include PID-controlled devices
+    with overshoot and settling time, or motors with backlash compensation
+    and retries where the readback might early on be close to the setpoint,
+    but it has not settled, so we consider it 'done' when in fact the
+    device is actively changing its value.
+
+    **Use case 3: Enable completion but no readback**
+
+    The `Set` command writes to the device, then uses the `timeout`
+    to wait for the completion confirmation.
+
+    This can be used with PVs that support completion and are dependable.
+    We cannot distinguish between a completion that is successful,
+    versus completion as a result of the device giving up.
+
+    If this mode is by accident used with a PV that doesn't actually
+    support completion, the IOC will immediately confirm the completion,
+    behaving just like case 1.
+
+    **Use case 4: Enable completion and readback**
+    
+    This is the ideal case, which is for example supported by the 'motor' record
+    or EPICS databases for Lakeshore controllers.
+    The `Set` command writes to the device, waits for the completion (based on timeout),
+    and then compares the written value against the `readback` PV to check
+    if we completed successfully, or if the device completed without being able to
+    actually reach the setpoint.
+
+    Note that this must *only be used with devices that actually support completion*.
+    When applied to a plain PV that does not support completion,
+    we will immediately receive the completion confirmation,
+    then check the readback, which is very likely not matching the setpoint, yet,
+    and fail.
+    So while this is best for PVs that support completion, it is worst for PVs
+    that don't.
+
+    Unfortunately there is no way in EPICS to determine the 'correct' settings
+    for a PV without knowing how it is implemented on the IOC, so the
+    choice of completion, readback and timeout needs to be configured by somebody
+    who knows the PV's behavior.
     """
 
     def __init__(self, device, value, completion=False, readback=False, tolerance=0.0, timeout=0.0, errhandler=None):
