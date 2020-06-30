@@ -105,6 +105,13 @@ class Set(Command):
     for a PV without knowing how it is implemented on the IOC, so the
     choice of completion, readback and timeout needs to be configured by somebody
     who knows the PV's behavior.
+
+    The readback can be used in several ways.
+    `readback=True` checks if the written PV has the written value.
+    `readback='SomeOtherPV'` checks if some other PV, for example the '.RBV' of a motor, has the written value.
+    By adding `readback_value=42` the command checks if the readback, i.e. either the written PV or
+    an alternate readback PV, has the provided value. This is typically used to check if some 'status' PV
+    indicates 'OK' after writing.
     """
 
     def __init__(self, device, value, completion=False, readback=False, readback_value=None, tolerance=0.0, timeout=0.0, errhandler=None):
