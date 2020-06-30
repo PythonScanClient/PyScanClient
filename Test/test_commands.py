@@ -65,7 +65,21 @@ class CommandTest(unittest.TestCase):
         # Setting a readback PV (a specific one) enables wait-on-readback
         cmd = Set("some_device", 3.14, completion=True, readback="some_device.RBV", tolerance=1, timeout=10.0)
         print(cmd)
+        self.assertEqual(str(cmd), b"Set('some_device', 3.14, completion=True, timeout=10.0, readback='some_device.RBV', tolerance=1.000000)")
         self.assertEqual(ET.tostring(cmd.genXML()), b"<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>true</wait><readback>some_device.RBV</readback><tolerance>1</tolerance><timeout>10.0</timeout></set>")
+
+        # Readback value different from the written value
+        cmd = Set("some_device", 3.14, completion=True, readback="other_device", readback_value=1, tolerance=1, timeout=10.0)
+        print(cmd)
+        self.assertEqual(str(cmd), b"Set('some_device', 3.14, completion=True, timeout=10.0, readback='other_device', readback_value=1, tolerance=1.000000)")
+        self.assertEqual(ET.tostring(cmd.genXML()), b"<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>true</wait><readback>other_device</readback><readback_value>1</readback_value><tolerance>1</tolerance><timeout>10.0</timeout></set>")
+
+        # Readback value uses string
+        cmd = Set("some_device", 3.14, completion=True, readback="status", readback_value='OK', tolerance=0, timeout=10.0)
+        print(cmd)
+        self.assertEqual(str(cmd), b"Set('some_device', 3.14, completion=True, timeout=10.0, readback='status', readback_value='OK')")
+        self.assertEqual(ET.tostring(cmd.genXML()), b"<set><device>some_device</device><value>3.14</value><completion>true</completion><wait>true</wait><readback>status</readback><readback_value>\"OK\"</readback_value><tolerance>0</tolerance><timeout>10.0</timeout></set>")
+
 
     def testSequence(self):
         # Nothing

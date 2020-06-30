@@ -20,6 +20,7 @@ class Set(Command):
     :param readback:   `False` to not check any readback,
                        `True` to wait for readback from the `device`,
                        or name of specific device to check for readback.
+    :param readback_value: None to use `value` when checking `readback`, otherwise an alternate value to check.
     :param tolerance:  Tolerance when checking numeric `readback`.
     :param timeout:    Timeout in seconds, used for `completion` and `readback`.
     :param errhandler: Error handler
@@ -105,11 +106,12 @@ class Set(Command):
     who knows the PV's behavior.
     """
 
-    def __init__(self, device, value, completion=False, readback=False, tolerance=0.0, timeout=0.0, errhandler=None):
+    def __init__(self, device, value, completion=False, readback=False, readback_value=None, tolerance=0.0, timeout=0.0, errhandler=None):
         self.__device = device
         self.__value = value
         self.__completion = completion
         self.__readback = readback
+        self.__readback_value = readback_value
         self.__tolerance = tolerance
         self.__timeout = timeout
         self.__errHandler = errhandler
@@ -168,6 +170,13 @@ class Set(Command):
         if self.__readback:
             ET.SubElement(xml, "wait").text = "true"
             ET.SubElement(xml, "readback").text = self.__device if self.__readback == True else self.__readback
+
+            if isinstance(self.__readback_value, str):
+                if len(self.__readback_value) > 0:
+                    ET.SubElement(xml, 'readback_value').text = '"%s"' % self.__readback_value
+            elif self.__readback_value is not None:
+                ET.SubElement(xml, 'readback_value').text = str(self.__readback_value)
+
             ET.SubElement(xml, "tolerance").text = str(self.__tolerance)
             need_timeout = True
         else:
@@ -199,7 +208,15 @@ class Set(Command):
                 result += ', timeout='+str(self.__timeout)
         if isinstance(self.__readback, str):
             result += ", readback='%s'" % self.__readback
-            result += ", tolerance=%f" % self.__tolerance
+
+            if isinstance(self.__readback_value, str):
+                if len(self.__readback_value) > 0:
+                    result += ", readback_value='%s'" % self.__readback_value
+            elif self.__readback_value is not None:
+                result += ", readback_value=" + str(self.__readback_value)
+
+            if self.__tolerance!=0.0:
+                result += ", tolerance=%f" % self.__tolerance
             if not self.__completion and  self.__timeout!=0.0:
                 result += ', timeout='+str(self.__timeout)
         elif self.__readback:
