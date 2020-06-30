@@ -27,6 +27,7 @@ class Set(Command):
     
     Example:
         >>> cmd = Set('position', 10.5)
+        >>> cmd = Set('setpoint', 10.5, completion=True, timeout=30.0, readback='other_pv', tolerance=0.20)
 
     *Note usage of timeout:*
     When the command awaits completion, the timeout is applied to the completion check,
