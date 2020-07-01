@@ -53,15 +53,20 @@ class DeviceSettings(object):
     :param readback:   False to not use a readback,
                        True to use the primary name,
                        Actual read back name if different from the promary device name. 
+    :param readback_value: None to check against written value, otherwise custom readback number or string value.
     :param timeout:    Time out for callback and readback in seconds. 0 to wait forever.
     :param tolerance:  Tolerance for numeric readback comparison.
     :param comparison: Comparison to use in Wait commands
     :param parallel:   Perform in parallel?
     """
-    def __init__(self, name, completion=False, readback=False, timeout=0.0, tolerance=None, comparison='>=', parallel=False):
+    def __init__(self, name, completion=False, readback=False, readback_value=None, timeout=0.0, tolerance=None, comparison='>=', parallel=False):
         self._name = name
         self._completion = completion
         self._readback = readback
+        if isinstance(readback_value, str)  and  len(readback_value) <= 0:
+            self._readback_value = None
+        else:
+            self._readback_value = readback_value
         self._timeout = timeout
         self._tolerance = tolerance
         self._comparison = comparison
@@ -80,6 +85,10 @@ class DeviceSettings(object):
         if not self._readback:
             return None
         return self._name if self._readback == True else self._readback
+
+    def getReadbackValue(self):
+        """:returns: None to check against written value, otherwise custom readback number or string value."""
+        return self._readback_value
 
     def getTimeout(self):
         """:returns: Timeout in seconds for both completion and readback."""
@@ -101,8 +110,13 @@ class DeviceSettings(object):
         rb = self.getReadback()
         if rb:
             rb = "'" + rb + "'"
-        return "DeviceSettings('%s', completion=%s, readback=%s, timeout=%g, tolerance=%s, comparison='%s', parallel=%s)" % (
-                self._name, str(self._completion), rb,  self._timeout, str(self._tolerance), self._comparison, str(self._parallel))
+
+        rbv = self._readback_value
+        if isinstance(rbv, str):
+            rbv = "'" + rbv + "'"
+
+        return "DeviceSettings('%s', completion=%s, readback=%s, readback_value=%s, timeout=%g, tolerance=%s, comparison='%s', parallel=%s)" % (
+                self._name, str(self._completion), rb,  rbv, self._timeout, str(self._tolerance), self._comparison, str(self._parallel))
 
 
 
@@ -145,6 +159,7 @@ class ScanSettings(object):
             self.defineDeviceClass(dev.encode('ascii'), 
                                    completion=attr.get('completion', False),
                                    readback=f(attr.get('readback', False)),
+                                   readback_value=f(attr.get('readback_value', "")),
                                    timeout=attr.get('timeout', 0.0),
                                    tolerance=attr.get('tolerance', 0.0),
                                    comparison=attr.get('comparison', ">=")
@@ -167,7 +182,7 @@ class ScanSettings(object):
         
         return device_name
         
-    def defineDeviceClass(self, name_pattern, completion=False, readback=False, timeout=0.0, tolerance=None, comparison='>='):
+    def defineDeviceClass(self, name_pattern, completion=False, readback=False, readback_value=None, timeout=0.0, tolerance=None, comparison='>='):
         """Define a class of devices based on name
         
         Call this in the constructor of your derived class.
@@ -182,11 +197,12 @@ class ScanSettings(object):
         :param readback:     False to not use a readback,
                              True to use the primary name,
                              Actual read back name if different from the promary device name. 
+        :param readback_value: None to check against written value, otherwise custom readback number or string value.
         :param timeout:      Time out for callback and readback in seconds. 0 to wait forever.
         :param tolerance:    Tolerance for numeric readback comparison.
         :param comparison:   Comparison to use in Wait commands.
         """
-        self.device_settings.insert(0, DeviceSettings(name_pattern, completion, readback, timeout, tolerance, comparison))                
+        self.device_settings.insert(0, DeviceSettings(name_pattern, completion=completion, readback=readback, readback_value=readback_value, timeout=timeout, tolerance=tolerance, comparison=comparison))                
                         
     def getDefaultSettings(self, name):
         """Get the default settings for a device
@@ -203,7 +219,7 @@ class ScanSettings(object):
                 rb = setting._readback
                 if rb == True:
                     rb = self.getReadbackName(name)
-                return DeviceSettings(name, setting.getCompletion(), rb, setting.getTimeout(), setting.getTolerance(), setting.getComparison())
+                return DeviceSettings(name, completion=setting.getCompletion(), readback=rb, readback_value=setting.getReadbackValue(), timeout=setting.getTimeout(), tolerance=setting.getTolerance(), comparison=setting.getComparison())
         return DeviceSettings(name)
     
     def parseDeviceSettings(self, prefixed_device):
@@ -265,7 +281,8 @@ class ScanSettings(object):
         if readback == True:
             readback = device
         
-        return DeviceSettings(default.getName(), completion=completion, readback=readback, timeout=default.getTimeout(), tolerance=default.getTolerance(),
+        return DeviceSettings(default.getName(), completion=completion, readback=readback, readback_value=default.getReadbackValue(),
+                              timeout=default.getTimeout(), tolerance=default.getTolerance(),
                               comparison=default.getComparison(), parallel=parallel)
 
     def __str__(self):
@@ -298,6 +315,7 @@ def SettingsBasedSet(prefixed_device, value, **kwargs):
     :param readback:   `False` to not check any readback,
                        `True` to wait for readback from the `device`,
                        or name of specific device to check for readback.
+    :param readback_value: None to check against written value, otherwise custom readback number or string value.
     :param tolerance:  Tolerance when checking numeric `readback`.
     :param timeout:    Timeout in seconds, used for `completion` and `readback`.
     :param errhandler: Error handler
@@ -305,6 +323,7 @@ def SettingsBasedSet(prefixed_device, value, **kwargs):
     settings = __scan_settings.parseDeviceSettings(prefixed_device)
     completion = kwargs['completion'] if 'completion' in kwargs else settings.getCompletion()
     readback   = kwargs['readback'] if 'readback' in kwargs else settings.getReadback()
+    readback_value = kwargs['readback_value'] if 'readback_value' in kwargs else settings.getReadbackValue()
     tolerance  = kwargs['tolerance'] if 'tolerance' in kwargs else settings.getTolerance()
     timeout    = kwargs['timeout'] if 'timeout' in kwargs else settings.getTimeout()
     errhandler = kwargs['errhandler'] if 'errhandler' in kwargs else None
@@ -313,7 +332,7 @@ def SettingsBasedSet(prefixed_device, value, **kwargs):
         tolerance = 0.1
 
     return Set(settings.getName(), value,
-               completion=completion, readback=readback, tolerance=tolerance, timeout=timeout, errhandler=errhandler)
+               completion=completion, readback=readback, readback_value=readback_value, tolerance=tolerance, timeout=timeout, errhandler=errhandler)
 
 def SettingsBasedLoop(prefixed_device, start, end, step, body=None, *args, **kwargs):
     """Set a device to various values in a loop.

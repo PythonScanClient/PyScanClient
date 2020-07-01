@@ -18,10 +18,16 @@ class MyScanSettings(ScanSettings):
         # Define special settings for some devices
         # Temperature controller uses completion, but no readback
         self.defineDeviceClass("My:Lakeshore.*", completion=True, readback=False, timeout=300, tolerance=10)
+
         # Motor uses completion and readback (with special readback name, see below)
         self.defineDeviceClass("My:Motor.*", completion=True, readback=True, timeout=100)
-        # Counter comared by increment, not absolute value
+
+        # Counter compared by increment, not absolute value
         self.defineDeviceClass("PerpetualCounter", comparison='increase by')
+
+        # Device where you may write '5', but then check for Status=="OK"
+        self.defineDeviceClass("DeviceWithStatus", completion=True, readback="Status", readback_value="OK", tolerance=0)
+        
         
     def getReadbackName(self, device_name):
         # Motors use their *.RBV field for readback
@@ -152,6 +158,9 @@ class DeviceSettingsTest(unittest.TestCase):
 
         cmd = SettingsBasedSet('Unknown:Motor1', 42, readback=False)
         self.assertEquals(str(cmd), "Set('Unknown:Motor1', 42)")
+
+        cmd = SettingsBasedSet('DeviceWithStatus', 5)
+        self.assertEquals(str(cmd), "Set('DeviceWithStatus', 5, completion=True, readback='Status', readback_value='OK')")
 
 
     def testSettingsBasedLoop(self):
