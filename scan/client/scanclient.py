@@ -113,7 +113,13 @@ else:
         try:
             response.raise_for_status()
         except requests.HTTPError as e:
-            raise Exception("Scan server at %s returned error code %d" % (url, e.response.code))
+            msg = "Scan server at %s returned error" % url
+            if hasattr(e, 'response'):
+                if hasattr(e.response, 'status_code'):
+                    msg += " code %d" % e.response.status_code
+                if hasattr(e.response, '_content'):
+                    msg += "\n" + e.response._content
+            raise Exception(msg)
 
         return response.text
 
