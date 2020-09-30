@@ -17,6 +17,7 @@ class Wait(Command):
     :param  comparison:  How current value is compared to the desired value.
                          Defaults to '='.
                          Other options: '!=', '>', '>=', '<' , '<=', 'increase by','decrease by'
+                         For string data, supported options are '=', '!=', '>', '>=', '<' , '<='.
     :param  tolerance:  Tolerance used for numeric '=' comparison. Defaults to 0, not used for string values or anything but '='.
     :param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
     :param  errhandler: Default None.
