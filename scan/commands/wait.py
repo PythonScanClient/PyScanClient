@@ -16,11 +16,15 @@ class Wait(Command):
     :param  value:       Desired value.
     :param  comparison:  How current value is compared to the desired value.
                          Defaults to '='.
-                         Other options: '!=', '>', '>=', '<' , '<=', 'increase by','decrease by'
+                         Other options: '!=', '>', '>=', '<' , '<=', 'increase by','decrease by'.
                          For string data, supported options are '=', '!=', '>', '>=', '<' , '<='.
     :param  tolerance:  Tolerance used for numeric '=' comparison. Defaults to 0, not used for string values or anything but '='.
     :param  timeout:    Timeout in seconds. Default 0 to wait 'forever'.
     :param  errhandler: Default None.
+
+    For 'increase by' and 'decrease by', the initial value is taken when
+    the command starts executing, and then it awaits an increment or decrement
+    of the value from that initial value.
         
     Example:
         >>> cmd = Wait('shutter', 1)
