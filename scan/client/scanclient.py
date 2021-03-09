@@ -197,7 +197,7 @@ class ScanClient(object):
         return { 'simulation': simulation, 'seconds': seconds }
 
 
-    def submit(self, cmds, name='UnNamed', queue=True):
+    def submit(self, cmds, name='UnNamed', queue=True, timeout=0, deadline=None):
         """Submit scan to scan server for execution
         
         :param cmds: List of commands,
@@ -205,8 +205,20 @@ class ScanClient(object):
                      or text with raw XML format.
         :param name: Name of scan
         :param queue: Submit to scan server queue, or execute as soon as possible?
+        :param timeout: Timeout in seconds after which scan will self-abort
+        :param deadline: Execution deadline in "yyyy-MM-dd HH:mm:ss" format when scan will self-abort
         
         :return: ID of submitted scan
+
+        By default, a submitted scan will be queued.
+        One scan is then executed at a time, in order of submission.
+        Each scan is allowed to run until all its commands complete.
+
+        The 'queue' parameter allows submitting scans for immediate execution,
+        i.e. in parallel to the queued commands.
+
+        Either the 'timeout' or the 'deadline' might be used to limit
+        the execution time.
         
         Examples::
         
@@ -219,12 +231,12 @@ class ScanClient(object):
         """
         quoted_name = quote(name, '')
         if isinstance(cmds, str):
-            result = self.__submitScanXML(cmds, quoted_name, queue)     
+            result = self.__submitScanXML(cmds, quoted_name, queue, timeout, deadline)
         elif isinstance(cmds, CommandSequence):
-            result = self.__submitScanSequence(cmds, quoted_name, queue)
+            result = self.__submitScanSequence(cmds, quoted_name, queue, timeout, deadline)
         else:
             # Warp list, tuple, other iterable
-            result = self.__submitScanSequence(CommandSequence(cmds), quoted_name, queue)
+            result = self.__submitScanSequence(CommandSequence(cmds), quoted_name, queue, timeout, deadline)
         
         xml = ET.fromstring(result)
         if xml.tag != 'id':
@@ -232,7 +244,7 @@ class ScanClient(object):
         return int(xml.text)
 
 
-    def __submitScanXML(self, scanXML, scanName, queue=True):
+    def __submitScanXML(self, scanXML, scanName, queue=True, timeout=0, deadline=None):
         """Submit scan in raw XML-form.
         
         Using   POST {BaseURL}/scan/{scanName}
@@ -241,6 +253,8 @@ class ScanClient(object):
         :param scanXML: The XML content of your new scan
         :param scanName: The name you want to give the new scan
         :param queue: Submit to scan server queue, or execute as soon as possible?
+        :param timeout: Timeout in seconds after which scan will self-abort
+        :param deadline: Execution deadline in "yyyy-MM-dd HH:mm:ss" format when scan will self-abort
         
         :return: Raw XML for scan ID
 
@@ -251,22 +265,33 @@ class ScanClient(object):
         >>> id = ssc.__submitScanXML(scanXML='<commands><comment><address>0</address><text>Successfully adding a new scan!</text></comment></commands>',scanName='1stScan')
         """
         url = self.__baseURL + "/scan/" + scanName
+
+        flags = False
         if not queue:
             url = url + "?queue=false"
+            flags = True
+        if timeout > 0:
+            url = url + ("&" if flags else "?") + "timeout=" + str(timeout)
+            flags = True
+        if deadline is not None  and  deadline != "0000-00-00 00:00:00":
+            url = url + ("&" if flags else "?") + "deadline=" + quote(deadline)
+
         r = perform_request(url, 'POST', scanXML)
         return r
     
             
-    def __submitScanSequence(self, cmdSeq, scanName, queue=True):
+    def __submitScanSequence(self, cmdSeq, scanName, queue=True, timeout=0, deadline=None):
         """Submit a CommandSequence
         
         :param cmdSeq: :class:`scan.commands.commandsequence.CommandSequence`
         :param scanName: The name needed to give the new scan
         :param queue: Submit to scan server queue, or execute as soon as possible?
+        :param timeout: Timeout in seconds after which scan will self-abort
+        :param deadline: Execution deadline in "yyyy-MM-dd HH:mm:ss" format when scan will self-abort
 
         :return: Raw XML for scan ID
         """
-        return self.__submitScanXML(cmdSeq.genSCN(),scanName, queue)
+        return self.__submitScanXML(cmdSeq.genSCN(),scanName, queue, timeout, deadline)
       
            
     def scanInfos(self, timeout=20):
