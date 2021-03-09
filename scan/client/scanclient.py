@@ -223,11 +223,14 @@ class ScanClient(object):
         Examples::
         
         >>> cmds = [ Comment('Hello'), Set('x', 10) ]
-        >>> id = client.submit( cmds, "My First Scan")
+        >>> id = client.submit(cmds, "My First Scan")
         
-        >>> cmds = CommandSequent(Comment('Hello'))
+        >>> cmds = CommandSequence(Comment('Hello'))
         >>> cmds.append(Set('x', 10))
-        >>> id = client.submit( cmds, "My Second Scan")
+        >>> id = client.submit(cmds, "My Second Scan")
+        
+        >>> cmds = CommandSequence(Delay(600))
+        >>> id = client.submit(cmds, "Timeout", timeout=10)
         """
         quoted_name = quote(name, '')
         if isinstance(cmds, str):
