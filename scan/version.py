@@ -1,8 +1,9 @@
 from __future__ import print_function
 
-__version__ = '1.9.0'
+__version__ = '1.10.0'
 
 version_history = """
+1.10.0 - Support submit(.., pre_post) parameter
 1.9.0 - Support submit(.., timeline, deadline) parameters
 1.8.1 - Fix error in requests.HTTPError handling
 1.8.0 - Set command with 'readback_value'
