@@ -9,48 +9,56 @@ FAILED=0
 $PYTHON "$DIRNAME/test_range_helper.py"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
 $PYTHON "$DIRNAME/test_scan_settings.py"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
 $PYTHON "$DIRNAME/test_commands.py"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
 $PYTHON "$DIRNAME/test_table_scan.py"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
 $PYTHON "$DIRNAME/test_data.py"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
 $PYTHON -m doctest "$DIRNAME/test_ndim.txt"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
 $PYTHON -m doctest "$DIRNAME/test_alignment.py"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
 $PYTHON -m doctest "$DIRNAME/test_spreadsheet.py"
 if [ $? -ne 0 ]
 then
+    echo "FAILED!"
     FAILED=`expr $FAILED + 1`
 fi
 
