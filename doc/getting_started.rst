@@ -9,11 +9,27 @@ Initial Setup
 We assume that you already have a recent version of EPICS base installed
 with access to commands like `softIoc`, `caget`, `caput`.
 
+Prepare the PyScanClient::
+
+   git clone https://github.com/PythonScanClient/PyScanClient.git
+   cd PyScanClient
+   python setup.py build
+   export PYTHONPATH=`pwd`/build/lib
+
 The scan server is a CS-Studio service.
 Both the scan server and the CS-Studio GUI can be built
 from https://github.com/ControlSystemStudio/phoebus.
-Binaries are for example available from
+More convenient binaries are available from
 https://controlssoftware.sns.ornl.gov/css_phoebus/nightly/
+
+Create a settings file for CS-Studio that holds the path to
+this python library::
+
+    echo org.csstudio.display.builder.runtime/python_path=$PYTHONPATH >>my_settings.ini
+
+You may also add common settings like CA or PVA address lists
+to that file, or add the `..runtime/python_path` setting to
+an already existing local settings file.
 
 All CS-Studio tools are based on Java. The CS-Studio GUI binary
 may bundle a java runtime. If it includes a `jdk` folder, use that.
@@ -22,14 +38,12 @@ Either way, declare your JDK and add its `bin` folder to the PATH::
 
   export JAVA_HOME=/path/to/jdk
   export PATH=$JAVA_HOME/bin:$PATH
-
-Check::
-
   java -version
 
-Assuming a binary, start the scan server like this::
+Assuming you fetched a scan server binary, start the scan server like this::
 
    unzip scan-server.zip
+   rm scan-server.zip
    cd scan-server-*
    ./scan-server.sh
 
@@ -45,23 +59,21 @@ On success, note the REST URL and list of console commands::
 You would stop the scan server by typing `shutdown`, then restart via `scan-server.sh`.
 
 
-Beamline Simulation
--------------------
+Test Beamline
+-------------
 
-Subsequent sections use a simple beamline simulation.
+Subsequent sections use a simple test beamline.
+Run it like this::
 
-While we will use the complete PyScanClient later,
-fetch it now to obtain that simulation and run it like this::
-
-   git clone https://github.com/PythonScanClient/PyScanClient.git
    cd PyScanClient/example
    softIoc -d ioc/simulation.db 
 
 Assuming you fetched a binary for CS-Studio, start the associated GUI like this::
 
-   unzip phoebus-linux.zip 
+   unzip phoebus-linux.zip
+   rm phoebus-linux.zip
    cd phoebus-*/
-   ./phoebus.sh -resource /path/to/PyScanClient/example/opi/1_BeamLine.opi
+   ./phoebus.sh -settings /path/to/my_settings.ini -resource /path/to/PyScanClient/example/opi/1_BeamLine.bob
 
 .. image:: simulation.png
 
@@ -134,7 +146,6 @@ CS-Studio GUI
 * In CS-Studio, invoke the menu Applications, Scan, Scan Monitor.
   You should see the last submitted scan as "Finished-OK",
   the others as simply "Logged".
-
 * Right-click on any scan and open the "Data Table".
 * Right-click no the "Finished" scan and open the "Scan Editor".
 * In the scan editor, right-click to "Submit scan".
@@ -158,11 +169,11 @@ CS-Studio GUI
   scans, or aborted.
 * In the scan monitor, selet a few older scans, right-click on them and "Remove selected". 
 
-In an operational setup, the scan monitor can be very useful to monitor
+The scan monitor is very useful to monitor
 the progress of queued and active scans.
 
 The scan editor could be used to manually assemble small scans,
-or to debug scans that have been submitted by other means.
+but it's mainly meant to debug scans that have been submitted by other means.
 
 The scan server will hold the commands of past scans in memory
 and persist the logged data on disk, but this
@@ -177,9 +188,59 @@ it is thus suggested to manually remove information for older scans,
 either by deleting selected scans or by invoking "Remove completed scans"
 from the scan monitor context menu.
 
-PyScanClient
-------------
+Basic PyScanClient
+------------------
 
+Check the content of `example/commands1.py`
+and run it::
+
+  cd example
+  python commands1.py
+
+
+.. literalinclude:: ../example/commands1.py
+
+Note how the python script assembles a list of commands.
+It builds the recipe for one "scan", submits it to the scan server,
+and exits.
+The scan server then spends more than a minute to execute the submitted
+commands.
+
+In the CS-Studio scan monitor, right-click on the running scan to open
+the "Scan Data Table" and watch how samples are added.
+This internal data logger is again not meant to replace data aquisition,
+but meant to assist in tracknig the progress of scans and to debug them.
+
+For more on the available scan commands, read the other sections
+of this document.
+
+CS-Studio GUI combined with PyScanClient
+----------------------------------------
+
+In CS-Studio, use the menu File, Open to open `PyScanClient/example/opi/2_XYScan.bob`.
+In addition to the beam, shutter and X/Y motors that we've already seen,
+it adds a "Scan" section. By default, it will scan both motors from 0 to 5,
+and at each position await 3 neutrons.
+
+Press "Go!" and note how the Scan Monitor now shows a running "XY Scan".
+Right-click on the scan in the monitor, open the "Scan Data Table"
+and watch it add new data for each scanned position.
+Close the data table and instead open the "Scan Data Plot".
+From the "X Axis" drop-down, select "xpos", and from the "Value 1" drop-down select "ypos".
+
+.. image:: scan_xy.png
+
+Start the next scan after "Up/Down" is turned off and compare the motor positions in the plot.
+
+Check "Simulate" to submit the scan for simulation, without actually executing it.
+Simulation can be useful to verify which commands will be created.
+It performs a simple run time estimate based on rate-of-change estimates that
+need to be configured on the scan server.
+
+Default Device Settings
+-----------------------
+
+TODO
 
 Production Setup
 ----------------
@@ -187,4 +248,7 @@ Production Setup
 In the above example we executed the scan server within a terminal window.
 A production setup would typically run it as a Linux service using `procServ`,
 https://github.com/ralphlange/procServ
+
+Both the scan server and the CS-Studio GUI are typically started by a site-specific
+launcher script that adds `-settings /path/to/site/settings.ini`.
 

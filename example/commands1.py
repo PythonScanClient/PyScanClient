@@ -2,18 +2,20 @@ from scan import *
 
 # Assemble list of commands
 cmds = [
-    Set('shutter:open', 1, completion=True),
-    Loop('motor1', 1, 10, 0.5,
+    Set('shutter', 1),
+    Loop('motor_x', 1, 10, 0.5,
     [
-       Set('daq:run', 1, completion=True),
+       Comment('daq:start'),
        Delay(10),
-       Set('daq:run', 0, completion=True),
-    ], completion=True, readback='motor1.RBV', tolerance=0.5)
+       Comment('daq:stop'),
+       Log('motor_x')
+    ], readback='motor_x', tolerance=0.5)
 ]
 
-print cmds
+print("Basic list of commands:")
+print(cmds)
 # Result:
-# [Set('shutter:open', 1, completion=True), Loop('motor1', 1, 10, 0.5, ...
+# [Set('shutter', 1), Loop('motor_x', 1, 10, 0.5, [ Comment('daq:start'),...
 
 # Alternatively, use `CommandSequence` which can start
 # empty or use list of commands
@@ -21,20 +23,20 @@ seq = CommandSequence(cmds)
 # Commands can be added to sequence
 seq.append(Comment('Done'))
 
-# `CommandSequence` results in nicer printout
-print seq
+print("`CommandSequence` results in nicer printout:")
+print(seq)
 # Result:
 # [
-#     Set('shutter:open', 1, completion=True)
-#     Loop('motor1', 1, 10, 0.5,
+#     Set('shutter', 1)
+#     Loop('motor_x', 1, 10, 0.5,
 #     [
-#         Set('daq:run', 1, completion=True),
+#         Comment('daq:start'),
 #         Delay(10),
-#         Set('daq:run', 0, completion=True),
-#     ], completion=True, readback='motor1.RBV', tolerance=0.5)
+#         Comment('daq:stop'),
+#         Log('motor_x')
+#     ], readback='motor_x', tolerance=0.5)
 #     Comment('Done')
 # ]
-
 
 # .. and then submit to scan server for execution
 client = ScanClient()
