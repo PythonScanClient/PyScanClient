@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
    
    overview.rst
+   getting_started.rst
    scan_client.rst
    commands.rst
    logdata.rst
