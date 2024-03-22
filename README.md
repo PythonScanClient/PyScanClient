@@ -11,7 +11,7 @@ For latest snapshot of documentation, see https://controlssoftware.sns.ornl.gov/
 To build local copy of documentation from sources, you need to install sphinx, http://sphinx-doc.org/.
 To install on Linux (RedHat):
     
-    sudo yum install python-sphinx
+    sudo yum install python3-sphinx
 
 To build documentation from sources:
 
