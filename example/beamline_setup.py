@@ -31,10 +31,12 @@ class BeamlineScanSettings(ScanSettings):
         self.loggable = [ "signal" ]
 
     def getReadbackName(self, device_name):
-        # Prime example would be a motor:
-        #if "motor" in device_name:
-        #    return device_name + ".RBV"
-        return device_name
+        # Anything that looks like a motor very likely has a .RBV.
+        # But that does not apply to the simulated motor_x, motor_y
+        if device_name in ( 'motor_x', 'motor_y' ):
+            return device_name
+        if "motor" in device_name:
+           return device_name + ".RBV"
 
 scan_settings = BeamlineScanSettings()
 # Install beam line specific scan settings

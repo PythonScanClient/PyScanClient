@@ -243,7 +243,35 @@ need to be configured on the scan server.
 Default Device Settings
 -----------------------
 
-TODO
+A command to turn a power supply on or set a voltage may be instantaneous::
+
+    commands = [ Set('PS42:Voltage', 12.0), Comment("PS is now on at 12 Volts")]
+
+But this device behavior tends to be the exception.
+When controlling a motor, the EPICS motor support allows using a "put-callback"
+to the device which waits until the motor reaches the desired location.
+This mechanism is also referred to as "completion".
+A temperature controller might support completion on its temperature
+setpoint PV.
+On devices that do not support completion, it may be possible
+to read the current device state from a separate readback PV and wait until
+it agrees with the commanded value.
+
+Based on the device at hand, we want to use the appropriate :class:`.Set` command::
+
+   Set('SomePV', 42.3, completion=True, timeout=30)
+   Set('SomePV', 42.3, completion=True, timeout=3000)
+   Set('SomePV', 42.3, completion=True, timeout=3000, readback="SomePV.RBV", tolerance=0.1)
+   Set('SomePV', 42.3, readback="OtherPV", tolerance=10, timeout=15)
+   
+Unfortunately, the "correct" way to set a PV is not discernible from the outside.
+It requires knowledge about the implementation of a PV in the IOC.
+And even if the correct way to set a PV is known, having to type
+all parameters for each `Set` command can be cumbersone.
+The PyScanClient library offers :ref:`scan_settings` where the ideal
+parameters for each PV can be configured once, and wrappers for the
+basic `Set` and `Wait` commands will then automatically use them as a default.
+
 
 Table Scan
 ----------

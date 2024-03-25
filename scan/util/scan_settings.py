@@ -1,4 +1,6 @@
 """
+.. _scan_settings:
+
 Scan settings
 =============
 

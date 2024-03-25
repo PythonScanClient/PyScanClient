@@ -42,7 +42,8 @@ class Set(Command):
     we wait for up to `timeout` seconds for the readback to be within tolerance.    
 
     *Note use of completion:*
-    EPICS Channel Access does not communicate if completion ('put-callback') is actually
+    The EPICS network protocol, be it Channel Access or PV Access,
+    does not communicate if completion ('put-callback') is actually
     supported. When writing to a PV that does not support completion, the call is returned
     right away, just as it would for a PV that supports completion and happens to complete
     quickly.
@@ -67,9 +68,9 @@ class Set(Command):
     but can be problematic for a device where the readback will
     take time to settle. Examples include PID-controlled devices
     with overshoot and settling time, or motors with backlash compensation
-    and retries where the readback might early on be close to the setpoint,
-    but it has not settled, so we consider it 'done' when in fact the
-    device is actively changing its value.
+    and retries. The readback can be close to the setpoint,
+    but the device might not have settled. We can then erroneously consider it 'done'
+    while the device is in fact still actively changing its value.
 
     **Use case 3: Enable completion but no readback**
 
