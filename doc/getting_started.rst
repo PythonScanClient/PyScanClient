@@ -211,8 +211,11 @@ the "Scan Data Table" and watch how samples are added.
 This internal data logger is again not meant to replace data aquisition,
 but meant to assist in tracknig the progress of scans and to debug them.
 
-For more on the available scan commands, read the other sections
-of this document.
+At this point you may familiarize yourself with all the :ref:`scan_commands`,
+especially the many options of the :class:`.Set` command.
+The PyScanClient `tutorial` folder contains several examples
+to try.
+
 
 CS-Studio GUI combined with PyScanClient
 ----------------------------------------
@@ -241,6 +244,18 @@ Default Device Settings
 -----------------------
 
 TODO
+
+Table Scan
+----------
+
+TODO
+
+
+Alignment Scan
+-------------- 
+
+TODO
+Custom script commands
 
 Production Setup
 ----------------
