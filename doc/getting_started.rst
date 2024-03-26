@@ -14,7 +14,13 @@ Prepare the PyScanClient::
    git clone https://github.com/PythonScanClient/PyScanClient.git
    cd PyScanClient
    python setup.py build
-   export PYTHONPATH=`pwd`/build/lib
+
+In here, we don't "install" the library
+but simply access it via the python path.
+In addition, we list the folder with examples to be used later
+in the path::
+
+   export PYTHONPATH=`pwd`/build/lib:`pwd`/example
 
 The scan server is a CS-Studio service.
 Both the scan server and the CS-Studio GUI can be built
@@ -62,11 +68,12 @@ You would stop the scan server by typing `shutdown`, then restart via `scan-serv
 Test Beamline
 -------------
 
-Subsequent sections use a simple test beamline.
-Run it like this::
+Subsequent sections use a simple test beamline created by `simulation.db`.
+The scan GUIs use additional databases.
+Start them all in one IOC like this::
 
    cd PyScanClient/example
-   softIoc -d ioc/simulation.db 
+   softIoc -m S=Demo -d ioc/simulation.db -d ioc/table.db
 
 Assuming you fetched a binary for CS-Studio, start the associated GUI like this::
 
@@ -89,6 +96,7 @@ Familiarize yourself with the simulation.
   (vertical orange bar).
 * Move the "Device" setpoint slider and notice how its
   value (horizontal orange bar) follows with a delay.
+
 
 Direct REST Access
 ------------------
@@ -123,6 +131,7 @@ but point your web browser to http://localhost:4810 and try the following.
   which should match what was submitted. Follow the "(data)" link and note how
   it lists one sample with value 1.0 and another with value 2.0.
 
+
 Scan Server Console
 -------------------
 
@@ -139,6 +148,7 @@ Scan Server Console
   It is neither meant to replace an archive system or experiment data aquision.
 * Back from the start page http://localhost:4810, click the
   "/scan/{name-of-new-scan}" link and submit anoter example scan.
+
 
 CS-Studio GUI
 -------------
@@ -188,6 +198,7 @@ it is thus suggested to manually remove information for older scans,
 either by deleting selected scans or by invoking "Remove completed scans"
 from the scan monitor context menu.
 
+
 Basic PyScanClient
 ------------------
 
@@ -216,29 +227,6 @@ especially the many options of the :class:`.Set` command.
 The PyScanClient `tutorial` folder contains several examples
 to try.
 
-
-CS-Studio GUI combined with PyScanClient
-----------------------------------------
-
-In CS-Studio, use the menu File, Open to open `PyScanClient/example/opi/2_XYScan.bob`.
-In addition to the beam, shutter and X/Y motors that we've already seen,
-it adds a "Scan" section. By default, it will scan both motors from 0 to 5,
-and at each position await 3 neutrons.
-
-Press "Go!" and note how the Scan Monitor now shows a running "XY Scan".
-Right-click on the scan in the monitor, open the "Scan Data Table"
-and watch it add new data for each scanned position.
-Close the data table and instead open the "Scan Data Plot".
-From the "X Axis" drop-down, select "xpos", and from the "Value 1" drop-down select "ypos".
-
-.. image:: scan_xy.png
-
-Start the next scan after "Up/Down" is turned off and compare the motor positions in the plot.
-
-Check "Simulate" to submit the scan for simulation, without actually executing it.
-Simulation can be useful to verify which commands will be created.
-It performs a simple run time estimate based on rate-of-change estimates that
-need to be configured on the scan server.
 
 Default Device Settings
 -----------------------
@@ -280,10 +268,65 @@ The code in `example/beamline1.py`, `example/beamline2.py` and
 scan settings.
 
 
+CS-Studio GUI combined with PyScanClient
+----------------------------------------
+
+End users can assemble recipes for a scan by writing python
+scripts similar to the ones shown so far.
+In practice, however, it is more likely for experts to prepare such scripts
+and end users then simply adjust key parameters and execute the script.
+
+For frequently used recipes, a GUI can be added.
+Instead of editing a script and executing it in a terminal window,
+users can then set parameters and submit a scan from the GUI.
+
+In CS-Studio, use the menu `File`, `Open`` to open `PyScanClient/example/opi/2_XYScan.bob`.
+In addition to the beam, shutter and X/Y motors that we've already seen,
+it adds a "Scan" section. By default, it will scan both motors from 0 to 5,
+and at each position await 3 neutrons.
+
+Press "Go!" and note how the Scan Monitor now shows a running "XY Scan".
+Right-click on the scan in the monitor, open the "Scan Data Table"
+and watch it add new data for each scanned position.
+Close the data table and instead open the "Scan Data Plot".
+From the "X Axis" drop-down, select "xpos", and from the "Value 1" drop-down select "ypos".
+
+.. image:: scan_xy.png
+
+Start the next scan after "Up/Down" is turned off and compare the motor positions in the plot.
+
+Check "Simulate" to submit the scan for simulation, without actually executing it.
+Simulation can be useful to verify which commands will be created.
+It performs a simple run time estimate based on rate-of-change estimates that
+need to be configured on the scan server.
+
+To see how this is implemented, open the display in the CS-Studio display editor.
+In this example, all scan parameters use local PVs. If you prefer to persist
+the parameters when the display is closed and later re-opened,
+you would use real PVs. 
+Pushing the "Go!" button executes `example/opi/scripts/xy_scan.py`:
+
+.. literalinclude:: ../example/opi/scripts/xy_scan.py
+
+
 Table Scan
 ----------
 
-TODO
+Scans that need to set devices like motors, temperature controllers etc.
+to a list of desired position, then maybe start data acquisition at each
+point, wait for some condition, then move to the next point can often
+be expressed in a concise table notation.
+
+In CS-Studio, use the menu `File`, `Open`` to open `PyScanClient/example/opi/3_Table_Scan.bob`.
+Push the file folder button next to the "Table:____" text field and
+locate the file `PyScanClient/example/tablescan.csv`,
+then press "Load" and "Submit".
+
+
+TODO .. more ..
+
+
+See :mod:`scan.table.table_scan` for more on the table syntax.
 
 
 Alignment Scan
