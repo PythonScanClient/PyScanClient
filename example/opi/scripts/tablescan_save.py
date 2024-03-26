@@ -2,11 +2,13 @@
 Save TableScan from widget to file
 @author: Kay Kasemir
 """
-from tablescan_ui import saveTableFromWidget
+from org.csstudio.display.builder.runtime.script import ScriptUtil, ValueUtil
 from errors import showException
+from tablescan_ui import saveTableFromWidget
 
-path = display.getWidget("TableFile").getValue()
+path = ValueUtil.getString(ScriptUtil.getWidgetValueByName(widget, "TableFile"))
+
 try:
-    saveTableFromWidget(display, path)
+    saveTableFromWidget(widget, path)
 except:
-    showException("Table Save Error")       
+    showException(widget, "Table Save Error")       

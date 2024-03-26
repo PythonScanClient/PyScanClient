@@ -2,19 +2,20 @@
 Submit TableScan from Table widget to scan server
 @author: Kay Kasemir
 """
+from org.csstudio.display.builder.runtime.script import ScriptUtil, ValueUtil
 from errors import showException
 from tablescan_ui import getTableFromWidget
 from beamline_setup import scan_client
 
 try:
-    table_scan = getTableFromWidget(display)
+    table_scan = getTableFromWidget(widget)
     
-    name = display.getWidget("TableFile").getValue().strip()
+    path = ValueUtil.getString(ScriptUtil.getWidgetValueByName(widget, "TableFile"))
+    name = path.strip()
     if name:
         table_scan.name = name
 
-    if table_scan:
-        commands = table_scan.createScan()
-        id = scan_client.submit(commands, name=name)
+    commands = table_scan.createScan()
+    id = scan_client.submit(commands, name=name)
 except:
-    showException("Table Scan")
+    showException(widget, "Table Scan")

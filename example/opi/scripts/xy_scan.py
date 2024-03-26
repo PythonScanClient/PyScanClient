@@ -1,8 +1,4 @@
-"""
-Schedule scan with parameters from BOY script
-
-@author: Kay Kasemir
-"""
+"""Script for GUI that builds and submits scan"""
 
 from org.csstudio.display.builder.runtime.script import ScriptUtil, ValueUtil
 from java.lang import Runnable

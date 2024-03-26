@@ -45,7 +45,7 @@ class BeamlineScanSettings(ScanSettings):
         # The example/opi for alignment uses these to
         # populate drop-downs
         self.settable = [ "motor_x", "motor_y" ]
-        self.waitable = [ "seconds", "pcharge" ]
+        self.waitable = [ "seconds", "time", "pcharge" ]
         self.loggable = [ "signal" ]
 
     def getReadbackName(self, device_name):
@@ -61,6 +61,11 @@ scan_settings = BeamlineScanSettings()
 setScanSettings(scan_settings)
 
 # 'Meta Commands'
+def Pre():
+    return Set('shutter', 1)
+def Post():
+    return Set('shutter', 0)
+
 def Start():
     """Start data acquisition"""
     return Sequence( Set('loc://daq_reset(0)', 1),
@@ -84,6 +89,8 @@ def SetChopper(wavelength, phase):
 def table_scan(headers, rows):
     """Create table scan with pre/post/start/stop for this beam line"""
     table = TableScan(headers, rows,
+                      pre=Pre(),
+                      post=Post(),
                       start=Start(),
                       stop=Stop())
     return table.createScan()

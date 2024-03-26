@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Saved on 2024-03-26 14:45:37 by ky9-->
+<display version="2.0.0">
+  <name>Table Scan</name>
+  <macros>
+    <S>Demo</S>
+  </macros>
+  <width>1080</width>
+  <height>800</height>
+  <actions>
+  </actions>
+  <grid_step_x>6</grid_step_x>
+  <grid_step_y>6</grid_step_y>
+  <widget type="table" version="2.0.0">
+    <name>TableScan</name>
+    <y>25</y>
+    <width>967</width>
+    <height>768</height>
+    <columns>
+      <column>
+        <name>Column 1</name>
+        <width>100</width>
+        <editable>true</editable>
+      </column>
+    </columns>
+    <actions>
+    </actions>
+    <scripts>
+      <script file="scripts/tablescan_init.py">
+        <pv_name>=1</pv_name>
+        <pv_name trigger="false">$(S):CS:Scan:TableFile</pv_name>
+      </script>
+    </scripts>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button</name>
+    <actions>
+      <action type="execute">
+        <script file="scripts/tablescan_load.py">
+        </script>
+        <description>Load</description>
+      </action>
+    </actions>
+    <x>972</x>
+    <y>3</y>
+    <width>103</width>
+    <height>25</height>
+    <tooltip>(Re-)Load scan from file</tooltip>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_1</name>
+    <actions>
+      <action type="execute">
+        <script file="scripts/tablescan_save.py">
+        </script>
+        <description>Save</description>
+      </action>
+    </actions>
+    <x>972</x>
+    <y>33</y>
+    <width>103</width>
+    <height>25</height>
+    <tooltip>Save scan table to file</tooltip>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label</name>
+    <text>Table:</text>
+    <width>49</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>TableFile</name>
+    <pv_name>$(S):CS:Scan:TableFile</pv_name>
+    <x>54</x>
+    <y>3</y>
+    <width>873</width>
+    <height>19</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <format>6</format>
+    <actions>
+    </actions>
+    <tooltip>Table file name
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_6</name>
+    <actions>
+      <action type="execute">
+        <script file="scripts/tablescan_submit.py">
+        </script>
+        <description>Submit</description>
+      </action>
+    </actions>
+    <x>972</x>
+    <y>84</y>
+    <width>103</width>
+    <height>25</height>
+    <tooltip>Submit scan based on table</tooltip>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+  </widget>
+  <widget type="fileselector" version="2.0.0">
+    <pv_name>$(S):CS:Scan:TableFile</pv_name>
+    <x>927</x>
+    <y>3</y>
+    <height>19</height>
+  </widget>
+</display>
