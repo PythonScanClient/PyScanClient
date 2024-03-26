@@ -268,9 +268,16 @@ Unfortunately, the "correct" way to set a PV is not discernible from the outside
 It requires knowledge about the implementation of a PV in the IOC.
 And even if the correct way to set a PV is known, having to type
 all parameters for each `Set` command can be cumbersone.
-The PyScanClient library offers :ref:`scan_settings` where the ideal
-parameters for each PV can be configured once, and wrappers for the
-basic `Set` and `Wait` commands will then automatically use them as a default.
+The PyScanClient :ref:`scan_settings` provide a way to configure default parameters
+for each PV.
+Wrappers for the basic `Set`, `Loop` and `Wait` commands then use these defaults.
+For an example, see `example/beamline_setup.py`:
+
+.. literalinclude:: ../example/beamline_setup.py
+
+The code in `example/beamline1.py`, `example/beamline2.py` and
+`example/beamline3.py` shows how to take advantage of the
+scan settings.
 
 
 Table Scan

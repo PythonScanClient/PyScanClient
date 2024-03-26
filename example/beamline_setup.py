@@ -1,31 +1,49 @@
 """Example for beamline specific setup
 
-Uses the scan server example database
-plus some local PVs to fake devices.
+   All scripts that access the scan server
+   should start with
+
+     'from beamline_setup import *'
 """
 
+# Get all scan commands
 from scan import *
 
-# Note that the basic Loop/Set/Wait commands are replaced by
-# those that utilize custom scan settings
+# Replace basic Loop/Set/Wait commands with wrappers
+# that utilize custom scan settings
 from scan.util import SettingsBasedLoop as Loop
 from scan.util import SettingsBasedSet as Set
 from scan.util import SettingsBasedWait as Wait
 
-# Custom scan settings
+# Each "beamline" or more generally setup that uses
+# the PyScanClient should create its own ScanSettings 
 class BeamlineScanSettings(ScanSettings):
     def __init__(self):
         super(BeamlineScanSettings, self).__init__()
-        # Define several PVs to use completion etc.
-        self.defineDeviceClass("shutter", readback=True)
-        self.defineDeviceClass("chopper:.*", completion=True)
-        self.defineDeviceClass(".*daq.*", completion=True)
+
+        # Define settings based on PV name patterns
+        # (regular expressions).
+        # Order matters! List most generic patterns first,
+        # specific PV names last.
+        # For example, motors should use completion, and check a readback
         self.defineDeviceClass("motor_.", completion=True, readback=True)
-        self.defineDeviceClass("setpoint", completion=True, readback="readback", tolerance=0.1)
+        # The specific motors in the simulation.db, however, don't support completion
+        self.defineDeviceClass("motor_x", completion=False, readback=True)
+        self.defineDeviceClass("motor_y", completion=False, readback=True)
+        self.defineDeviceClass("shutter", readback=True)
+        # The simulated "setpoint" uses a different PV "readback" as its readback.
+        # (readback=False skips readback check
+        #  readback=True calls getReadbackName(pv) which typically returns the PV itself,
+        #  readback='whatever' uses provided PV
+        # )
+        self.defineDeviceClass("setpoint", completion=False, readback="readback", tolerance=0.1, timeout=20)
+        # When waiting for proton charge or neutron counts, use "increase by"
         self.defineDeviceClass("pcharge", comparison="increase by")
         self.defineDeviceClass("neutrons", comparison="increase by")
         
-        # Used by UI to suggest devices on which one can 'wait'
+        # Each site may add more to its site-specific configuration.
+        # The example/opi for alignment uses these to
+        # populate drop-downs
         self.settable = [ "motor_x", "motor_y" ]
         self.waitable = [ "seconds", "pcharge" ]
         self.loggable = [ "signal" ]
@@ -38,10 +56,9 @@ class BeamlineScanSettings(ScanSettings):
         if "motor" in device_name:
            return device_name + ".RBV"
 
-scan_settings = BeamlineScanSettings()
 # Install beam line specific scan settings
+scan_settings = BeamlineScanSettings()
 setScanSettings(scan_settings)
-
 
 # 'Meta Commands'
 def Start():
@@ -58,12 +75,11 @@ def TakeData(counter, limit):
     return  Sequence(Start(), Wait(counter, limit), Stop())
 
 def SetChopper(wavelength, phase):
-    return  Sequence(scan_settings.Set('loc://chopper:run(0)', 0),
-                     scan_settings.Set('loc://chopper:wlen(0)', wavelength),
-                     scan_settings.Set('loc://chopper:phs(0)', phase),
-                     scan_settings.Set('loc://chopper:run(0)', 1)
+    return  Sequence(Set('loc://chopper:run(0)', 0),
+                     Set('loc://chopper:wlen(0)', wavelength),
+                     Set('loc://chopper:phs(0)', phase),
+                     Set('loc://chopper:run(0)', 1)
                     )
-
 
 def table_scan(headers, rows):
     """Create table scan with pre/post/start/stop for this beam line"""
@@ -78,37 +94,15 @@ ndim = createNDimScan
 # Create a scan client, using the host name that executes the scan server
 scan_client = ScanClient('localhost')
 
-
-
-
-
-import unittest
-
-class TestScanClient(unittest.TestCase):
-    def testSet(self):
-        self.assertEqual(str(Set('setpoint', 1)), "Set('setpoint', 1, completion=True, readback='readback')")
-        self.assertEqual(str(Set('setpoint', 1, completion=False)), "Set('setpoint', 1, readback='readback')")
-        self.assertEqual(str(Set('setpoint', 1, readback=False)), "Set('setpoint', 1, completion=True)")
-        self.assertEqual(str(Set('setpoint', 1, timeout=10)), "Set('setpoint', 1, completion=True, readback='readback', timeout=10)")
-
-    def testLoop(self):
-        self.assertEqual(str(Loop('x', 1, 5, 0.5)), "Loop('x', 1, 5, 0.5)")
-        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5)), "Loop('motor_x', 1, 5, 0.5, completion=True, readback='motor_x')")
-        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, completion=False)), "Loop('motor_x', 1, 5, 0.5, readback='motor_x')")
-        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, completion=False, readback=False)), "Loop('motor_x', 1, 5, 0.5)")
-        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, Comment(''), completion=False, readback=False)),
-                         "Loop('motor_x', 1, 5, 0.5, [ Comment('') ])")
-        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, Comment('a'), Comment('b'), completion=False, readback=False)),
-                         "Loop('motor_x', 1, 5, 0.5, [ Comment('a'), Comment('b') ])")
-        self.assertEqual(str(Loop('motor_x', 1, 5, 0.5, [ Comment('a'), Comment('b') ], completion=False, readback=False)),
-                         "Loop('motor_x', 1, 5, 0.5, [ Comment('a'), Comment('b') ])")
-        
-    def testWait(self):
-        self.assertEqual(str(Wait('whatever', 1)), "Wait('whatever', 1, comparison='>=')")
-        self.assertEqual(str(Wait('pcharge', 1)), "Wait('pcharge', 1, comparison='increase by')")
-        self.assertEqual(str(Wait('pcharge', 1, timeout=5)), "Wait('pcharge', 1, comparison='increase by', timeout=5)")
-        self.assertEqual(str(Wait('pcharge', 1, timeout=5, comparison='>=')), "Wait('pcharge', 1, comparison='>=', timeout=5)")
-
-
+# As a convenience, `python beamline_setup.py` prints settings
 if __name__ == '__main__':
-    unittest.main()
+    from scan.util.scan_settings import getScanSettings
+
+    print("Beam Line scan settings")
+    print("=======================")
+    for setting in getScanSettings().device_settings:
+        print(setting)
+    print("")
+    print("Scan Client")
+    print("===========")
+    print(scan_client)
