@@ -308,25 +308,59 @@ Pushing the "Go!" button executes `example/opi/scripts/xy_scan.py`:
 
 .. literalinclude:: ../example/opi/scripts/xy_scan.py
 
+This script executes within the GUI with access to the widgets in the display.
+It is handled by Jython and can use the PyScanClient the same way as
+C-Python running outside the GUI.
 
 Table Scan
 ----------
 
-Scans that need to set devices like motors, temperature controllers etc.
-to a list of desired position, then maybe start data acquisition at each
-point, wait for some condition, then move to the next point can often
-be expressed in a concise table notation.
+Scans that need to set devices like motors to a list of desired positions,
+start data acquisition at each point, wait for some condition, stop data acquisition,
+and then move to the next point can often be expressed in a concise table notation.
 
-In CS-Studio, use the menu `File`, `Open`` to open `PyScanClient/example/opi/3_Table_Scan.bob`.
-Push the file folder button next to the "Table:____" text field and
-locate the file `PyScanClient/example/tablescan.csv`,
-then press "Load" and "Submit".
+In CS-Studio, use the menu `File`, `Open` to open `PyScanClient/example/opi/3_Table_Scan.bob`.
+Push the file folder button next to the "Table:____" text field to
+locate the file `PyScanClient/example/tablescan.csv`.
+Press "Load" and "Submit".
 
+.. image:: table_scan.png
 
-TODO .. more ..
+In short, table columns are typically PV names, and cells contain their values.
+Cell values for PVs may contain plain values as in the first row
+which sets both motors to 1.
+Cells may also contain lists of values or `loop(start, end, step)` constructs,
+as in the second row which will create nested loops setting
+`motor_x` to 1, 3, 5, while an inner loop will set
+`motor_y` to 1, 1.5, 2, ..., 4.5, 5.0.
 
+The triplet "Wait For", "Value" and "Or Time" columns have a special meaning.
+In the first row, after setting the motor positions, we wait for 5 seconds.
+In the second, we wait for the proton charge to increment by 1e9,
+or move on after 1 minute, whichever comes first.
+Either way, the `Start()` commands which presumably start data aquisition are executed just
+before we wait, and the `Stop()` commands which close data aquisition are executed after each "Wait For".
+Each PV that is used in a table row is logged at the end of each row.
+
+Finally, the list of commands created for a table scan start with `Pre()` commands and end with `Post()`
+commands. In the `beamline_setup.py` shown above those are used to open and then close the shutter.
+The created list of commands can be seen in the scan editor:
+
+.. image:: table_scan_commands.png
 
 See :mod:`scan.table.table_scan` for more on the table syntax.
+
+The PyScanClient fundamentally supports table scans in CSV format.
+The CS-Studio GUI offers a basic table display where values
+can be adjusted before submitting.
+Most spreadsheet programs can be used to create or edit more
+extensive table scans, which are then exported as CSV
+to load and submit them from the GUI.
+You may also extend your local copy of the tablescan GUI scripts
+to call out to tools like the LibreOffice file converter,
+"soffice --convert-to csv ...",
+which then allows the GUI to directly load such spreadsheet files
+without manual conversion to CSV.
 
 
 Alignment Scan
@@ -345,3 +379,5 @@ https://github.com/ralphlange/procServ
 Both the scan server and the CS-Studio GUI are typically started by a site-specific
 launcher script that adds `-settings /path/to/site/settings.ini`.
 
+
+TODO: scan server's pre and post commands

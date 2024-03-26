@@ -25,7 +25,7 @@ Use Case: Table-Based Scans
 ---------------------------
 
 Scans that need to set devices like motors, temperature controllers etc.
-to a list of desired position, then maybe start data acquisition at each
+to a list of desired positions, then maybe start data acquisition at each
 point, wait for some condition, then move to the next point can often
 be expressed in a concise table notation.
 

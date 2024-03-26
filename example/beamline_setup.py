@@ -28,8 +28,8 @@ class BeamlineScanSettings(ScanSettings):
         # For example, motors should use completion, and check a readback
         self.defineDeviceClass("motor_.", completion=True, readback=True)
         # The specific motors in the simulation.db, however, don't support completion
-        self.defineDeviceClass("motor_x", completion=False, readback=True)
-        self.defineDeviceClass("motor_y", completion=False, readback=True)
+        self.defineDeviceClass("motor_x", completion=False, readback=False)
+        self.defineDeviceClass("motor_y", completion=False, readback=False)
         self.defineDeviceClass("shutter", readback=True)
         # The simulated "setpoint" uses a different PV "readback" as its readback.
         # (readback=False skips readback check
