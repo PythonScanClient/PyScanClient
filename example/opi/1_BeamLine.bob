@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Saved on 2024-03-22 14:38:09 by ky9-->
+<!--Saved on 2024-03-26 11:44:53 by ky9-->
 <display version="2.0.0">
   <width>720</width>
   <height>380</height>
@@ -414,5 +414,22 @@ $(pv_value)</tooltip>
     <border_alarm_sensitive>false</border_alarm_sensitive>
     <limits_from_pv>false</limits_from_pv>
     <maximum>1.0</maximum>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_6</name>
+    <text>Detector</text>
+    <x>408</x>
+    <y>12</y>
+    <width>72</width>
+    <height>16</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
+    <auto_size>true</auto_size>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
   </widget>
 </display>
