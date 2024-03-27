@@ -293,23 +293,23 @@ CS-Studio GUI combined with PyScanClient
 
 End users can assemble recipes for a scan by writing python
 scripts similar to the ones shown so far.
-In practice, however, it is more likely for experts to prepare such scripts
-and end users then simply adjust key parameters and execute the script.
+In practice, however, it is more likely for experts to prepare such scripts.
+End users then adjust key parameters and execute the script.
 
 For frequently used recipes, a GUI can be added.
 Instead of editing a script and executing it in a terminal window,
 users can then set parameters and submit a scan from the GUI.
 
-In CS-Studio, use the menu `File`, `Open`` to open `PyScanClient/example/opi/2_XYScan.bob`.
+In CS-Studio, use the menu `File`, `Open` to open `PyScanClient/example/opi/2_XYScan.bob`.
 In addition to the beam, shutter and X/Y motors that we've already seen,
 it adds a "Scan" section. By default, it will scan both motors from 0 to 5,
-and at each position await 3 neutrons.
+awaiting 3 neutrons at each position.
 
 Press "Go!" and note how the Scan Monitor now shows a running "XY Scan".
 Right-click on the scan in the monitor, open the "Scan Data Table"
-and watch it add new data for each scanned position.
+and watch it grow by a row for each scanned position.
 Close the data table and instead open the "Scan Data Plot".
-From the "X Axis" drop-down, select "xpos", and from the "Value 1" drop-down select "ypos".
+From the "X Axis" drop-down, select "motor_x", and from the "Value 1" drop-down select "motor_y".
 
 .. image:: scan_xy.png
 
@@ -354,7 +354,7 @@ as in the second row which will create nested loops setting
 `motor_x` to 1, 3, 5, while an inner loop will set
 `motor_y` to 1, 1.5, 2, ..., 4.5, 5.0.
 
-The triplet "Wait For", "Value" and "Or Time" columns have a special meaning.
+The triplet of columns "Wait For", "Value" and "Or Time" has special meaning.
 In the first row, after setting the motor positions, we wait for 5 seconds.
 In the second, we wait for the proton charge to increment by 1e9,
 or move on after 1 minute, whichever comes first.
@@ -364,7 +364,7 @@ Each PV that is used in a table row is logged at the end of each row.
 
 Finally, the list of commands created for a table scan start with `Pre()` commands and end with `Post()`
 commands. In the `beamline_setup.py` shown above those are used to open and then close the shutter.
-The created list of commands can be seen in the scan editor:
+The resulting list of commands can be checked by opening the submitted scan in the scan editor:
 
 .. image:: table_scan_commands.png
 
@@ -386,7 +386,7 @@ without manual conversion to CSV.
 Alignment Scan
 -------------- 
 
-One fairly common beamline procedure is the alignment.
+One fairly common beamline procedure is an alignment.
 For example, a slit or sample is moved across a range of positions,
 the intensity of a signal is noted at each position,
 and we try to locate the maximum of that signal.
@@ -395,23 +395,72 @@ In CS-Studio, use the menu `File`, `Open` to open
 `PyScanClient/example/opi/1_BeamLine.bob`
 and in there set the "Y" motor to 3.0.
 Now open `PyScanClient/example/opi/4_Alignment_Scan.bob`.
-Adjust the settings as shown the following screenshot, then press "Submit".
+Adjust the settings as shown in the following screenshot, then press "Submit".
+The GUI submits commands for moving the X motor over a range of positions.
+At each step we wait for some time, then log the motor position and some signal.
+Finally, a gaussian fit is performed to locate the peak in that signal.
 
 .. image:: alignment_scan.png
 
-TODO
-Custom script commands
+When inspecting the submitted commands by opening them from the scan monitor
+into the scan editor, the commands for moving the motor and logging
+the signal are quite straight forward.
+In addition, there are "script" commands.
 
-Production Setup
-----------------
+.. image:: alignment_scan_commands.png
+
+Script commands can invoke jython code within the scan server.
+These scripts have access to PVs and to the logged data of a scan.
+In this alignment scan, a "WriteDataToPV" script command
+is invoked to write data from the logged "motor_x" and the logged "signal"
+into waveform PVs. Those waveform PVs are then shown in the display
+to track the progress of the scan.
+Finally, a "FindPeak" command is used to locate the peak in the logged data
+and to publish the result via PVs.
+
+For more on the :class:`.Script` command, check its documentation in the
+list of :doc:`scan commands <commands>`.
+For implementation details of these specific custom scripts,
+look for `writedatatopv.py` and `findpeak.py` in the `PyScanClient/example/server` folder.
+
+Note that this example not only introduces script commands but also stretches
+their purpose.
+The jython code of a script command has access to most of the scan server.
+It can implement functionality that is not offered by the basic scan commands.
+This is both an opportunity and a risk. The use of script commands should
+remain limited. Each script command needs to be well tested to assert that it
+is not impacting the robustness of the scan server.
+
+For this specific example of an alignment scan, a better solution is
+the implementation of an alignment IOC.
+This may be done in python, using a python channel access or PV access server library.
+Such an alignment IOC has PVs similar to those shown in this alignment display
+to configure which PVs to "move", how to wait at each step, and what signal
+to log. Implementing such an alignment IOC in python opens up access
+to many types of peak fitting algorithms.
+The alignment IOC should have an option to end with positioning the moved
+motor at the peak of the signal.
+Finally, the alignment IOC should expose a "Run" PV which supports put-callback.
+
+Such an alignment can then be invoked interactively from a GUI,
+but it can also be configured and started from a scan,
+for example a table scan which configures the alignment PVs
+and then writes to the "Run" PV, using completion.
+
+
+Production Setup Notes
+----------------------
 
 In the above example we executed the scan server within a terminal window.
 A production setup would typically run it as a Linux service using `procServ`,
 https://github.com/ralphlange/procServ
 
 Both the scan server and the CS-Studio GUI are typically started by a site-specific
-launcher script that adds `-settings /path/to/site/settings.ini`.
+launcher script that adds `-settings /path/to/my_settings.ini`.
 
+By default, the scan server log is stored in the `/tmp` folder.
+In the `scan_config.xml`, it should be configured to be in a more permanent location.
 
-TODO: scan server's pre and post commands
-
+The scan config file can also list "pre" and "post" commands that are always
+executed at the start and end of each scan. Specifically, the "post" commands
+are executed both when a scan completes successfully and when it fails.

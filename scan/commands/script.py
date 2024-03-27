@@ -22,16 +22,21 @@ class Script(Command):
     Scripts must derive from `ScanScript`:
     
     >>> class MyScript(ScanScript):
-    ...    def __init__(self, name, offset):
+    ...    # Script command that gets logged data for a PV,
+    ...    # writes the sum to a '.._sum' PV
+    ...    def __init__(self, name):
     ...        self.name = name
-    ...        self.offset = offset
     ...
     ...    def getDeviceNames(self):
-    ...        return [ "result1" ]
+    ...        # PVs that this command needs
+    ...        return [ self.name + "_sum" ]
     ...
     ...    def run(self, context, args):
     ...        [ x ] = context.getData(self.name)
-    ...        context.write(self.name + "_offset", x + offset)
+    ...        s = 0
+    ...        for v in x:
+    ...            s += v
+    ...        context.write(self.name + "_sum", s)
     
     For details refer to the Javadoc of the Scan Server.
     

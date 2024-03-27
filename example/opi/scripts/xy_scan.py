@@ -26,11 +26,11 @@ else:
     
 # Create scan
 cmds =[
-  Loop('xpos', min(x0, x1), max(x0, x1), max(0.1, abs(dx)),
-    Loop('ypos', min(y0, y1), max(y0, y1), toggle * max(0.1, abs(dy)),
+  Loop('motor_x', min(x0, x1), max(x0, x1), max(0.1, abs(dx)),
+    Loop('motor_y', min(y0, y1), max(y0, y1), toggle * max(0.1, abs(dy)),
     [
         Wait('neutrons', neutrons, comparison='increase by'),
-        Log('xpos', 'ypos', 'readback')
+        Log('motor_x', 'motor_y', 'readback')
     ]
     )
   )
