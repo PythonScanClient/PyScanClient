@@ -52,7 +52,7 @@ record(ao, "$(S):CS:Scan:Cond:Val")
     info(autosaveFields, "VAL")
     field(DESC, "Scan condition value")
     field(PINI, "YES")
-    field(DOL,  "1000")
+    field(DOL,  "1")
     field(PREC, "2")
 }
 

@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Saved on 2024-03-27 11:06:23 by ky9-->
+<display version="2.0.0">
+  <name>Alignment Scan</name>
+  <macros>
+    <S>Demo</S>
+  </macros>
+  <height>650</height>
+  <actions>
+  </actions>
+  <scripts>
+    <script file="scripts/alignment_init.py">
+      <pv_name>$(S):CS:Scan:Device1</pv_name>
+      <pv_name>$(S):CS:Scan:Cond:Device</pv_name>
+      <pv_name>$(S):CS:Scan:Log:Device</pv_name>
+    </script>
+  </scripts>
+  <grid_step_x>6</grid_step_x>
+  <grid_step_y>6</grid_step_y>
+  <widget type="label" version="2.0.0">
+    <name>Label_1</name>
+    <text>Device:</text>
+    <width>109</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>device1</name>
+    <pv_name>$(S):CS:Scan:Device1</pv_name>
+    <x>108</x>
+    <width>133</width>
+    <height>31</height>
+    <background_color>
+      <color red="255" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Device that should be scanned
+$(pv_name)
+$(pv_value)</tooltip>
+    <items>
+      <item>-</item>
+    </items>
+    <items_from_pv>false</items_from_pv>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>device1_1</name>
+    <pv_name>$(S):CS:Scan:Device1</pv_name>
+    <x>246</x>
+    <width>169</width>
+    <height>25</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <format>6</format>
+    <actions>
+    </actions>
+    <tooltip>Device that should be scanned
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_2</name>
+    <text>Start:</text>
+    <x>420</x>
+    <width>49</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_3</name>
+    <text>End:</text>
+    <x>552</x>
+    <width>49</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>end1</name>
+    <pv_name>$(S):CS:Scan:End1</pv_name>
+    <x>588</x>
+    <width>79</width>
+    <height>25</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Final value of scan
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_12</name>
+    <text>Step:</text>
+    <x>672</x>
+    <width>55</width>
+    <height>25</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>step1</name>
+    <pv_name>$(S):CS:Scan:Step1</pv_name>
+    <x>720</x>
+    <width>79</width>
+    <height>25</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Scan step size
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>start1</name>
+    <pv_name>$(S):CS:Scan:Start1</pv_name>
+    <x>468</x>
+    <y>2</y>
+    <width>79</width>
+    <height>25</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Initial value of scan
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_8</name>
+    <text>Step condition:</text>
+    <y>36</y>
+    <width>109</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>cond_device</name>
+    <pv_name>$(S):CS:Scan:Cond:Device</pv_name>
+    <x>108</x>
+    <y>36</y>
+    <width>133</width>
+    <height>31</height>
+    <background_color>
+      <color red="255" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Condition to await at each step
+$(pv_name)
+$(pv_value)</tooltip>
+    <items>
+      <item>-</item>
+    </items>
+    <items_from_pv>false</items_from_pv>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>cond_device_1</name>
+    <pv_name>$(S):CS:Scan:Cond:Device</pv_name>
+    <x>246</x>
+    <y>36</y>
+    <width>163</width>
+    <height>25</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <format>6</format>
+    <actions>
+    </actions>
+    <tooltip>Condition to await at each step
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_10</name>
+    <text>increment by:</text>
+    <x>414</x>
+    <y>36</y>
+    <width>115</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>cond_value</name>
+    <pv_name>$(S):CS:Scan:Cond:Val</pv_name>
+    <x>516</x>
+    <y>36</y>
+    <width>115</width>
+    <height>25</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Step condition value
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_11</name>
+    <text>Log:</text>
+    <y>72</y>
+    <width>109</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>log_device</name>
+    <pv_name>$(S):CS:Scan:Log:Device</pv_name>
+    <x>108</x>
+    <y>72</y>
+    <width>133</width>
+    <height>31</height>
+    <background_color>
+      <color red="255" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Device that should be fitted via edge location
+$(pv_name)
+$(pv_value)</tooltip>
+    <items>
+      <item>-</item>
+    </items>
+    <items_from_pv>false</items_from_pv>
+  </widget>
+  <widget type="textentry" version="3.0.0">
+    <name>log_device_1</name>
+    <pv_name>$(S):CS:Scan:Log:Device</pv_name>
+    <x>246</x>
+    <y>72</y>
+    <width>463</width>
+    <height>25</height>
+    <background_color>
+      <color name="WritePV_Background" red="128" green="255" blue="255">
+      </color>
+    </background_color>
+    <format>6</format>
+    <actions>
+    </actions>
+    <tooltip>Device that should be fitted via edge location
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="xyplot" version="3.0.0">
+    <name>XY Graph</name>
+    <y>108</y>
+    <width>799</width>
+    <height>403</height>
+    <actions>
+    </actions>
+    <scripts>
+      <script file="scripts/align_plot_update.py">
+        <pv_name>$(S):CS:Scan:Fit:Pos</pv_name>
+        <pv_name>$(S):CS:Scan:Fit:Height</pv_name>
+        <pv_name>$(S):CS:Scan:Fit:Width</pv_name>
+        <pv_name trigger="false">loc://fit_cx(0, 0)</pv_name>
+        <pv_name trigger="false">loc://fit_y(0, 0)</pv_name>
+        <pv_name trigger="false">loc://fit_lx(0, 0)</pv_name>
+        <pv_name trigger="false">loc://fit_rx(0, 0)</pv_name>
+      </script>
+    </scripts>
+    <x_axis>
+      <title>Position</title>
+      <autoscale>true</autoscale>
+      <log_scale>false</log_scale>
+      <minimum>0.0</minimum>
+      <maximum>100.0</maximum>
+      <show_grid>true</show_grid>
+      <title_font>
+        <font name="Default Bold" family="Liberation Sans" style="BOLD" size="14.0">
+        </font>
+      </title_font>
+      <scale_font>
+        <font name="Default" family="Liberation Sans" style="REGULAR" size="14.0">
+        </font>
+      </scale_font>
+      <visible>true</visible>
+    </x_axis>
+    <y_axes>
+      <y_axis>
+        <title>Value</title>
+        <autoscale>true</autoscale>
+        <log_scale>false</log_scale>
+        <minimum>0.0</minimum>
+        <maximum>100.0</maximum>
+        <show_grid>true</show_grid>
+        <title_font>
+          <font name="Default Bold" family="Liberation Sans" style="BOLD" size="14.0">
+          </font>
+        </title_font>
+        <scale_font>
+          <font name="Default" family="Liberation Sans" style="REGULAR" size="14.0">
+          </font>
+        </scale_font>
+        <on_right>false</on_right>
+        <visible>true</visible>
+        <color>
+          <color name="Text" red="0" green="0" blue="0">
+          </color>
+        </color>
+      </y_axis>
+    </y_axes>
+    <traces>
+      <trace>
+        <name>Data</name>
+        <x_pv>$(S):CS:Scan:Fit:Data:X</x_pv>
+        <y_pv>$(S):CS:Scan:Fit:Data:Y</y_pv>
+        <err_pv></err_pv>
+        <axis>0</axis>
+        <trace_type>1</trace_type>
+        <color>
+          <color red="0" green="0" blue="255">
+          </color>
+        </color>
+        <line_width>2</line_width>
+        <line_style>0</line_style>
+        <point_type>4</point_type>
+        <point_size>4</point_size>
+        <visible>true</visible>
+      </trace>
+      <trace>
+        <name>Left</name>
+        <x_pv>loc://fit_lx(0, 0)</x_pv>
+        <y_pv>loc://fit_y(0, 0)</y_pv>
+        <err_pv></err_pv>
+        <axis>0</axis>
+        <trace_type>1</trace_type>
+        <color>
+          <color red="255" green="0" blue="0">
+          </color>
+        </color>
+        <line_width>1</line_width>
+        <line_style>1</line_style>
+        <point_type>0</point_type>
+        <point_size>4</point_size>
+        <visible>true</visible>
+      </trace>
+      <trace>
+        <name>Center</name>
+        <x_pv>loc://fit_cx(0, 0)</x_pv>
+        <y_pv>loc://fit_y(0, 0)</y_pv>
+        <err_pv></err_pv>
+        <axis>0</axis>
+        <trace_type>1</trace_type>
+        <color>
+          <color red="188" green="0" blue="0">
+          </color>
+        </color>
+        <line_width>3</line_width>
+        <line_style>1</line_style>
+        <point_type>0</point_type>
+        <point_size>4</point_size>
+        <visible>true</visible>
+      </trace>
+      <trace>
+        <name>Right</name>
+        <x_pv>loc://fit_rx(0, 0)</x_pv>
+        <y_pv>loc://fit_y(0, 0)</y_pv>
+        <err_pv></err_pv>
+        <axis>0</axis>
+        <trace_type>1</trace_type>
+        <color>
+          <color red="255" green="0" blue="0">
+          </color>
+        </color>
+        <line_width>1</line_width>
+        <line_style>1</line_style>
+        <point_type>0</point_type>
+        <point_size>4</point_size>
+        <visible>true</visible>
+      </trace>
+    </traces>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_13</name>
+    <text>Fit Method:</text>
+    <y>516</y>
+    <width>103</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="combo" version="2.0.0">
+    <name>method</name>
+    <pv_name>$(S):CS:Scan:Fit:Method</pv_name>
+    <x>96</x>
+    <y>516</y>
+    <width>133</width>
+    <height>31</height>
+    <background_color>
+      <color red="255" green="255" blue="255">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>How to fit the logged data
+$(pv_name)
+$(pv_value)</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_14</name>
+    <text>Position:</text>
+    <x>252</x>
+    <y>516</y>
+    <width>79</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update</name>
+    <pv_name>$(S):CS:Scan:Fit:Pos</pv_name>
+    <x>324</x>
+    <y>516</y>
+    <width>169</width>
+    <height>25</height>
+    <vertical_alignment>1</vertical_alignment>
+    <wrap_words>false</wrap_words>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="checkbox" version="2.0.0">
+    <name>normalize</name>
+    <pv_name>$(S):CS:Scan:Fit:Normalize</pv_name>
+    <label>Normalize by step condition</label>
+    <y>552</y>
+    <width>229</width>
+    <height>25</height>
+    <actions>
+    </actions>
+    <tooltip>Before fitting, normalize logged values by step condition?
+$(pv_name)
+$(pv_value)</tooltip>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_15</name>
+    <text>Width:</text>
+    <x>264</x>
+    <y>552</y>
+    <width>55</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_1</name>
+    <pv_name>$(S):CS:Scan:Fit:Width</pv_name>
+    <x>324</x>
+    <y>552</y>
+    <width>169</width>
+    <height>25</height>
+    <vertical_alignment>1</vertical_alignment>
+    <wrap_words>false</wrap_words>
+    <actions>
+    </actions>
+    <tooltip>Full-widths at half height
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="action_button" version="3.0.0">
+    <name>Action Button_2</name>
+    <actions>
+      <action type="execute">
+        <script file="scripts/alignment_submit.py">
+        </script>
+        <description>Submit</description>
+      </action>
+    </actions>
+    <x>720</x>
+    <y>576</y>
+    <width>79</width>
+    <height>25</height>
+    <tooltip>Submit scan based on table</tooltip>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_16</name>
+    <text>Height:</text>
+    <x>264</x>
+    <y>582</y>
+    <width>55</width>
+    <height>26</height>
+    <vertical_alignment>1</vertical_alignment>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="textupdate" version="2.0.0">
+    <name>Text Update_2</name>
+    <pv_name>$(S):CS:Scan:Fit:Height</pv_name>
+    <x>324</x>
+    <y>582</y>
+    <width>169</width>
+    <height>25</height>
+    <vertical_alignment>1</vertical_alignment>
+    <wrap_words>false</wrap_words>
+    <actions>
+    </actions>
+    <tooltip>Full-widths at half height
+$(pv_name)
+$(pv_value)</tooltip>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+</display>

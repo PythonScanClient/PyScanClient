@@ -1,49 +1,40 @@
 """Example for beamline specific setup
-
-   All scripts that access the scan server
-   should start with
+   All scripts that access the scan server should start with
 
      'from beamline_setup import *'
 """
 
 # Get all scan commands
 from scan import *
-
-# Replace basic Loop/Set/Wait commands with wrappers
-# that utilize custom scan settings
+# Replace basic Loop/Set/Wait commands with wrappers that use scan settings
 from scan.util import SettingsBasedLoop as Loop
 from scan.util import SettingsBasedSet as Set
 from scan.util import SettingsBasedWait as Wait
 
-# Each "beamline" or more generally setup that uses
-# the PyScanClient should create its own ScanSettings 
+# Implement ScanSettings for this beamline 
 class BeamlineScanSettings(ScanSettings):
     def __init__(self):
         super(BeamlineScanSettings, self).__init__()
 
-        # Define settings based on PV name patterns
-        # (regular expressions).
-        # Order matters! List most generic patterns first,
-        # specific PV names last.
-        # For example, motors should use completion, and check a readback
+        # Define settings based on PV name patterns (regular expressions).
+        # Order matters! List patterns first, specific PVs last.
+        # In general, motors should use completion, and check a readback
         self.defineDeviceClass("motor_.", completion=True, readback=True)
         # The specific motors in the simulation.db, however, don't support completion
         self.defineDeviceClass("motor_x", completion=False, readback=False)
         self.defineDeviceClass("motor_y", completion=False, readback=False)
         self.defineDeviceClass("shutter", readback=True)
-        # The simulated "setpoint" uses a different PV "readback" as its readback.
-        # (readback=False skips readback check
-        #  readback=True calls getReadbackName(pv) which typically returns the PV itself,
-        #  readback='whatever' uses provided PV
-        # )
+        # The simulated "setpoint" uses a different "readback" PV as its readback.
+        # readback=False skips readback check
+        # readback=True calls getReadbackName(pv) which typically returns the PV itself
+        # readback='whatever' uses provided PV
         self.defineDeviceClass("setpoint", completion=False, readback="readback", tolerance=0.1, timeout=20)
         # When waiting for proton charge or neutron counts, use "increase by"
         self.defineDeviceClass("pcharge", comparison="increase by")
         self.defineDeviceClass("neutrons", comparison="increase by")
         
         # Each site may add more to its site-specific configuration.
-        # The example/opi for alignment uses these to
-        # populate drop-downs
+        # The example/opi for alignment uses these to populate drop-downs
         self.settable = [ "motor_x", "motor_y" ]
         self.waitable = [ "seconds", "time", "pcharge" ]
         self.loggable = [ "signal" ]

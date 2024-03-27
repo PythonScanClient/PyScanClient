@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Saved on 2024-03-26 11:44:53 by ky9-->
+<!--Saved on 2024-03-27 11:09:54 by ky9-->
 <display version="2.0.0">
   <width>720</width>
   <height>380</height>
@@ -11,127 +11,15 @@
   </actions>
   <grid_step_x>6</grid_step_x>
   <grid_step_y>6</grid_step_y>
-  <widget type="group" version="3.0.0">
-    <name>Motors</name>
-    <x>492</x>
-    <y>178</y>
-    <width>223</width>
-    <height>201</height>
-    <foreground_color>
-      <color red="0" green="128" blue="255">
-      </color>
-    </foreground_color>
-    <line_color>
-      <color red="0" green="128" blue="255">
-      </color>
-    </line_color>
-    <background_color>
-      <color red="240" green="240" blue="240">
-      </color>
-    </background_color>
+  <widget type="picture" version="2.0.0">
+    <name>Image</name>
+    <file>images/sample.png</file>
+    <x>113</x>
+    <y>4</y>
+    <width>392</width>
+    <height>383</height>
     <actions>
     </actions>
-    <widget type="scrollbar" version="2.0.0">
-      <name>Scrollbar</name>
-      <pv_name>motor_x</pv_name>
-      <x>30</x>
-      <y>42</y>
-      <width>145</width>
-      <height>25</height>
-      <actions>
-      </actions>
-      <maximum>10.0</maximum>
-      <limits_from_pv>false</limits_from_pv>
-      <bar_length>0.2</bar_length>
-    </widget>
-    <widget type="scrollbar" version="2.0.0">
-      <name>Scrollbar</name>
-      <pv_name>motor_y</pv_name>
-      <x>30</x>
-      <y>109</y>
-      <width>145</width>
-      <height>23</height>
-      <actions>
-      </actions>
-      <maximum>10.0</maximum>
-      <limits_from_pv>false</limits_from_pv>
-      <bar_length>0.2</bar_length>
-      <increment>0.2</increment>
-    </widget>
-    <widget type="label" version="2.0.0">
-      <name>Label</name>
-      <text>X</text>
-      <y>12</y>
-      <width>10</width>
-      <height>16</height>
-      <horizontal_alignment>1</horizontal_alignment>
-      <vertical_alignment>1</vertical_alignment>
-      <auto_size>true</auto_size>
-      <actions>
-      </actions>
-      <border_color>
-        <color red="0" green="128" blue="255">
-        </color>
-      </border_color>
-    </widget>
-    <widget type="label" version="2.0.0">
-      <name>Label_1</name>
-      <text>Y</text>
-      <y>82</y>
-      <width>10</width>
-      <height>16</height>
-      <horizontal_alignment>1</horizontal_alignment>
-      <vertical_alignment>1</vertical_alignment>
-      <auto_size>true</auto_size>
-      <actions>
-      </actions>
-      <border_color>
-        <color red="0" green="128" blue="255">
-        </color>
-      </border_color>
-    </widget>
-    <widget type="spinner" version="2.0.0">
-      <name>Spinner</name>
-      <pv_name>motor_x</pv_name>
-      <x>30</x>
-      <y>12</y>
-      <width>91</width>
-      <height>25</height>
-      <format>0</format>
-      <precision>3</precision>
-      <background_color>
-        <color red="235" green="251" blue="255">
-        </color>
-      </background_color>
-      <horizontal_alignment>1</horizontal_alignment>
-      <vertical_alignment>1</vertical_alignment>
-      <actions>
-      </actions>
-      <maximum>10.0</maximum>
-      <limits_from_pv>false</limits_from_pv>
-      <increment>0.1</increment>
-    </widget>
-    <widget type="spinner" version="2.0.0">
-      <name>Spinner_1</name>
-      <pv_name>motor_y</pv_name>
-      <x>30</x>
-      <y>78</y>
-      <width>91</width>
-      <height>25</height>
-      <format>0</format>
-      <precision>3</precision>
-      <background_color>
-        <color red="235" green="251" blue="255">
-        </color>
-      </background_color>
-      <horizontal_alignment>1</horizontal_alignment>
-      <vertical_alignment>1</vertical_alignment>
-      <actions>
-      </actions>
-      <maximum>10.0</maximum>
-      <limits_from_pv>false</limits_from_pv>
-      <increment>0.1</increment>
-    </widget>
   </widget>
   <widget type="group" version="3.0.0">
     <name>Device</name>
@@ -195,93 +83,12 @@
       <maximum>10.0</maximum>
     </widget>
   </widget>
-  <widget type="picture" version="2.0.0">
-    <name>Image</name>
-    <file>images/sample.png</file>
-    <x>113</x>
-    <y>4</y>
-    <width>392</width>
-    <height>383</height>
-    <actions>
-    </actions>
-  </widget>
-  <widget type="bool_button" version="2.0.0">
-    <name>Image Boolean Button</name>
-    <pv_name>shutter</pv_name>
-    <bit>-1</bit>
-    <x>72</x>
-    <y>178</y>
-    <width>61</width>
-    <height>59</height>
-    <off_label></off_label>
-    <off_image>images/shutter_closed.png</off_image>
-    <on_label></on_label>
-    <on_image>images/shutter_open.png</on_image>
-    <background_color>
-      <color red="240" green="240" blue="240">
-      </color>
-    </background_color>
-    <actions>
-    </actions>
-    <tooltip>Open/close the shutter</tooltip>
-  </widget>
   <widget type="label" version="2.0.0">
-    <name>Label_4</name>
-    <text>Beam</text>
-    <x>20</x>
-    <y>143</y>
-    <width>37</width>
-    <height>16</height>
-    <horizontal_alignment>1</horizontal_alignment>
-    <vertical_alignment>1</vertical_alignment>
-    <auto_size>true</auto_size>
-    <actions>
-    </actions>
-    <border_color>
-      <color red="0" green="128" blue="255">
-      </color>
-    </border_color>
-  </widget>
-  <widget type="led" version="2.0.0">
-    <name>LED</name>
-    <pv_name>beam_on</pv_name>
-    <bit>0</bit>
-    <x>26</x>
-    <y>194</y>
-    <width>27</width>
-    <height>27</height>
-    <foreground_color>
-      <color red="192" green="192" blue="192">
-      </color>
-    </foreground_color>
-    <actions>
-    </actions>
-    <tooltip>Is the beam "on"?
-Should be abt. 95% of the time.</tooltip>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>Label_1</name>
-    <text>Proton Charge</text>
-    <x>156</x>
-    <y>143</y>
-    <width>92</width>
-    <height>16</height>
-    <horizontal_alignment>1</horizontal_alignment>
-    <vertical_alignment>1</vertical_alignment>
-    <auto_size>true</auto_size>
-    <actions>
-    </actions>
-    <border_color>
-      <color red="0" green="128" blue="255">
-      </color>
-    </border_color>
-  </widget>
-  <widget type="label" version="2.0.0">
-    <name>Label_2</name>
-    <text>Shutter</text>
-    <x>76</x>
-    <y>143</y>
-    <width>46</width>
+    <name>Label_6</name>
+    <text>Detector</text>
+    <x>408</x>
+    <y>12</y>
+    <width>53</width>
     <height>16</height>
     <horizontal_alignment>1</horizontal_alignment>
     <vertical_alignment>1</vertical_alignment>
@@ -310,12 +117,34 @@ Should be abt. 95% of the time.</tooltip>
       </color>
     </border_color>
   </widget>
+  <widget type="progressbar" version="2.0.0">
+    <name>Progress Bar</name>
+    <pv_name>signal</pv_name>
+    <x>432</x>
+    <y>134</y>
+    <width>31</width>
+    <height>124</height>
+    <fill_color>
+      <color red="255" green="184" blue="85">
+      </color>
+    </fill_color>
+    <background_color>
+      <color red="200" green="200" blue="200">
+      </color>
+    </background_color>
+    <horizontal>false</horizontal>
+    <actions>
+    </actions>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <limits_from_pv>false</limits_from_pv>
+    <maximum>1.0</maximum>
+  </widget>
   <widget type="label" version="2.0.0">
-    <name>Label_4</name>
-    <text>Motors</text>
-    <x>300</x>
-    <y>306</y>
-    <width>43</width>
+    <name>Label_1</name>
+    <text>Proton Charge</text>
+    <x>156</x>
+    <y>143</y>
+    <width>92</width>
     <height>16</height>
     <horizontal_alignment>1</horizontal_alignment>
     <vertical_alignment>1</vertical_alignment>
@@ -326,6 +155,59 @@ Should be abt. 95% of the time.</tooltip>
       <color red="0" green="128" blue="255">
       </color>
     </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_4</name>
+    <text>Beam</text>
+    <y>144</y>
+    <width>37</width>
+    <height>16</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
+    <auto_size>true</auto_size>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_2</name>
+    <text>Shutter</text>
+    <x>58</x>
+    <y>144</y>
+    <width>46</width>
+    <height>16</height>
+    <horizontal_alignment>1</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
+    <auto_size>true</auto_size>
+    <actions>
+    </actions>
+    <border_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </border_color>
+  </widget>
+  <widget type="bool_button" version="2.0.0">
+    <name>Image Boolean Button</name>
+    <pv_name>shutter</pv_name>
+    <bit>-1</bit>
+    <x>48</x>
+    <y>163</y>
+    <width>96</width>
+    <height>96</height>
+    <off_label></off_label>
+    <off_image>images/shutter_closed.png</off_image>
+    <on_label></on_label>
+    <on_image>images/shutter_open.png</on_image>
+    <background_color>
+      <color red="240" green="240" blue="240">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <tooltip>Open/close the shutter</tooltip>
   </widget>
   <widget type="textupdate" version="2.0.0">
     <name>Text Update_1</name>
@@ -350,6 +232,145 @@ $(pv_value)</tooltip>
       <color red="0" green="128" blue="255">
       </color>
     </border_color>
+  </widget>
+  <widget type="group" version="3.0.0">
+    <name>Motors</name>
+    <x>492</x>
+    <y>178</y>
+    <width>223</width>
+    <height>201</height>
+    <foreground_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </foreground_color>
+    <line_color>
+      <color red="0" green="128" blue="255">
+      </color>
+    </line_color>
+    <background_color>
+      <color red="240" green="240" blue="240">
+      </color>
+    </background_color>
+    <actions>
+    </actions>
+    <widget type="label" version="2.0.0">
+      <name>Label</name>
+      <text>X</text>
+      <y>12</y>
+      <width>10</width>
+      <height>16</height>
+      <horizontal_alignment>1</horizontal_alignment>
+      <vertical_alignment>1</vertical_alignment>
+      <auto_size>true</auto_size>
+      <actions>
+      </actions>
+      <border_color>
+        <color red="0" green="128" blue="255">
+        </color>
+      </border_color>
+    </widget>
+    <widget type="spinner" version="2.0.0">
+      <name>Spinner</name>
+      <pv_name>motor_x</pv_name>
+      <x>30</x>
+      <y>12</y>
+      <width>91</width>
+      <height>25</height>
+      <format>0</format>
+      <precision>3</precision>
+      <background_color>
+        <color red="235" green="251" blue="255">
+        </color>
+      </background_color>
+      <horizontal_alignment>1</horizontal_alignment>
+      <vertical_alignment>1</vertical_alignment>
+      <actions>
+      </actions>
+      <maximum>10.0</maximum>
+      <limits_from_pv>false</limits_from_pv>
+      <increment>0.1</increment>
+    </widget>
+    <widget type="scrollbar" version="2.0.0">
+      <name>Scrollbar</name>
+      <pv_name>motor_x</pv_name>
+      <x>30</x>
+      <y>42</y>
+      <width>145</width>
+      <height>25</height>
+      <actions>
+      </actions>
+      <maximum>10.0</maximum>
+      <limits_from_pv>false</limits_from_pv>
+      <bar_length>0.2</bar_length>
+    </widget>
+    <widget type="spinner" version="2.0.0">
+      <name>Spinner_1</name>
+      <pv_name>motor_y</pv_name>
+      <x>30</x>
+      <y>78</y>
+      <width>91</width>
+      <height>25</height>
+      <format>0</format>
+      <precision>3</precision>
+      <background_color>
+        <color red="235" green="251" blue="255">
+        </color>
+      </background_color>
+      <horizontal_alignment>1</horizontal_alignment>
+      <vertical_alignment>1</vertical_alignment>
+      <actions>
+      </actions>
+      <maximum>10.0</maximum>
+      <limits_from_pv>false</limits_from_pv>
+      <increment>0.1</increment>
+    </widget>
+    <widget type="label" version="2.0.0">
+      <name>Label_1</name>
+      <text>Y</text>
+      <y>82</y>
+      <width>10</width>
+      <height>16</height>
+      <horizontal_alignment>1</horizontal_alignment>
+      <vertical_alignment>1</vertical_alignment>
+      <auto_size>true</auto_size>
+      <actions>
+      </actions>
+      <border_color>
+        <color red="0" green="128" blue="255">
+        </color>
+      </border_color>
+    </widget>
+    <widget type="scrollbar" version="2.0.0">
+      <name>Scrollbar</name>
+      <pv_name>motor_y</pv_name>
+      <x>30</x>
+      <y>109</y>
+      <width>145</width>
+      <height>23</height>
+      <actions>
+      </actions>
+      <maximum>10.0</maximum>
+      <limits_from_pv>false</limits_from_pv>
+      <bar_length>0.2</bar_length>
+      <increment>0.2</increment>
+    </widget>
+  </widget>
+  <widget type="led" version="2.0.0">
+    <name>LED</name>
+    <pv_name>beam_on</pv_name>
+    <bit>0</bit>
+    <x>6</x>
+    <y>195</y>
+    <width>27</width>
+    <height>27</height>
+    <foreground_color>
+      <color red="192" green="192" blue="192">
+      </color>
+    </foreground_color>
+    <actions>
+    </actions>
+    <tooltip>Is the beam "on"?
+Should be abt. 95% of the time.</tooltip>
   </widget>
   <widget type="label" version="2.0.0">
     <name>Label_5</name>
@@ -393,34 +414,12 @@ $(pv_value)</tooltip>
       </color>
     </border_color>
   </widget>
-  <widget type="progressbar" version="2.0.0">
-    <name>Progress Bar</name>
-    <pv_name>signal</pv_name>
-    <x>432</x>
-    <y>134</y>
-    <width>31</width>
-    <height>124</height>
-    <fill_color>
-      <color red="255" green="184" blue="85">
-      </color>
-    </fill_color>
-    <background_color>
-      <color red="200" green="200" blue="200">
-      </color>
-    </background_color>
-    <horizontal>false</horizontal>
-    <actions>
-    </actions>
-    <border_alarm_sensitive>false</border_alarm_sensitive>
-    <limits_from_pv>false</limits_from_pv>
-    <maximum>1.0</maximum>
-  </widget>
   <widget type="label" version="2.0.0">
-    <name>Label_6</name>
-    <text>Detector</text>
-    <x>408</x>
-    <y>12</y>
-    <width>72</width>
+    <name>Label_4</name>
+    <text>Motors</text>
+    <x>300</x>
+    <y>306</y>
+    <width>43</width>
     <height>16</height>
     <horizontal_alignment>1</horizontal_alignment>
     <vertical_alignment>1</vertical_alignment>

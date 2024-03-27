@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<scan_config>
+   <!-- Path to server-side scripts -->
+   <path>to_be_set</path>
+
+   <!-- Simulation information for a PV        
+        Slew rate is in [units of the device] / second
+        The (simulated) neutrons change at about 7/sec
+     -->
+   <pv>
+       <name>neutrons</name>
+       <slew_rate>7</slew_rate>
+   </pv>
+   <!-- Proton charge: About 3.5e12 / hour = 9.7e8 / sec -->
+   <pv>
+       <name>pcharge</name>
+       <slew_rate>9.7222e+08</slew_rate>
+   </pv>
+      
+   <!-- In addition, a name_pattern (regular expression is supported -->
+   <pv>
+       <name_pattern>motor_.</name_pattern>
+       <slew_rate>10</slew_rate>
+   </pv>
+</scan_config>

@@ -1,24 +1,33 @@
 """
-Initialize scan GUI
+Initialize alignment scan GUI
 @author: Kay Kasemir
 """
 
-from org.csstudio.opibuilder.scriptUtil import PVUtil
-from org.eclipse.jface.dialogs import MessageDialog
-
+from org.csstudio.display.builder.runtime.script import ScriptUtil, PVUtil
 from errors import showException
 
 try:
     from beamline_setup import *
 
-    widget = display.getWidget("device1")
-    widget.setPropertyValue("items", scan_settings.settable)
-        
-    widget = display.getWidget("cond_device")
-    widget.setPropertyValue("items", scan_settings.waitable)
-    
-    widget = display.getWidget("log_device")
-    widget.setPropertyValue("items", scan_settings.loggable)
+    # Populate combo options, default to the first option
+    combo = ScriptUtil.findWidgetByName(widget, "device1")
+    combo.setItems(scan_settings.settable)
+    pv = ScriptUtil.getPrimaryPV(combo)
+    if len(PVUtil.getString(pv)) <= 0:
+        pv.write(scan_settings.settable[0])
+
+    combo = ScriptUtil.findWidgetByName(widget, "cond_device")
+    combo.setItems(scan_settings.waitable)
+    pv = ScriptUtil.getPrimaryPV(combo)
+    if len(PVUtil.getString(pv)) <= 0:
+        pv.write(scan_settings.waitable[0])
+
+    combo = ScriptUtil.findWidgetByName(widget, "log_device")
+    combo.setItems(scan_settings.loggable)
+    pv = ScriptUtil.getPrimaryPV(combo)
+    if len(PVUtil.getString(pv)) <= 0:
+        pv.write(scan_settings.loggable[0])
+
 except Exception, e:
-    showException("Sorry...")
+    showException(widget, "Sorry...")
 

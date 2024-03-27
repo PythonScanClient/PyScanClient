@@ -36,5 +36,5 @@ Use Case: Custom Python Scripts
 -------------------------------
 
 Finally, custom Python scripts can assemble a set of commands,
-see :ref:`scan_client`
-and :ref:`scan_commands`.
+see :doc:`scan client <scan_client>`
+and :doc:`scan commands <commands>`.

@@ -1,5 +1,3 @@
-.. _scan_client:
-
 Scan Client
 ===========
 
