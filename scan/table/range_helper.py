@@ -9,7 +9,7 @@ import re
 # Regular expression for a number,
 # captured as one group,
 # padded by space
-__re_dbl = " *([-+]?[0-9]+\.?[0-9]*(?:[eE][-+]?[0-9]+)?) *"
+__re_dbl = r" *([-+]?[0-9]+\.?[0-9]*(?:[eE][-+]?[0-9]+)?) *"
 
 # Regular expression for the range([start,] stop[, step]) command,
 # capturing the start, end and step arguments
