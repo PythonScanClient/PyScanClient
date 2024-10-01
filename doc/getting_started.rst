@@ -52,7 +52,7 @@ For the CS-Studio displays, we add the path to this python library and its examp
 
 This `.../python_path` setting is for CS-Studio displays to locate display scripts.
 It is not required by the scan server, but for simplicity
-you may combnied settings in a common file loaded by all CS-Studio tools,
+you may combine settings in a common file loaded by all CS-Studio tools,
 since the tools will ignore settings that don't apply to them.
 
 The scan server uses an additional configuration file.
