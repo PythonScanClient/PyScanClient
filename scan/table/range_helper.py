@@ -13,10 +13,10 @@ __re_dbl = r" *([-+]?[0-9]+\.?[0-9]*(?:[eE][-+]?[0-9]+)?) *"
 
 # Regular expression for the range([start,] stop[, step]) command,
 # capturing the start, end and step arguments
-__re_range = r"range *\((?:" + __re_dbl + r",)?" + __re_dbl + r"(?:," + __re_dbl +")?\)"
+__re_range = r"range *\((?:" + __re_dbl + r",)?" + __re_dbl + r"(?:," + __re_dbl + r")?\)"
 
 # Similar for loop([start,] stop[, step])
-__re_loop = r"[Ll]oop *\((?:" + __re_dbl + r",)?" + __re_dbl + r"(?:," + __re_dbl +")?\)"
+__re_loop = r"[Ll]oop *\((?:" + __re_dbl + r",)?" + __re_dbl + r"(?:," + __re_dbl + r")?\)"
 
 range_matcher = re.compile(__re_range)
 loop_matcher = re.compile(__re_loop)
