@@ -1,8 +1,9 @@
 from __future__ import print_function
 
-__version__ = '1.10.0'
+__version__ = '1.10.1'
 
 version_history = """
+1.10.1 - Wrap HTTP error content in str(..)
 1.10.0 - Support submit(.., pre_post) parameter
 1.9.0 - Support submit(.., timeline, deadline) parameters
 1.8.1 - Fix error in requests.HTTPError handling
@@ -57,5 +58,5 @@ version_history = """
 
 if __name__ == "__main__":
     print(("Version %s" % __version__))
-    
+
     print(version_history)

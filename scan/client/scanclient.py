@@ -58,7 +58,7 @@ if os.name == 'java':
                 out = connection.getOutputStream()
                 out.write(data)
                 out.close()
-    
+
             inp = BufferedReader(InputStreamReader(connection.getInputStream()))
             result = java.lang.StringBuilder()
             while True:
@@ -78,11 +78,11 @@ else:
 
     def perform_request(url, method='GET', data=None, timeout=None):
         """Perform HTTP request with scan server
-        
+
         :param url:    URL
         :param method: 'GET', 'PUT', ...
         :param data:   Optional data
-       
+
         :return: XML response from scan server
         """
         response = None
@@ -118,7 +118,10 @@ else:
                 if hasattr(e.response, 'status_code'):
                     msg += " code %d" % e.response.status_code
                 if hasattr(e.response, '_content'):
-                    msg += "\n" + e.response._content
+                    msg += "\nServer error message:"
+                    msg += "\n" + ('-' * 80)
+                    msg += "\n" + str(e.response._content)
+                    msg += "\n" + ('-' * 80)
             raise Exception(msg)
 
         return response.text
@@ -126,36 +129,36 @@ else:
 
 class ScanClient(object):
     """Client interface to the scan server
-    
+
     :param host: The IP address or name of scan server host.
     :param port: The TCP port of the scan server.
-    
+
     Example:
-    
+
     >>> client = ScanClient('localhost')
     """
     __baseURL = None
-       
+
     def __init__(self, host='localhost', port=4810):
         self.__host = host
         self.__port = int(port) #no matter what type of 'port' input, self._port keeps to be int.
         #May implement a one to one host+port with instance in the future.
         self.__baseURL = "http://" + self.__host + ':' + str(self.__port)
 
-    
+
     def __repr__(self):
         return "ScanClient('%s', %d)" % (self.__host, self.__port)
 
 
     def serverInfo(self):
         """Get scan server information
-        
+
         Provides version number, configuration, ... of current server
-        
+
         Using `GET {BaseURL}/server/info`
-        
+
         :return: XML with server info
-        
+
         Usage::
 
         >>> client = ScanClient()
@@ -163,29 +166,29 @@ class ScanClient(object):
         """
         return perform_request(self.__baseURL + "/server/info")
 
-                
+
     def simulate(self, cmds):
         """Submit scan to scan server for simulation
-        
+
         :param cmds: List of commands,
                      :class:`~scan.commands.commandsequence.CommandSequence`
                      or text with raw XML format.
-        
+
         :return: Simulation result as dictionary `{ 'simulation': "Printable text", 'seconds': 193.0 }`
-        
+
         Example::
 
         >>> result = client.simulate([ Set('x', 5), Delay(2) ])
         >>> print result['simulation']
         """
         if isinstance(cmds, str):
-            scan = cmds            
+            scan = cmds
         elif isinstance(cmds, CommandSequence):
             scan = cmds.genSCN()
         else:
             # Warp list, tuple, other iterable
             scan = CommandSequence(cmds).genSCN()
-            
+
         url = self.__baseURL + "/simulate"
 
         result = perform_request(url, 'POST', scan)
@@ -199,7 +202,7 @@ class ScanClient(object):
 
     def submit(self, cmds, name='UnNamed', queue=True, timeout=0, deadline=None, pre_post=True):
         """Submit scan to scan server for execution
-        
+
         :param cmds: List of commands,
                      :class:`~scan.commands.commandsequence.CommandSequence`
                      or text with raw XML format.
@@ -208,7 +211,7 @@ class ScanClient(object):
         :param timeout: Timeout in seconds after which scan will self-abort
         :param deadline: Execution deadline in "yyyy-MM-dd HH:mm:ss" format when scan will self-abort
         :param pre_post: Execute pre- and post-scan commands (default: True)
-        
+
         :return: ID of submitted scan
 
         By default, a submitted scan will be queued.
@@ -220,16 +223,16 @@ class ScanClient(object):
 
         Either the 'timeout' or the 'deadline' might be used to limit
         the execution time.
-        
+
         Examples::
-        
+
         >>> cmds = [ Comment('Hello'), Set('x', 10) ]
         >>> id = client.submit(cmds, "My First Scan")
-        
+
         >>> cmds = CommandSequence(Comment('Hello'))
         >>> cmds.append(Set('x', 10))
         >>> id = client.submit(cmds, "My Second Scan")
-        
+
         >>> cmds = CommandSequence(Delay(600))
         >>> id = client.submit(cmds, "Timeout", timeout=10)
         """
@@ -241,7 +244,7 @@ class ScanClient(object):
         else:
             # Warp list, tuple, other iterable
             result = self.__submitScanSequence(CommandSequence(cmds), quoted_name, queue, timeout, deadline, pre_post)
-        
+
         xml = ET.fromstring(result)
         if xml.tag != 'id':
             raise Exception("Expected scan <id>, got <%s>" % xml.tag)
@@ -250,17 +253,17 @@ class ScanClient(object):
 
     def __submitScanXML(self, scanXML, scanName, queue=True, timeout=0, deadline=None, pre_post=True):
         """Submit scan in raw XML-form.
-        
+
         Using   POST {BaseURL}/scan/{scanName}
         Return  <id>{id}</id>
-        
+
         :param scanXML: The XML content of your new scan
         :param scanName: The name you want to give the new scan
         :param queue: Submit to scan server queue, or execute as soon as possible?
         :param timeout: Timeout in seconds after which scan will self-abort
         :param deadline: Execution deadline in "yyyy-MM-dd HH:mm:ss" format when scan will self-abort
         :param pre_post: Execute pre- and post-scan commands (default: True)
-        
+
         :return: Raw XML for scan ID
 
         Usage::
@@ -285,11 +288,11 @@ class ScanClient(object):
 
         r = perform_request(url, 'POST', scanXML)
         return r
-    
-            
+
+
     def __submitScanSequence(self, cmdSeq, scanName, queue=True, timeout=0, deadline=None, pre_post=True):
         """Submit a CommandSequence
-        
+
         :param cmdSeq: :class:`scan.commands.commandsequence.CommandSequence`
         :param scanName: The name needed to give the new scan
         :param queue: Submit to scan server queue, or execute as soon as possible?
@@ -300,16 +303,16 @@ class ScanClient(object):
         :return: Raw XML for scan ID
         """
         return self.__submitScanXML(cmdSeq.genSCN(),scanName, queue, timeout, deadline, pre_post)
-      
-           
+
+
     def scanInfos(self, timeout=20):
-        """Get information of all scans 
-        
+        """Get information of all scans
+
         Using `GET {BaseURL}/scans`
-        
+
         :param timeout: Throws exception when no reply within that time in seconds
         :return: List of :class:`~scan.client.scaninfo.ScanInfo`
-        
+
         Example::
 
         >>> infos = client.scanInfos()
@@ -325,15 +328,15 @@ class ScanClient(object):
 
     def scanInfo(self, scanID, timeout=10):
         """Get information for a scan
-        
+
         Using `GET {BaseURL}/scan/{id}`
-              
+
         :param scanID: The ID of scan for which to fetch information.
         :param timeout: Throws exception when no reply within that time in seconds
         :return: :class:`~scan.client.scaninfo.ScanInfo`
-        
+
         Example::
-        
+
         >>> client = ScanClient()
         >>> print client.scanInfo(42)
         """
@@ -342,18 +345,18 @@ class ScanClient(object):
 
     def scanCmds(self, scanID):
         """Get the commands of scan.
-        
+
         Reads scan commands from scan server.
         Only possible for scans that are still available
         on the server, not for older scans that only
         have logged data but no command detail.
-        
+
         :param scanID::  The ID of scan for which to fetch information.
-        
+
         :return: Scan commands in XML format of a scan.
-        
+
         Example::
-        
+
         >>> client = ScanClient()
         >>> scanid = client.submit(...someCMDs...)
         >>> # Submit it again:
@@ -366,18 +369,18 @@ class ScanClient(object):
 
     def lastSerial(self, scanID):
         """Get the last log data serial.
-        
+
         Obtains the serial ID of the last logged sample of a scan.
         Allows clients which monitor the progress of a scan to poll
         for changes in the logged data without always having to pull
         the complete data log.
-        
+
         :param scanID: The ID of scan for which to fetch information.
-        
+
         :return: Id of last logged sample of the scan.
-        
+
         Example::
-        
+
         >>> last_log_fetched = -1
         >>> while not client.scanInfo(id).isDone:
         >>>     last_logged = client.lastSerial(id)
@@ -394,16 +397,16 @@ class ScanClient(object):
 
     def scanDevices(self, scanID=-1):
         """Get list of devices used by scan.
-        
+
         :param scanID: The ID of scan that is still held in scan server,
                        -1 to fetch default devices.
-        
+
         Provides a list of devices used by a scan.
         For a running scan, this includes devices accessed
         in the pre- and post-scan.
         Also includes devices configured with alias names,
         but not necessarily used by the scan.
-        
+
         :return: XML with info about devices.
         """
         url = self.__baseURL + "/scan/" + str(scanID) + '/devices'
@@ -420,22 +423,22 @@ class ScanClient(object):
 
     def waitUntilDone(self, scanID):
         """Wait until scan finishes.
-        
+
         On return, the scan has finished successfully.
         Can also be used for an older scan that has logged data,
         whereupon this call will return immediately.
-        
+
         In case the scan failed or was aborted,
         an exception is raised.
 
         If scan information is not available
         (timeout while requesting it),
         keep checking.
-        
+
         :param scanID: ID of scan on which to wait
-        
+
         :return: Scan info
-        :raise Exception: If scan was aborted or failed. 
+        :raise Exception: If scan was aborted or failed.
         """
         while True:
             info = self.__getInfo(scanID)
@@ -448,11 +451,11 @@ class ScanClient(object):
 
     def pause(self, scanID=-1):
         """Pause a running scan
-        
-        :param scanID: ID of scan or -1 to pause current scan 
-        
+
+        :param scanID: ID of scan or -1 to pause current scan
+
         Using `PUT {BaseURL}/scan/{id}/pause`
-        
+
         Example::
 
         >>> id = client.submit(commands)
@@ -464,13 +467,13 @@ class ScanClient(object):
 
     def resume(self, scanID=-1):
         """Resume a paused scan
-        
+
         :param scanID: ID of scan or -1 to resume current scan
-         
+
         Using `PUT {BaseURL}/scan/{id}/resume`
-        
+
         Example::
-        
+
         >>> id = client.submit(commands)
         >>> client.pause(id)
         >>> client.resume(id)
@@ -481,11 +484,11 @@ class ScanClient(object):
 
     def abort(self, scanID=-1):
         """Abort a running or paused scan
-        
+
         :param scanID: ID of scan or -1 to abort current scan
 
         Using `PUT {BaseURL}/scan/{id}/abort`
-        
+
         Example::
 
         >>> id = client.submit(commands)
@@ -497,11 +500,11 @@ class ScanClient(object):
 
     def delete(self, scanID):
         """Remove a completed scan.
-        
+
         Using `DELETE {BaseURL}/scan/{id}`
-        
+
         :param scanID: The id of scan you want to delete.
-        
+
         Example::
 
         >>> id = client.submit(commands)
@@ -513,24 +516,24 @@ class ScanClient(object):
 
     def clear(self):
         """Remove all completed scans.
-        
+
         Using `DELETE {BaseURL}/scans/completed`
-        
+
         Usage::
-        
+
         >>> client.clear()
         """
         perform_request(self.__baseURL + "/scans/completed", 'DELETE')
 
     def patch(self, scanID, address, property, value):  # @ReservedAssignment
         """Update scan on server.
-        
+
         This can be used to update parameters of an existing
         command in an existing scan on the server.
-        
+
         In case the command had already been executed, the change
         has no effect.
-        
+
         Using `PUT {BaseURL}/scan/{id}/patch`
 
         :param scanID: The id of scan you want to update.
@@ -538,9 +541,9 @@ class ScanClient(object):
                         Counted within the scan starting at 0.
         :param property: The property of the command to update.
         :param value: The new value for that property.
-        
+
         Example::
-        
+
         >>> id = client.submit([ Delay(5), Set('motor_x', 10) ], 'Changing...')
         >>> client.pause(id)
         >>> # Want to set 'motor_x' to 5 instead of 10
@@ -553,17 +556,17 @@ class ScanClient(object):
 
     def getData(self, scanID):
         """Fetch logged data of a scan
-        
+
         :param scanID: ID of scan
-        
+
         :return: Data dictionary
-        
+
         Example:
            >>> data = client.getData(id)
            >>> print data
-           
+
         Format of the data::
-        
+
            { 'device1': {'id': [0, 1, 2, 3, 4 ],
                          'value': [2.0, 3.0, 4.0, 2.0, 4.0],
                          'time': [1427913270352, 1427913270470, 1427913270528, 1427913270596, 1427913270695]
@@ -576,7 +579,7 @@ class ScanClient(object):
 
         The data dictionary has one entry per logged device.
         Its value is again a dictionary with entries
-        
+
         id:
            Sample IDs, starting from 0
         value:
